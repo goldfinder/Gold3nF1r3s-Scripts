@@ -1,8 +1,8 @@
 local noise = math.noise
 
-local sizeX = 32
-local sizeY = 32
-local sizeZ = 32
+local sizeX = 90
+local sizeY = 90
+local sizeZ = 90
 
 local air = Enum.Material.Air
 local grass = Enum.Material.Grass
