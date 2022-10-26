@@ -720,5 +720,3 @@ while true do
 	local tween = TweenService:Create(beam, tweenInfo1, goal2)
 	tween.Completed:Wait()
 end
-
-beam.Color = 
