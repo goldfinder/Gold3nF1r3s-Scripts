@@ -38,8 +38,8 @@ local ca = CFrame.Angles
 local player = owner
 wait(.8)
 local pchar = player.Character
-local ammo=math.huge
-local reserves = math.huge
+local ammo=3
+local reserves = 9
 local currholst = true
 local THC = false
 local deb = false
