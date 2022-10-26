@@ -56,7 +56,7 @@ function nametag()
 		tween:Play()
 		tween.Completed:Wait()
 	end
-end)
+end
 owner.CharacterAdded:Connect(function()
 	nametag()
 end)
