@@ -12,9 +12,9 @@ local CHUNK_SCALE 		= 3 				-- The grid scale for terrain generation. Should be 
 
 local RENDER_DISTANCE 	= 50 				-- The length/width of chunks in voxels that should be around the player at all times
 
-local X_SCALE 			= 90			-- How much we should strech the X scale of the generation noise
+local X_SCALE 			= 900			-- How much we should strech the X scale of the generation noise
 
-local Z_SCALE 			= 90			-- How much we should strech the Z scale of the generation noise
+local Z_SCALE 			= 900			-- How much we should strech the Z scale of the generation noise
 
 local GENERATION_SEED	= math.random() 	-- Seed for determining the main height map of the terrain.
 
