@@ -2,7 +2,7 @@ local part = Instance.new("Part")
 part.Parent = Workspace
 local TweenService = game:GetService('TweenService')
 local object = part
-local tweenInfo = TweenInfo.new(1,Enum.EasingStyle.Linear,Enum.EasingDirection.InOut,0,false,0)
+local tweenInfo = TweenInfo.new(0.25,Enum.EasingStyle.Linear,Enum.EasingDirection.InOut,0,false,0)
 
 while true do
 	local r, g, b = math.random(), math.random(), math.random()
