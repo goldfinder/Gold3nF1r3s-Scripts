@@ -1,52 +1,159 @@
-local noise = math.noise
+local Players = game:GetService("Players")
 
-local sizeX = 90
-local sizeY = 90
-local sizeZ = 90
 
-local air = Enum.Material.Air
-local grass = Enum.Material.Grass
-local sand = Enum.Material.Sand
 
-local mat = {}
-local occ = {}
+------------------------------------------------------------------------------------------------------------------------------------------------
 
-function fBm(x, y, z)
-    local octaves = 3
-    local lacunarity = 2.0
-    local gain = 0.5
-    local amplitude = 1.0
-    local frequency = 0.01
-    
-    local sum = 0.0
-    for i = 0, octaves do
-        sum = sum + amplitude * noise(x * frequency, y * frequency, z * frequency)
-        amplitude = amplitude * gain
-        frequency = frequency * lacunarity
-    end
-    return sum;
-end 
 
-for x=1, sizeX do
-    mat[x] = {}
-    occ[x] = {}
-    
-    for y=1, sizeY do
-        mat[x][y] = {}
-        occ[x][y] = {}
-        
-        for z=1, sizeZ do
-            local p = fBm(x, y, z)
-            
-            if p > 0 then
-                mat[x][y][z] = p < 0.1 and grass or sand
-                occ[x][y][z] = p
-            else
-                mat[x][y][z] = air
-                occ[x][y][z] = 0
-            end 
-        end
-    end
+
+local BASE_HEIGHT 		= 100				-- The main height factor for the terrain.
+
+local CHUNK_SCALE 		= 3 				-- The grid scale for terrain generation. Should be kept relatively low if used in real-time.
+
+local RENDER_DISTANCE 	= 50 				-- The length/width of chunks in voxels that should be around the player at all times
+
+local X_SCALE 			= 90			-- How much we should strech the X scale of the generation noise
+
+local Z_SCALE 			= 90			-- How much we should strech the Z scale of the generation noise
+
+local GENERATION_SEED	= math.random() 	-- Seed for determining the main height map of the terrain.
+
+local TERRAIN_TYPE = Enum.Material.Ice --Terrain Type
+
+
+
+------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+local chunks = {} --table to store chunk locations
+
+
+
+--Checks player location to see if they have already been there
+
+--If it is a new location, it adds to table
+
+local function chunkExists(chunkX, chunkZ)
+
+	if not chunks[chunkX] then
+
+		chunks[chunkX] = {}
+
+	end
+
+	return chunks[chunkX][chunkZ]
+
 end
 
-workspace.Terrain:WriteVoxels(Region3.new(Vector3.new(0, 0, 0), Vector3.new(128, 128, 128)), 4, mat, occ)
+
+
+--Takes calculated values and generates terrain
+
+local function mountLayer(x, heightY, z, material)
+
+	local beginY = -BASE_HEIGHT
+
+	local endY = heightY
+
+	local cframe = CFrame.new(x * 4 + 2, (beginY + endY) * 4 / 2, z * 4 + 2)
+
+	local size = Vector3.new(4, (endY - beginY) * 4, 4)
+
+	workspace.Terrain:FillBlock(cframe, size, material)	
+
+end
+
+
+
+--Prepares values for terrain generation
+
+function makeChunk(chunkX, chunkZ)
+
+	local rootPosition = Vector3.new(chunkX * CHUNK_SCALE, 0, chunkZ * CHUNK_SCALE)
+
+	chunks[chunkX][chunkZ] = true -- Acknowledge the chunk's existance.
+
+	for x = 0, CHUNK_SCALE - 1 do
+
+		for z = 0, CHUNK_SCALE - 1 do
+
+			local cx = (chunkX * CHUNK_SCALE) + x
+
+			local cz = (chunkZ * CHUNK_SCALE) + z
+
+			local noise = math.noise(GENERATION_SEED, cx / X_SCALE, cz / Z_SCALE)
+
+			local cy = noise * BASE_HEIGHT
+
+			mountLayer(cx, cy, cz, TERRAIN_TYPE) --sends values to mountLayer function
+
+		end
+
+	end
+
+end
+
+
+
+
+
+--Checks player surroundings
+
+--Adds location to table
+
+--Adds new terrain as player moves to new locations
+
+function checkSurroundings(location)
+
+	local chunkX, chunkZ = math.floor(location.X / 4 / CHUNK_SCALE), math.floor(location.Z / 4 / CHUNK_SCALE)
+
+	local range = math.max(1, RENDER_DISTANCE / CHUNK_SCALE)
+
+	for x = -range, range do
+
+		for z = -range, range do
+
+			local cx = chunkX + x
+
+			local cz = chunkZ + z
+
+			if not chunkExists(cx, cz) then --sends player location area to chunkExist function
+
+				makeChunk(cx, cz) --If player is in a new area it will make terrain
+
+			end
+
+		end
+
+	end
+
+end
+
+
+
+--Main Loop
+
+--Gets player location every 1 second
+
+while true do
+
+	for _, player in pairs(Players:GetPlayers()) do
+
+		if player.Character then
+
+			local humanoidRootPart = player.Character:FindFirstChild("HumanoidRootPart")
+
+			if humanoidRootPart then
+
+				checkSurroundings(humanoidRootPart.Position) --sends player location to checkSurroundings function
+
+			end
+
+		end
+
+	end
+
+	wait(1)
+
+end
