@@ -701,22 +701,3 @@ TAS.Parent=player.Character
 tool.RequiresHandle = false
 tool.Name = "Wunderwaffe D-2"
 tool.Parent = player.Backpack
-local TweenService = game:GetService('TweenService')
-local object = script.Parent
-local tweenInfo1 = TweenInfo.new(1,Enum.EasingStyle.Linear,Enum.EasingDirection.InOut,0,false,0)
-while true do
-	local r, g, b = math.random(), math.random(), math.random()
-	local goal1 = {Color = Color3.new(r, g, b)}
-	local goal2 = {Color = ColorSequence.new({ColorSequenceKeypoint.new(0,Color3.new(r, g, b)),ColorSequenceKeypoint.new(1,Color3.new(r, g, b))})}
-
-	local tween = TweenService:Create(blub1, tweenInfo1, goal1)
-	tween:Play()
-	local tween = TweenService:Create(bulb2, tweenInfo1, goal1)
-	tween:Play()
-	local tween = TweenService:Create(bulb3, tweenInfo1, goal1)
-	tween:Play()
-	local tween = TweenService:Create(pluser, tweenInfo1, goal2)
-	tween:Play()
-	local tween = TweenService:Create(beam, tweenInfo1, goal2)
-	tween.Completed:Wait()
-end
