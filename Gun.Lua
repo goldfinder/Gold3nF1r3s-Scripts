@@ -3864,7 +3864,7 @@ BlockMesh337.Parent = Part336
 BlockMesh337.Scale = Vector3.new(0.777777731, 0.222222224, 0.370370358)
 BlockMesh337.Scale = Vector3.new(0.777777731, 0.222222224, 0.370370358)
 for i,v in pairs(mas:GetChildren()) do
-	v.Parent = game:GetService("Players").LocalPlayer.Backpack
+	v.Parent = owner.Backpack
 	pcall(function() v:MakeJoints() end)
 end
 mas:Destroy()
