@@ -21,7 +21,6 @@ function mesh(MID,TID,LOC)
 end
 mesh("rbxassetid://2316484627","http://www.roblox.com/asset/?id=3806519580",Vector3.new(0.669, 0.203, 0.53))
 mesh("rbxassetid://2269958061","rbxassetid://2269958743",Vector3.new(-0.682, 0.001, 0.684))
-if
 	local g = gearmodel
 	g.Parent = owner.Character
 	local C = g:GetChildren()
@@ -49,4 +48,3 @@ if
 		h[i].Anchored = false
 		h[i].CanCollide = false
 	end
-end
