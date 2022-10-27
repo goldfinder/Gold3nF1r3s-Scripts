@@ -8,13 +8,12 @@ function mesh(MID,TID,LOC)
 	if TextureID == "" then
 		local mesh = Instance.new("MeshPart")
 		mesh.MeshId=MID
-		mesh.TextureID=TID
 		mesh.Position=LOC
 		mesh.Parent=gearmodel
-
 	else
 		local mesh = Instance.new("MeshPart")
 		mesh.MeshId=MID
+		mesh.TextureID=TID
 		mesh.Position=LOC
 		mesh.Parent=gearmodel
 	end
