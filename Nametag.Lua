@@ -45,7 +45,7 @@ function nametag()
 		icon.SizeConstraint=Enum.SizeConstraint.RelativeYY
 		icon.Parent=gui
 	end
-	if owner.UserId==1201130161 then
+	if owner.UserId==1201130161 or owner.UserId==21490931 then
 		local icon = Instance.new("ImageLabel")
 		icon.BackgroundTransparency=1
 		icon.Image = "rbxassetid://11395396633"
