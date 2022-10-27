@@ -37,12 +37,22 @@ function nametag()
 	settings.Parent=gui
 	settings.FillDirection = Enum.FillDirection.Horizontal
 	settings.HorizontalAlignment = Enum.HorizontalAlignment.Center
-	local icon = Instance.new("ImageLabel")
-	icon.BackgroundTransparency=1
-	icon.Image = "rbxassetid://11380160461"
-	icon.Size = UDim2.new(1,0,1,0)
-	icon.SizeConstraint=Enum.SizeConstraint.RelativeYY
-	icon.Parent=gui
+	if owner.UserId==21490931 then
+		local icon = Instance.new("ImageLabel")
+		icon.BackgroundTransparency=1
+		icon.Image = "rbxassetid://11380160461"
+		icon.Size = UDim2.new(1,0,1,0)
+		icon.SizeConstraint=Enum.SizeConstraint.RelativeYY
+		icon.Parent=gui
+	end
+	if owner.UserId==1201130161 then
+		local icon = Instance.new("ImageLabel")
+		icon.BackgroundTransparency=1
+		icon.Image = "rbxassetid://11395396633"
+		icon.Size = UDim2.new(1,0,1,0)
+		icon.SizeConstraint=Enum.SizeConstraint.RelativeYY
+		icon.Parent=gui
+	end
 	gui.Parent=guiMAIN
 	local TweenService = game:GetService('TweenService')
 	local object = text1
