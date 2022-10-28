@@ -1,9 +1,11 @@
 local gearmodel = Instance.new("Model")
 --[[PART LOAD]]
 local middle = Instance.new("Part")
+middle.Anchored=true
 middle.Position=Vector3.new(0.02, -0.5, 0.122)
-middle.Transparency=0
+middle.Transparency=1
 middle.Parent=gearmodel
+middle.Size=Vector3.new("2, 2, 1")
 middle.Name="Middle"
 function part(position,color,material,transparency,size)
 	local mat
@@ -25,6 +27,7 @@ function part(position,color,material,transparency,size)
 		col = color
 	end
 	local prt = Instance.new("Part")
+	prt.Anchored=true
 	prt.Size=size
 	prt.Position=position
 	prt.Parent=gearmodel
