@@ -42,7 +42,6 @@ guiimage.Size = UDim2.new(0,100,0,100)
 guiimage.Image="rbxassetid://73888062"
 guiimage.ScaleType=Enum.ScaleType.Stretch
 guiimage.Parent=gui
-local f = part()
 
 
 local g = gearmodel
