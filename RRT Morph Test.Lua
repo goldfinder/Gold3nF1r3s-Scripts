@@ -4,6 +4,7 @@ local middle = Instance.new("Part")
 middle.Position=Vector3.new(0.02, -0.5, 0.122)
 middle.Transparency=0
 middle.Parent=gearmodel
+middle.Name="Middle"
 function part(position,color,material,transparency)
 	local mat
 	local col
