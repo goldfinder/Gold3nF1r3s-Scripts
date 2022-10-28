@@ -77,6 +77,12 @@ mesh.Offset=Vector3.new(0,0,0.8)
 mesh.VertexColor=Vector3.new(1,1,1)
 mesh.Parent=f
 
+local f = part(Vector3.new(-0.485, -0.88, 0.218),Color3.fromRGB(255, 204, 153),Enum.Material.Metal,0,Vector3.new(0.4, 0.8, 0.2),Vector3.new(0,180,0))
+local mesh = Instance.new("BlockMesh")
+mesh.Scale=Vector3.new(1,1,1)
+mesh.Offset=Vector3.new(0,0,0.8)
+mesh.VertexColor=Vector3.new(1,1,1)
+mesh.Parent=f
 
 local g = gearmodel
 g.Parent = owner.Character
