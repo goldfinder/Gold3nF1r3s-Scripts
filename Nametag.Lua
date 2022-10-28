@@ -3,7 +3,7 @@ function nametag()
 	local chr = owner.Character
 	local GUIPARENT = chr.Head
 	local guiMAIN = Instance.new("BillboardGui")
-	guiMAIN.ExtentsOffset = Vector3.new(0,4,0)
+	guiMAIN.ExtentsOffsetWorldSpace = Vector3.new(0,4,0)
 	guiMAIN.MaxDistance = math.huge
 	guiMAIN.Size = UDim2.new(6,0,2,0)
 	guiMAIN.LightInfluence = 0
