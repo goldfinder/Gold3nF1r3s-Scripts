@@ -5,7 +5,7 @@ middle.Position=Vector3.new(-0.023, -0.092, -0.124)
 middle.Transparency=0
 middle.Parent=gearmodel
 function mesh(MID,TID,LOC)
-	if TextureID == "" then
+	if TID == "" then
 		local mesh = Instance.new("MeshPart")
 		mesh.MeshId=MID
 		mesh.Position=LOC
