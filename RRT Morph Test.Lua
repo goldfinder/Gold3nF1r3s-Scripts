@@ -5,7 +5,7 @@ middle.Position=Vector3.new(0.02, -0.5, 0.122)
 middle.Transparency=0
 middle.Parent=gearmodel
 middle.Name="Middle"
-function part(position,color,material,transparency)
+function part(position,color,material,transparency,size)
 	local mat
 	local col
 	local trp
@@ -25,6 +25,7 @@ function part(position,color,material,transparency)
 		col = color
 	end
 	local prt = Instance.new("Part")
+	prt.Size=size
 	prt.Position=position
 	prt.Parent=gearmodel
 	prt.Color=col
@@ -32,7 +33,7 @@ function part(position,color,material,transparency)
 	prt.Transparency=trp
 	return prt
 end
-local f = part(Vector3.new(-0.375, -0.014, -0.522),Color3.fromRGB(255, 204, 153),Enum.Material.ForceField,1)
+local f = part(Vector3.new(-0.375, -0.014, -0.522),Color3.fromRGB(255, 204, 153),Enum.Material.ForceField,1,Vector3.new(1.25, 0.3, 0.2))
 local gui = Instance.new("SurfaceGui")
 gui.Face=Enum.NormalId.Front
 gui.SizingMode=Enum.SurfaceGuiSizingMode.FixedSize
