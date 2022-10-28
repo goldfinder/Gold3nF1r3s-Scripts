@@ -3,7 +3,7 @@
 
 local ScriptFunctions = {
 function(script,require)
-script.Parent.Model.WorldPivot=CFrame.new(owner.Character.HumanoidRootPart.X,owner.Character.HumanoidRootPart.Y,owner.Character.HumanoidRootPart.Z)
+script.Parent.Model.WorldPivot=CFrame.new(owner.Character.HumanoidRootPart.Position.X,owner.Character.HumanoidRootPart.Position.Y,owner.Character.HumanoidRootPart.Position.Z)
 script.Parent.Model.Parent=workspace
 end
 }
