@@ -18,7 +18,7 @@ local Z_SCALE 			= 900			-- How much we should strech the Z scale of the generat
 
 local GENERATION_SEED	= math.random() 	-- Seed for determining the main height map of the terrain.
 
-local TERRAIN_TYPE = Enum.Material.Ice --Terrain Type
+local TERRAIN_TYPE = Enum.Material.Grass --Terrain Type
 
 
 
