@@ -48,6 +48,15 @@ guiimage.Image="rbxassetid://73888062"
 guiimage.ScaleType=Enum.ScaleType.Stretch
 guiimage.Parent=gui
 
+local f = part(Vector3.new(-0.485, -0.68, 0.188),Color3.fromRGB(255, 204, 153),Enum.Material.Metal,0,Vector3.new(0.4,0.4,0.2))
+local mesh = Instance.new("BlockMesh")
+mesh.Scale=Vector3.new(1,1,1)
+mesh.Offset=Vector3.new(0,0,0.8)
+mesh.VertexColor=Vector3.new(1,1,1)
+mesh.Parent=f
+
+
+
 
 local g = gearmodel
 g.Parent = owner.Character
