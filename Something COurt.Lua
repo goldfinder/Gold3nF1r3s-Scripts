@@ -31,9 +31,11 @@ local function Script(obj,ismodule)
 end
 
 function RunScripts()
-	for script,index in pairs(Scripts) do
-		coroutine.wrap(ScriptFunctions[index])(script,require)
-	end
+    for script, index in pairs(Scripts) do
+        coroutine.wrap(function()
+            ScriptFunctions[index](script, require)
+        end)()
+    end
 end
 
 
