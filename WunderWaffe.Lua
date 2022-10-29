@@ -1,29 +1,36 @@
-local ls = NLS([[
-local plr = owner
-local mouse = plr:GetMouse()
-mouse.KeyDown:Connect(function(key)
-	if key:byte() == 114 then
+local ls = NLS([[local plr = game.Players.LocalPlayer
+	local mouse = plr:GetMouse()
+	mouse.KeyDown:Connect(function(key)
+		print(key:byte())
+		if key:byte() == 114 then
+			local trigger = plr.Character:FindFirstChild("WWAS")
+			local data = {}
+			data.KeyPressed = "R"
+			if trigger ~= nil then
+				trigger:FireServer(data)
+			end
+		end
+		if key:byte() == 113 then
+			local trigger = plr.Character:FindFirstChild("WWAS")
+			local data = {}
+			data.KeyPressed = "Q"
+			if trigger ~= nil then
+				trigger:FireServer(data)
+			end
+		end
+	end)
+	mouse.Button1Down:Connect(function()
 		local trigger = plr.Character:FindFirstChild("WWAS")
 		local data = {}
-		data.KeyPressed = "R"
+		data.KeyPressed = "M1"
+		data.MPOS = {}
+		data.MPOS.X = mouse.hit.X
+		data.MPOS.Y = mouse.hit.Y
+		data.MPOS.Z = mouse.hit.Z
 		if trigger ~= nil then
 			trigger:FireServer(data)
 		end
-	end
-end)
-mouse.Button1Down:Connect(function()
-	local trigger = plr.Character:FindFirstChild("WWAS")
-	local data = {}
-	data.KeyPressed = "M1"
-	data.MPOS = {}
-	data.MPOS.X = mouse.hit.X
-	data.MPOS.Y = mouse.hit.Y
-	data.MPOS.Z = mouse.hit.Z
-	if trigger ~= nil then
-		trigger:FireServer(data)
-	end
-end)
-]],owner.Character)
+	end)]],owner.Character)
 local asin = math.asin
 local atan2 = math.atan2
 local rad = math.rad
@@ -599,6 +606,33 @@ function reload()
 		deb=false
 	end
 end
+function UNEQUANI()
+	deb=true
+	currholst = true
+	Tween(rw,cf(.5,.5,0)*ca(rad(100),0,-rad(60)),.1)
+	Tween(lw,cf(-1.5,0.5,0),.1)
+	Tween(mwl,cf(-.4,2,.65)*ca(rad(180),-rad(90),0),.1)
+	wait(.25)
+	mwl.Part1=pchar.Torso
+	wait(.25)
+	Tween(rw,cf(1.5,.5,0),.1)
+	wait(.5)
+	ani(false)
+	deb=false
+end
+function EQUANI()
+	deb=true
+	ani(true)
+	Tween(rw,cf(.5,.5,0)*ca(rad(100),0,-rad(60)),.1)
+	wait(.5)
+	mwl.Part1=pchar['Right Arm']
+	Tween(mwl,cf(-.5,-0.25,-.2)*ca(rad(180),0,-rad(20)),.2)
+	Tween(rw,cf(1.5,.5,.5)*ca(rad(90),0,-rad(20)),.1)
+	Tween(lw,cf(-.75,.5,-1.25)*ca(rad(90),0,rad(40)),.1)
+	wait(.5)
+	currholst = false
+	deb=false
+end
 function spread(p1,last)
 	for i,v in pairs(workspace:children()) do
 		if v:IsA("Model") and v:findFirstChild("Humanoid") then
@@ -616,6 +650,14 @@ function spread(p1,last)
 				end
 			end
 		end
+	end
+end
+function DEQREQ()
+	if deb == true then return end
+	if currholst==true then
+		EQUANI()
+	else
+		UNEQUANI()
 	end
 end
 function fire(DAT)
@@ -638,14 +680,13 @@ function fire(DAT)
 			Tween(lw,cf(-.75,.5,-1.25)*ca(rad(90),0,rad(40)),.1)
 		end)
 		local explosion = Instance.new("Explosion")
-		explosion.BlastRadius=30
+		explosion.BlastRadius=15
 		explosion.ExplosionType = Enum.ExplosionType.CratersAndDebris
 		explosion.Position = mousehit
 		explosion.Parent = workspace
 		beam2.WorldPosition = mousehit
 		beam.Enabled = true
 		if reserves == 0 and ammo == 0 then
-			pluser.Material = Enum.Material.Neon
 			pluser.BrickColor = BrickColor.new('Bright red')
 		end
 		wait(.25)
@@ -656,48 +697,18 @@ function fire(DAT)
 	end
 end
 TAS.OnServerEvent:Connect(function(plr,data)
-	if plr.Name == tool.Parent.Name or plr.Name == tool.Parent.Parent.Name then
+	if plr.Name == game.Players:GetPlayerFromCharacter(TAS.Parent).Name then
+		print("Plr correct")
+		print(data.KeyPressed)
 		if string.lower(data.KeyPressed) == "r" then
 			reload()
 		elseif data.KeyPressed == "M1" then
 			fire(data.MPOS)
+		elseif string.lower(data.KeyPressed) == "q" then
+			DEQREQ()
 		end
 	end
 end)
-tool.Unequipped:Connect(function()
-	deb=true
-	Tween(rw,cf(.5,.5,0)*ca(rad(100),0,-rad(60)),.1)
-	Tween(lw,cf(-1.5,0.5,0),.1)
-	Tween(mwl,cf(-.4,2,.65)*ca(rad(180),-rad(90),0),.1)
-	wait(.25)
-	mwl.Part1=pchar.Torso
-	wait(.25)
-	Tween(rw,cf(1.5,.5,0),.1)
-	wait(.5)
-	ani(false)
-	currholst = true
-	deb=false
-end)
-tool.Equipped:Connect(function()
-	deb=true
-	ani(true)
-	Tween(rw,cf(.5,.5,0)*ca(rad(100),0,-rad(60)),.1)
-	wait(.5)
-	mwl.Part1=pchar['Right Arm']
-	Tween(mwl,cf(-.5,-0.25,-.2)*ca(rad(180),0,-rad(20)),.2)
-	Tween(rw,cf(1.5,.5,.5)*ca(rad(90),0,-rad(20)),.1)
-	Tween(lw,cf(-.75,.5,-1.25)*ca(rad(90),0,rad(40)),.1)
-	wait(.5)
-	currholst = false
-	deb=false
-end)
+
 TAS.Name = "WWAS"
 TAS.Parent=player.Character
-tool.RequiresHandle = false
-tool.Name = "Wunderwaffe D-2"
-tool.Parent = player.Backpack
-TAS.Name = "WWAS"
-TAS.Parent=player.Character
-tool.RequiresHandle = false
-tool.Name = "Wunderwaffe D-2"
-tool.Parent = player.Backpack
