@@ -1,4 +1,4 @@
-local ls = NLS([[local plr = game.Players.LocalPlayer
+local ls = NLS([[local plr = owner
 	local mouse = plr:GetMouse()
 	mouse.KeyDown:Connect(function(key)
 		if key:byte() == 114 then
