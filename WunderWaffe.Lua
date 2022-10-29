@@ -1,7 +1,6 @@
 local ls = NLS([[local plr = game.Players.LocalPlayer
 	local mouse = plr:GetMouse()
 	mouse.KeyDown:Connect(function(key)
-		print(key:byte())
 		if key:byte() == 114 then
 			local trigger = plr.Character:FindFirstChild("WWAS")
 			local data = {}
@@ -698,8 +697,6 @@ function fire(DAT)
 end
 TAS.OnServerEvent:Connect(function(plr,data)
 	if plr.Name == game.Players:GetPlayerFromCharacter(TAS.Parent).Name then
-		print("Plr correct")
-		print(data.KeyPressed)
 		if string.lower(data.KeyPressed) == "r" then
 			reload()
 		elseif data.KeyPressed == "M1" then
