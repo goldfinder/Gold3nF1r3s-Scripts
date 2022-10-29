@@ -4,7 +4,7 @@
 local ScriptFunctions = {
 function(script,require)
 function RMP()
-	local id = math.random(23,1)
+	local id = math.random(1,23)
 	if id == 1 then
 		return "PVT."
 	elseif id == 2 then
