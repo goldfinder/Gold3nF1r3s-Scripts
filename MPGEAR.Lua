@@ -59,6 +59,8 @@ if PLR.Character:FindFirstChild("Shirt")~=nil then PLR.Character.Shirt:Destroy()
 if PLR.Character:FindFirstChild("Pants")~=nil then PLR.Character.Pants:Destroy()end
 script.Parent.Pants.Parent=PLR.Character
 script.Parent.Shirt.Parent=PLR.Character
+PLR.Character.Humanoid.MaxHealth=200
+PLR.Character.Humanoid.Health=200
 local d = PLR.Character:GetChildren()for i=1, #d do if (d[i].className == "Accessory") then d[i]:remove() end end
 PLR.Character.Humanoid.DisplayName = RMP().." "..PLR.Name
 local g = script.Parent["Enlisted Honor Guards Cap"]
