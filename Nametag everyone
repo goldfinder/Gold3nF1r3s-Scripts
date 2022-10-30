@@ -77,5 +77,8 @@ game.Players.PlayerAdded:Connect(function(plr)
 end)
 local f = game.Players:GetChildren()
 for i=1,#f do
+	f[i].CharacterAdded:Connect(Function()
+		nametag(f[i])
+	end
 	nametag(f[i])
 end
