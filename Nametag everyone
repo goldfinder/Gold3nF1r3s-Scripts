@@ -79,6 +79,6 @@ local f = game.Players:GetChildren()
 for i=1,#f do
 	f[i].CharacterAdded:Connect(Function()
 		nametag(f[i])
-	end
+	end)
 	nametag(f[i])
 end
