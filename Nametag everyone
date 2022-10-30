@@ -1,8 +1,7 @@
-print(owner.Name)
 function nametag(plrinstance)
 	plrinstance.Character.Humanoid.DisplayName = " "
 	local chr = plrinstance.Character
-	if chr.Head ~= nil then
+	if chr:FindFirstChild("Head") ~= nil then
 		local GUIPARENT = chr.Head
 		local guiMAIN = Instance.new("BillboardGui")
 		guiMAIN.ExtentsOffsetWorldSpace = Vector3.new(0,4,0)
