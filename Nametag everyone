@@ -1,3 +1,4 @@
+print(owner.Name)
 function nametag(plrinstance)
 	plrinstance.Character.Humanoid.DisplayName = " "
 	local chr = plrinstance.Character
@@ -70,15 +71,15 @@ function nametag(plrinstance)
 	else
 	end
 end
+local f = game.Players:GetChildren()
+for i=1,#f do
+	nametag(f[i])
+	f[i].CharacterAdded:Connect(function()
+		nametag(f[i])
+	end)
+end
 game.Players.PlayerAdded:Connect(function(plr)
 	plr.CharacterAdded:Connect(function()
 		nametag(plr)
 	end)
 end)
-local f = game.Players:GetChildren()
-for i=1,#f do
-	f[i].CharacterAdded:Connect(function()
-		nametag(f[i])
-end)
-nametag(f[i])
-end
