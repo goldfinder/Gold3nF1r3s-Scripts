@@ -1,7 +1,8 @@
 function nametag(plrinstance)
 	plrinstance.Character.Humanoid.DisplayName = " "
 	local chr = plrinstance.Character
-	local GUIPARENT = chr.Head
+	if chr.Head ~= nil then
+			local GUIPARENT = chr.Head
 	local guiMAIN = Instance.new("BillboardGui")
 	guiMAIN.ExtentsOffsetWorldSpace = Vector3.new(0,4,0)
 	guiMAIN.MaxDistance = math.huge
@@ -65,6 +66,8 @@ function nametag(plrinstance)
 		local tween = TweenService:Create(object, tweenInfo, goal)
 		tween:Play()
 		tween.Completed:Wait()
+	end
+	else
 	end
 end
 game.Players.PlayerAdded:Connect(function(plr)
