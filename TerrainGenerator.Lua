@@ -3,8 +3,8 @@
 --[[
 	Script #1 of 2: game.ServerScriptService.Terrain (Server Script)
 ]]
-local X = 120
-local Z = 120
+local X = 60
+local Z = 60
 local plr = game.Players.Gold3nF1r3.Character
 local posx = plr.HumanoidRootPart.Position.X
 local posy = plr.HumanoidRootPart.Position.Y
