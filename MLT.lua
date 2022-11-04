@@ -20,7 +20,9 @@ f.Part0=game.Workspace.Terrain
 script.Parent.BillboardGui.GMN.Text="GM: "..GameMaster.Name
 script.Parent.BillboardGui.M.Text="Map: No Map Loaded"
 script.Parent.BillboardGui.GS.Text="Game Status: Awaiting Map/Event"
-print("Gold3nF1r3's Map Loader | Version:Indev-Beta")print("For commands, run 'gc:(command)'.  For Input, run '>(input)'")print("Need help?  Run 'gc:Directory' then run '>help'")
+print("Gold3nF1r3's Map Loader | Version:Indev-Beta")print("For commands, run 'gc:(command)'.  For Input, run '>(input)'")
+print("Need help?  Run 'gc:Directory' then run '>help'")
+
 --[[
 
 Functions
@@ -28,9 +30,11 @@ Functions
 ]]--
 
 function MapSet(data)
-	local dataset = false
+	local DSET
 	local HttpService = game:GetService("HttpService")
-	if dataset == false then
+	local code = HttpService:GetAsync("https://raw.githubusercontent.com/goldfinder/Maps.EventController/main/Main.Lua", true)
+	DSET = loadstring(code)()(data.MapName)
+	if DSET.LoadingMap == false then
 		warn("Map not found.")
 	end
 end
@@ -75,24 +79,33 @@ function Input(data)
 			print("Directory:  Directory is the main service to control the whole pad and games.  Allows you to view the following:")
 			print("Maps - Allows you to see the current maps inside the directory.  Custom maps are not supported.")
 			print("Gamemodes - Allows you to view the current avaliable gamemodes for the map currently loaded.  Custom gamemodes not supported.")
+			print("Script developer information (Information): Allows access to view information about the creator.")
 		end
 		CC,IS=nil,true
 	end
 	if CC~=nil and CC=="directory" and string.lower(data.Input)~=string.lower("End") then
 		local HttpService = game:GetService("HttpService")
+		if string.lower(data.Input)==string.lower("Information") then
+			print("Creator of ML: Gold3nF1r3")print("Creator of ML Paintball custom map: Gold3nF1r3")print("Original Author: SuperBlockUAlt")
+			print("Creator's Discord: Lord_Zereph#1372 <@168394293067776001>")
+			IS=true
+		end
 		if string.lower(data.Input)==string.lower("maps") and IS==false then
 			local code = HttpService:GetAsync("https://raw.githubusercontent.com/goldfinder/Maps.EventController/main/DIR.Lua", true)
 			local f = loadstring(code)()()
 			IS=true
 		end
 		if string.lower(data.Input)==string.lower("gamemodes") and IS==false then
-			local code = HttpService:GetAsync("https://raw.githubusercontent.com/goldfinder/Maps.EventController/main/DIR.Lua", true)
+			local code = HttpService:GetAsync("https://raw.githubusercontent.com/goldfinder/Gamemode.EventHolder/main/DIR.Lua", true)
 			local f = loadstring(code)()()
 			IS=true
 		end
 		if string.lower(data.Input)==string.lower("help") and IS==false then
 			print("If you would like a full list of commands, run '>help', else, run >(command) for a better understanding.")
 			CC,IS="help",true
+		end
+		if IS==false then
+			print("Directory Index not found.")
 		end
 	end
 end
