@@ -1,8 +1,6 @@
 -- Converted using Mokiros's Model to Script Version 3
 -- Converted string size: 1080 characters
 
---2022-11-03 21:35
-
 local ScriptFunctions = {
 function(script,require)
 --[[
@@ -38,12 +36,14 @@ function MapSet(data)
 	DSET = loadstring(code)()(data.MapName)
 	if DSET.LoadingMap == false then
 		warn("Map not found.")
+	else
+		script.Parent.BillboardGui.M.Text=DSET.MapName
 	end
 end
 function GameCommands(data)
 	if string.lower(data.Command.Front) == string.lower("MS") then
 		CC="MapSet"
-		print("Maps are sensitive.  Run 'gc:maps' for maps.")
+		print("Maps are sensitive.  Run 'gc:directory' then '>maps' for maps.")
 	end
 	if string.lower(data.Command.Front) == string.lower("directory") then
 		CC="directory"
