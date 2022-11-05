@@ -9,16 +9,23 @@ Main Control
 
 ]]--
 --Vars
-local GameMaster = owner
-local CC = nil
+local GameMaster=owner
+local CC=nil
+local maploaded = false
+local eventloaded = false
 local eventrunning=false
+local LS={}
+LS.CMI = nil
+LS.LMS = "Map: No Map Loaded"
+LS.LES = "Event: No Event Loaded"
 local f = Instance.new("WeldConstraint")
 --Events
 f.Parent=script.Parent
 f.Part1=script.Parent
 f.Part0=game.Workspace.Terrain
 script.Parent.BillboardGui.GMN.Text="GM: "..GameMaster.Name
-script.Parent.BillboardGui.M.Text="Map: No Map Loaded"
+script.Parent.BillboardGui.M.Text=LS.LMS
+script.Parent.BillboardGui.E.Text=LS.LES
 script.Parent.BillboardGui.GS.Text="Game Status: Awaiting Map/Event"
 print("Gold3nF1r3's Map Loader | Version:Indev-Beta")print("For commands, run 'gc:(command)'.  For Input, run '>(input)'")
 print("Need help?  Run 'gc:Directory' then run '>help'")
@@ -29,21 +36,56 @@ Functions
 
 ]]--
 
+function gamestatus(data)
+	local string = "GS:"
+	if maploaded == true and eventloaded == true then
+		string = string.." ???"
+	elseif maploaded == false and eventloaded == true then
+		string = string.." Awaiting Map"
+	elseif maploaded == true and eventloaded == false then
+		string = string.." Awaiting Event"
+	elseif maploaded==false and eventloaded==false then
+		string = string.." Awaiting Map/Event"
+	end
+	script.Parent.BillboardGui.GS.Text=string
+end
+function MapRemove()
+	LS.CMI:destroy()
+end
 function MapSet(data)
 	local DSET
 	local HttpService = game:GetService("HttpService")
 	local code = HttpService:GetAsync("https://raw.githubusercontent.com/goldfinder/Maps.EventController/main/Main.Lua", true)
+	script.Parent.BillboardGui.M.Text="Map: Loading map."
 	DSET = loadstring(code)()(data.MapName)
 	if DSET.LoadingMap == false then
 		warn("Map not found.")
+		script.Parent.BillboardGui.M.Text=LS.LMS
 	else
+		LS.CMI=DSET.MapInstance
+		LS.LMS=DSET.MapName
 		script.Parent.BillboardGui.M.Text=DSET.MapName
+		maploaded=true
+		gamestatus()
 	end
 end
 function GameCommands(data)
 	if string.lower(data.Command.Front) == string.lower("MS") then
-		CC="MapSet"
-		print("Maps are sensitive.  Run 'gc:directory' then '>maps' for maps.")
+		if maploaded ~= true then
+			CC="MapSet"
+			print("Maps are sensitive.  Run 'gc:directory' then '>maps' for maps.")
+			script.Parent.BillboardGui.M.Text="Map: GM choosing map"
+		else
+			warn("A map is already loaded.  run 'gc:rmap' to remove the map loaded")
+		end
+	end
+	if string.lower(data.Command.Front)==string.lower("rmap") then
+		if maploaded ~= false then
+			MapRemove()
+			print("Map removed.")
+		else
+			warn("No maps loaded.  run 'gc:maps' to load a map.")
+		end
 	end
 	if string.lower(data.Command.Front) == string.lower("directory") then
 		CC="directory"
@@ -97,12 +139,18 @@ function Input(data)
 			local f = loadstring(code)()()
 			IS=true
 		end
+		if string.lower(data.Input)==string.lower("rmap") and IS==false then
+			print("RMAP: Rmap removes the current map loaded.")
+			IS=true
+		end
 		if string.lower(data.Input)==string.lower("gamemodes") and IS==false then
+			warn("Gamemodes have not been setup.  Do not use this command.")
 			local code = HttpService:GetAsync("https://raw.githubusercontent.com/goldfinder/Gamemode.EventHolder/main/DIR.Lua", true)
 			local f = loadstring(code)()()
 			IS=true
 		end
 		if string.lower(data.Input)==string.lower("help") and IS==false then
+			warn("Directory disabled for use of help.")
 			print("If you would like a full list of commands, run '>help', else, run >(command) for a better understanding.")
 			CC,IS="help",true
 		end
@@ -446,7 +494,7 @@ local function Decode(str)
 end
 
 
-local Objects = Decode('AAA+IQRQYXJ0IQROYW1lIQNwYWQhCEFuY2hvcmVkIiENQm90dG9tU3VyZmFjZQMAAAAAAAAAACEKQnJpY2tDb2xvcgcVACEGQ0ZyYW1lBA89PiEFQ29sb3IGxCgcIQhQb3NpdGlvbgoAAMhCAABIQgAAyEIhBFNpemUKAADAQAAAgD8AAMBAIQpUb3BTdXJmYWNlIQxC'
+local Objects = Decode('AAA+IQRQYXJ0IQROYW1lIQNwYWQhCEFuY2hvcmVkIiENQm90dG9tU3VyZmFjZQMAAAAAAAAAACEKQnJpY2tDb2xvcgcVACEGQ0ZyYW1lBA89PiEFQ29sb3IGxCgcIQhQb3NpdGlvbgoAAMhCAABAQAAAyEIhBFNpemUKAADAQAAAgD8AAMBAIQpUb3BTdXJmYWNlIQxC'
 ..'aWxsYm9hcmRHdWkhDlpJbmRleEJlaGF2aW9yAwAAAAAAAPA/IQZBY3RpdmUhF0V4dGVudHNPZmZzZXRXb3JsZFNwYWNlCgAAAAAAAOBAAAAAAAwAAFBBAAAAAKBAAAAhB1RleHRCb3ghAUUhEEJhY2tncm91bmRDb2xvcjMGAAAAIRZCYWNrZ3JvdW5kVHJhbnNwYXJl'
 ..'bmN5AwAAAKCZmek/DAAAgD8AAM3MTD4AACEERm9udAMAAAAAAAAQQCEEVGV4dCELRXZlbnQ6IE5vbmUhClRleHRDb2xvcjMG////IQpUZXh0U2NhbGVkIQhUZXh0U2l6ZQMAAAAAAAAsQCELVGV4dFdyYXBwZWQhDENvZGUgV2FybmluZwwAAAAAAADNzEw+AAAhFU5P'
 ..'VCBDT0RFRCwgRE8gTk9UIEJVRwaqAAAhAU0MAAAAAAAAzczMPgAAIQRNYXA6Bv//ACEDR01ODAAAAAAAAJqZGT8AACEDR006IQJHUwwAAAAAAADNzEw/AAAhDEdhbWUgU3RhdHVzOiENQ2xpY2tEZXRlY3RvciEVTWF4QWN0aXZhdGlvbkRpc3RhbmNlAwAAAAAAAChA'
