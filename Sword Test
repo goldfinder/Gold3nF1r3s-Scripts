@@ -3,6 +3,7 @@
 
 local ScriptFunctions = {
 function(script,require)
+script.Parent.Parent = owner.Backpack
 local equip = script.Parent.Handle.Equip
 local unequi= script.Parent.Handle.Unequip
 local tool = script.Parent
