@@ -1,0 +1,1886 @@
+-- Converted using Mokiros's Model to Script Version 3
+-- Converted string size: 6564 characters
+
+local ScriptFunctions = {
+function(script,require)
+local equip = script.Parent.Handle.Equip
+local unequi= script.Parent.Handle.Unequip
+local tool = script.Parent
+
+
+
+tool.Equipped:Connect(function()
+	equip:Play()
+end)
+
+
+tool.Unequipped:Connect(function()
+	unequi:Play()
+end)
+end,
+function(script,require)
+-- Tool References
+local Tool = script.Parent
+local Model = nil
+local Player = script.Parent.Parent.Parent
+
+-- When the tool is unequipped
+Tool.Unequipped:connect(function()
+
+	-- Define Character
+	local Character = Player.Character
+	
+	-- Create the welded model
+	Model = Instance.new("Model", Character)	
+	Model.Name = Tool.Name.."Weld"	
+	
+	-- Weld all parts to the handle
+	local Handle = Tool.Handle:Clone()
+	Handle.Name = "Part"
+	Handle.CanCollide = false
+	Handle.Parent = Model
+	for _,Item in pairs(Tool:GetChildren()) do
+		if Item.ClassName == "Part" or Item.ClassName == "UnionOperation" or Item.ClassName == "MeshPart" then
+			if Item.Name ~= "Handle" then
+				local Part = Item:Clone()
+				Part.Name = "Part"
+				local Weld = Instance.new("Weld")
+				Weld.Parent = Part
+				Weld.Part0 = Part
+				Weld.Part1 = Handle
+				Weld.C0 = Part.CFrame:inverse() * Handle.CFrame
+				Part.Parent = Model
+			end
+		end
+	end
+	
+	-- CFrame model to side	
+	local Weld = Instance.new("Weld")
+	Weld.Parent = Handle
+	Weld.Part0 = Handle
+	Weld.Part1 = Player.Character.Torso
+	Weld.C0 = CFrame.new(.8, -1.05, 1.05) * CFrame.fromEulerAnglesXYZ(math.rad(-2), math.rad(20), math.rad(-90))	
+	
+end)
+
+-- When the tool is equipped
+Tool.Equipped:connect(function()
+	
+	-- Remove the tool when they re-equip sword
+	if Model ~= nil then
+		Model:Destroy()
+	end	
+	
+end)
+end,
+function(script,require)
+Tool = script.Parent
+local arms = nil
+local torso = nil
+local fakearms = {}
+local welds = {}
+
+function Weld(x,y)
+	local W = Instance.new("Weld")
+	W.Part0 = x
+	W.Part1 = y
+	local CJ = CFrame.new(x.Position)
+	local C0 = x.CFrame:inverse()*CJ
+	local C1 = y.CFrame:inverse()*CJ
+	W.C0 = C0
+	W.C1 = C1
+	W.Parent = x
+end
+
+function SimpleWeld(x,y)
+	local W = Instance.new("Weld")
+	W.Part0 = x
+	W.Part1 = y
+	W.Parent = x
+end
+
+function Get(A)
+	if A:IsA("BasePart") then
+		if Tool:FindFirstChild(A.name.."Rotation") then
+			Weld(Tool[A.name.."Rotation"], A) 
+			if A.Name == "Frizzen" then
+				local C = A:GetChildren()
+				for i=1, #C do
+				Get(C[i])
+				end
+			end
+		elseif string.find(A.name,"Rotation") then
+			SimpleWeld(Tool[string.gsub(A.name, "Rotation", "Attachment")], A) 
+		elseif A.Parent.Name == "Frizzen" then
+			Weld(A.Parent, A)
+		elseif A.Name == "RamRodEnd" then
+			Weld(Tool["RamRodRotation"], A)
+		else
+			Weld(Tool.Handle, A)
+		end
+		A.Anchored = false
+	else
+		local C = A:GetChildren()
+		for i=1, #C do
+		Get(C[i])
+		end
+	end
+end
+
+function Finale()
+	Get(Tool)
+end
+wait(0.1)
+Finale()
+
+function Equip()
+	local Plr = game.Players:WaitForChild(Tool.Parent.Name)
+	Chr = Plr.Character
+	wait()
+	arms = {Chr:FindFirstChild("Left Arm"), Chr:FindFirstChild("Right Arm")}
+	torso = Chr:FindFirstChild("Torso")
+	if script:IsDescendantOf(workspace) and torso and arms then
+		if workspace:FindFirstChild(Chr.Name.."'s high quality arms") then
+			workspace:FindFirstChild(Chr.Name.."'s high quality arms"):Destroy()
+		end
+
+		model = Instance.new("Model", workspace)
+		model.Name = Chr.Name.."'s high quality arms"
+		local humanoid = Instance.new("Humanoid", model)
+		humanoid.Name = "ArmHumanoid"
+		local Link = Instance.new("ObjectValue",model)
+		Link.Name, Link.Value = "HumanoidLink", Chr.Humanoid
+		local Shirt
+		for _,Child in pairs(Chr:GetChildren()) do
+			if Child:IsA("Shirt") then
+				Shirt = Child
+				break
+			end
+		end
+		if Shirt then
+			Shirt:Clone().Parent = model
+			Shirt.Changed:connect(function()
+				model.Shirt.ShirtTemplate = Chr.Shirt.ShirtTemplate
+			end)
+			Chr.ChildAdded:connect(function(newChild)
+				if newChild:IsA("Shirt") then
+					model.Shirt.ShirtTemplate = newChild.ShirtTemplate
+				end
+			end)
+		end
+		for n,v in ipairs(arms) do
+			local P = v:Clone()
+			P.Transparency = 0
+			P.CanCollide = false
+			P.Parent = model
+			P.TopSurface, P.BottomSurface = "Smooth", "Smooth"
+			local PW = Instance.new("Weld")
+			PW.Name = "Mweld3"
+			PW.Parent = v
+			PW.Part0, PW.Part1, PW.C0, PW.C1 = v, P, v.CFrame:inverse(), P.CFrame:inverse()
+			v.Transparency = 1
+			fakearms[n] = P
+		end
+		Tool:WaitForChild("Animation").Disabled = false
+
+		coroutine.resume(coroutine.create(function()
+			while script:IsDescendantOf(Chr) and arms[1] and arms[2] do
+				arms[1].Transparency = 1	arms[2].Transparency = 1
+				fakearms[1].Transparency = 0 fakearms[2].Transparency = 0
+				wait()
+			end		
+		end))
+
+		if fakearms[2]:FindFirstChild("RightGrip") then fakearms[2].RightGrip:Destroy() end
+	end
+end
+
+function Unequip()
+	if model then model:Destroy() end
+	if workspace:FindFirstChild(Chr.Name.."'s high quality arms") then workspace:FindFirstChild(Chr.Name.."'s high quality arms"):Destroy() end
+	for n,v in ipairs(arms) do
+		v.Transparency = 0
+	end
+end
+Tool.Equipped:connect(Equip)
+Tool.Unequipped:connect(Unequip)
+
+function Fire()
+	local MuzzleFlash = coroutine.create(function()
+		Tool.PanMuzzle.Smoke.Enabled = true			
+		wait(0.05)
+		Tool.Muzzle.MuzzleSmoke.Enabled = true
+		Tool.Muzzle.Flash.Enabled = true
+		Tool.Muzzle.Flame.Enabled = true
+		wait(0.1)
+		Tool.Muzzle.Flash.Enabled = false
+		wait(0.15)
+		Tool.Muzzle.Flame.Enabled = false			
+		Tool.PanMuzzle.Smoke.Enabled = false
+		wait(0.25)
+		Tool.Muzzle.MuzzleSmoke.Enabled = false
+	end)
+	coroutine.resume(MuzzleFlash)
+end
+script:WaitForChild("Fire").OnServerEvent:connect(Fire)
+
+if Tool:FindFirstChild("BayonetOn") then
+	Tool.BayonetOn.Changed:connect(function()
+		if Tool.BayonetOn.Value then
+			Tool:FindFirstChild("BayonetBlade").Transparency = 0
+		else
+			Tool:FindFirstChild("BayonetBlade").Transparency = 1
+		end
+	end)
+end
+end,
+function(script,require)
+local SEs = game.ReplicatedStorage.ServerEvents
+local CEs = game.ReplicatedStorage.ClientEvents
+
+local k
+CEs.SendKey.OnClientEvent:connect(function(newKey)
+	k = newKey
+end)
+
+Tool = script.Parent
+repeat wait() until game.Players.LocalPlayer
+local Player = game.Players.LocalPlayer
+repeat wait() until Player.Character
+chr = Player.Character	
+local arms = nil
+legs = {}
+local torso = nil
+local Camera = game.Workspace.CurrentCamera
+local Debounce = false
+local OriginalC0 = CFrame.new(0, 1, 0, -1, -0, -0, 0, 0, 1, 0, 1, 0)
+local N,C = 1,1
+Turning = false
+TweenService = game:GetService("TweenService")
+userInputService = game:GetService("UserInputService")
+local Gyro = script:WaitForChild("Gyro")
+
+Cooldown = 0.1
+LastCheck = tick()-Cooldown
+local Stance = "Nothing"
+local BladeReady = false
+local SwordDebounce = false
+local Attacking = false
+local Blocking = false
+local shieldmode = false
+local AttackDirection = "U"
+
+local weld1,weld2,weld3,tweld
+local weld1C1,weld2C1,weld3C1,tweldC1
+
+function Equip(Mouse)
+Player = game.Players.LocalPlayer
+chr = Player.Character	
+Camera.FieldOfView = 70
+Debounce = true
+Stance = "Equiping"
+Answer = 0
+NeckRotation = 0
+LastUnit = Mouse.UnitRay.Unit.Direction
+
+SEs.Equip:FireServer(Tool,{
+	CFrame.new(1.5, 0, 0) * CFrame.fromEulerAnglesXYZ(math.rad(1), math.rad(0), math.rad(0)) * CFrame.new(0,1.5,0),
+    CFrame.new(-1.5, 0.1-((0.37)), 0.1-((1.1))) * CFrame.fromEulerAnglesXYZ(math.rad(-20)+(math.rad(-103)), math.rad(-10), 0) * CFrame.new(0,1.5,0),
+    CFrame.new(-1.5, 0.1, 0.1+((0.065))) * CFrame.fromEulerAnglesXYZ(math.rad(-20)+(math.rad(-15)), math.rad(-10), 0) * CFrame.new(0,1.5,0)	
+})
+
+repeat wait() until k ~= nil
+print(Tool.Name," Activated")
+
+arms = {chr:FindFirstChild("Left Arm"), chr:FindFirstChild("Right Arm")}
+head = chr:FindFirstChild("Head")
+torso = chr:FindFirstChild("Torso")
+
+local function SetWelds()
+hrp = chr:FindFirstChild("HumanoidRootPart")
+neck = torso:FindFirstChild("Neck")
+
+fakehead = chr:WaitForChild("FakeHead")
+fakeneck = fakehead:WaitForChild("FakeNeck")
+tilt = chr:WaitForChild("Tilt")
+tiltweld = tilt:WaitForChild("Mtiltweld")
+
+weld1 = torso:WaitForChild("Mweld1")
+weld2 = torso:WaitForChild("Mweld2")
+weld3 = arms[2]:WaitForChild("Mweld3")
+tweld = hrp:WaitForChild("Mtweld")
+arms[1].Transparency = 1	arms[2].Transparency = 1	
+end
+SetWelds()
+
+if arms ~= nil and torso ~= nil then
+local sh = {torso:FindFirstChild("Left Shoulder"), torso:FindFirstChild("Right Shoulder"), torso.Parent.HumanoidRootPart:FindFirstChild("RootJoint")}
+if sh == nil or sh ~= nil then
+local yes = true
+if yes then
+yes = false
+
+if workspace:FindFirstChild(chr.Name.."'s high quality arms") then
+	Mouse.TargetFilter = workspace:FindFirstChild(chr.Name.."'s high quality arms")
+end
+
+Tool:WaitForChild("Blade")
+Gyro.cframe = Mouse.hit
+_G.MouseSensitivity = 1
+
+function PlaySound(Sound,RChr)
+    SEs.FireClient:FireServer(k,"PlaySound",Sound,RChr)
+
+	local newSound = Instance.new("Sound", Sound.Parent)
+	newSound.SoundId = Sound.SoundId
+	newSound.PlaybackSpeed = Sound.PlaybackSpeed
+	newSound.Volume = Sound.Volume
+	newSound.Name = Sound.Name.."Playing"
+	newSound:Play()
+	game:GetService("Debris"):AddItem(newSound, Sound.TimeLength)
+end
+
+-- Tweens
+
+function Animate(w1,w2,w3,tw,Time,Delay)
+
+SetWelds()
+
+weld1C1 = w1
+weld2C1 = w2
+weld3C1 = w3
+tweldC1 = tw
+
+TweenService:Create(neck,TweenInfo.new(Time),{C0=OriginalC0*CFrame.Angles(Answer,0,NeckRotation)}):Play()
+
+SEs.FireClient:FireServer(k,"AnimateFE",{w1,w2,w3,tw},Time,Answer,0,NeckRotation,chr,Tool.Hig.Value)
+
+if script:IsDescendantOf(chr) then
+TweenService:Create(weld1,TweenInfo.new(Time),
+	{C1=w1*CFrame.new(0,Tool.Hig.Value,0)}):Play()
+
+TweenService:Create(weld2,TweenInfo.new(Time),
+	{C1=w2*CFrame.new(0,Tool.Hig.Value,0)}):Play()
+
+TweenService:Create(weld3,TweenInfo.new(Time),
+	{C1=w3*CFrame.new(0,Tool.Hig.Value,0)}):Play()
+			
+TweenService:Create(tweld,TweenInfo.new(Time),
+    {C1=tw*CFrame.new(0,Tool.Hig.Value,0)}):Play()
+end
+
+if Delay then Time = Time + Delay end
+wait(Time) 
+end
+
+chr.Humanoid.Died:connect(function()
+game.Workspace.CurrentCamera.FieldOfView = 70
+end)
+
+Mouse.Move:connect(function() -- Thanks to Ultimatedar for this logic, heavily edited by me.
+    local Mouse = Player:GetMouse()
+	local Direction = Mouse.Hit.p
+	local B = head.Position.Y-Direction.Y
+	local Dist = (head.Position-Direction).magnitude
+	Answer = math.asin(B/Dist)
+	Gyro.cframe = Mouse.Hit
+	if Stance ~= "Nothing" then
+	Answer = 0
+	else if Stance == "Nothing" then
+		if Answer > math.rad(20) then
+			Answer = math.rad(20)
+		elseif Answer < math.rad(-10) then
+			Answer = math.rad(-10)
+	    else if torso.Parent.Humanoid.Sit then
+						Answer = 0
+				end
+	end
+	end
+	end
+	
+if (Stance == "Nothing") then
+
+SEs.FireClient:FireServer(k,"Aglin",chr,Answer,{Answer,0,NeckRotation},0.1,Turning)
+if not Turning then	
+TweenService:Create(neck,TweenInfo.new(0.1),{C0=OriginalC0*CFrame.Angles(Answer,0,NeckRotation)}):Play()
+end
+
+TweenService:Create(fakeneck,TweenInfo.new(0.1),{C0=OriginalC0*CFrame.Angles(0,0,0)}):Play()
+
+TweenService:Create(tiltweld,TweenInfo.new(0.1),{C0=CFrame.new(0,0,0) * CFrame.Angles(Answer,0,0)}):Play()
+
+if Gyro.Parent ~= tilt and Tool.Skrimish.Value then Gyro.Parent = tilt chr.Humanoid.AutoRotate = false
+ 
+elseif Gyro.Parent == tilt and not Tool.Skrimish.Value then Gyro.Parent = script chr.Humanoid.AutoRotate = true
+ end
+
+else
+	
+if Gyro.Parent == tilt then Gyro.Parent = script chr.Humanoid.AutoRotate = true
+ end	
+
+SEs.FireClient:FireServer(k,"Aglin",chr,Answer,{Answer,0,NeckRotation},0.1,Turning,true)
+if not Turning then	
+TweenService:Create(neck,TweenInfo.new(0.1),{C0=OriginalC0*CFrame.Angles(Answer,0,NeckRotation)}):Play()
+end
+
+TweenService:Create(fakeneck,TweenInfo.new(0.1),{C0=OriginalC0*CFrame.Angles(0,0,0)}):Play()
+
+TweenService:Create(tiltweld,TweenInfo.new(0.1),{C0=CFrame.new(0,0,0) * CFrame.Angles(0,0,0)}):Play()
+	
+end
+	if tick() - Cooldown > LastCheck then
+		local NextUnit = Mouse.UnitRay.Unit.Direction
+		if math.abs(NextUnit.Y - LastUnit.Y) >= 0.01 then
+			if NextUnit.Y > LastUnit.Y then
+				AttackDirection = "U"
+			else
+				AttackDirection = "D"
+			end
+		else
+			if CalcHorizontalAngle(LastUnit*Vector3.new(1,0,1), NextUnit*Vector3.new(1,0,1)) > 0 then
+				AttackDirection = "R"
+			else
+				AttackDirection = "L"
+			end
+		end
+		LastUnit = NextUnit
+	end	
+end)
+
+weld1C1 = weld1.C1
+weld2C1 = weld2.C1
+weld3C1 = weld3.C1
+tweldC1 = tweld.C1
+
+wait(0.1)
+
+--EQUIP ANIMATION
+wait(0.1)
+Animate(
+ CFrame.new(1.5, 0, 0) * CFrame.fromEulerAnglesXYZ(math.rad(0), math.rad(0), math.rad(0)) * CFrame.new(0,1.5,0)
+,CFrame.new(-1.5, 0.1, 0.165-((0.065))) * CFrame.fromEulerAnglesXYZ(math.rad(-35)+(math.rad(15)), math.rad(-10), 0) * CFrame.new(0,1.5,0)	
+,CFrame.new(-1.5, -0.27+((0.37)), -1+((1.1))) * CFrame.fromEulerAnglesXYZ(math.rad(-123)+(math.rad(103)), math.rad(-10), 0) * CFrame.new(0,1.5,0)	
+,CFrame.new(0,0,0) * CFrame.fromEulerAnglesXYZ(0,0,0)
+,0.2)		
+
+--EQUIP ANIMATION
+Debounce = false
+
+Stance = "Nothing"
+
+
+local KeyUsed = {"g","h","z","t"}
+local function KeyChecked(key)
+	for i=1,#KeyUsed do
+		if key == KeyUsed[i] then
+			return true
+		end
+	end
+	return false
+end
+Character = Player.Character
+Mouse.KeyDown:connect(function(key)
+	local shield = Player.Character:FindFirstChild("Shieldon")
+	key = string.lower(key)
+	if key == "y" then
+SEs.ChangeVal:FireServer(k,Tool.Skrimish,not Tool.Skrimish.Value)
+	elseif key == "c" and not Attacking then
+		SEs.Crouch:FireServer(k,script.CRC,Character)
+	elseif Stance == "Nothing" and not Debounce and not Blocking then
+    	if key == "g" then
+	    	CarrySabre()
+	    elseif key == "h" then
+	    	PresentSabre()
+       	elseif key == "z" then
+		if not shield then
+     		AtEase()
+		else return end
+     	elseif key == "t" then
+	    	EyeRight()
+    end		
+
+
+	elseif Stance ~= "Nothing" and not Debounce and not Blocking
+		and KeyChecked(key) then
+	    if Stance == "Carry" then
+	    	CarrySabre()
+	    elseif Stance == "Present" then
+	    	PresentSabre()
+       	elseif Stance == "Ease" then
+     		AtEase()	
+     	elseif Stance == "Right" then
+	    	EyeRight()
+	    end
+	end
+end)
+
+
+Mouse.Button1Down:connect(function()
+	local shield = Player.Character:FindFirstChild("Shieldon")
+		if shield then
+			if Stance == "Nothing" then
+				
+				
+	if not Attacking and not Blocking then
+		SEs.ChangeVal:FireServer(k,Tool.Direction,AttackDirection)
+		Attack = true
+		Attacking = true
+		if AttackDirection == "U" then
+Turning = true
+NeckRotation = math.rad(10)
+Animate(
+ CFrame.new(1.5, 0, 0) * CFrame.fromEulerAnglesXYZ(math.rad(0), math.rad(10), math.rad(0)) * CFrame.new(0,1.5,0)
+,CFrame.new(-1.5, 0.1+((0.6)), 0.1+((0.4))) * CFrame.fromEulerAnglesXYZ(math.rad(-20)+(math.rad(-100)), math.rad(-10), 0)* CFrame.new(0,1.5,0)
+,CFrame.new(-1.5, 0.1+((0.6)), 0.1+((0.4))) * CFrame.fromEulerAnglesXYZ(math.rad(-20)+(math.rad(-100)), math.rad(-10), 0)* CFrame.new(0,1.5,0)	
+,CFrame.new(0,0,0) * CFrame.fromEulerAnglesXYZ(0,math.rad(10),0)
+,0.2)	
+Turning = false
+			repeat wait() until not Attack
+			PlaySound(Tool.Handle.Swing)
+			BladeReady = true
+Turning = true
+NeckRotation = math.rad(-10)
+Animate(
+ CFrame.new(1.5, 0, 0) * CFrame.fromEulerAnglesXYZ(math.rad(0), math.rad(-10), math.rad(0)) * CFrame.new(0,1.5,0)
+,CFrame.new(-1.5, 0.7+((-0.3)), 0.5) * CFrame.fromEulerAnglesXYZ(math.rad(-120)+(math.rad(95)), math.rad(-10), 0)* CFrame.new(0,1.5,0)
+,CFrame.new(-1.5, 0.7+((-0.3)), 0.5) * CFrame.fromEulerAnglesXYZ(math.rad(-120)+(math.rad(95)), math.rad(-10), 0)* CFrame.new(0,1.5,0)
+,CFrame.new(0,0,0) * CFrame.fromEulerAnglesXYZ(0,math.rad(-10),0)
+,0.1)	
+			BladeReady = false
+			wait(0.2)
+NeckRotation = math.rad(0)
+Animate(
+ CFrame.new(1.5, 0, 0) * CFrame.fromEulerAnglesXYZ(math.rad(0), math.rad(0), math.rad(0)) * CFrame.new(0,1.5,0)
+,CFrame.new(-1.5, 0.4+((-0.3)), 0.5+((-0.4))) * CFrame.fromEulerAnglesXYZ(math.rad(-25)+(math.rad(5)), math.rad(-10), 0)* CFrame.new(0,1.5,0)
+,CFrame.new(-1.5, 0.4+((-0.3)), 0.5+((-0.4))) * CFrame.fromEulerAnglesXYZ(math.rad(-25)+(math.rad(5)), math.rad(-10), 0)* CFrame.new(0,1.5,0)
+,CFrame.new(0,0,0) * CFrame.fromEulerAnglesXYZ(0,0,0)
+,0.2)	
+Turning = false
+
+		elseif AttackDirection == "D" then
+Turning = true
+NeckRotation = math.rad(10)
+Animate(
+ CFrame.new(1.5, 0, 0) * CFrame.fromEulerAnglesXYZ(math.rad(0), math.rad(10), math.rad(0)) * CFrame.new(0,1.5,0)
+,CFrame.new(-1.5, 0.1+((-0.1)), 0.1+((-0.4))) * CFrame.fromEulerAnglesXYZ(math.rad(-20)+(math.rad(30)), math.rad(-10)+(math.rad(10)), 0)* CFrame.new(0,1.5,0)
+,CFrame.new(-1.5, 0.1+((-0.1)), 0.1+((-0.4))) * CFrame.fromEulerAnglesXYZ(math.rad(-20)+(math.rad(30)), math.rad(-10)+(math.rad(10)), 0)* CFrame.new(0,1.5,0)
+,CFrame.new(0,0,0) * CFrame.fromEulerAnglesXYZ(0,math.rad(10),0)
+,0.2)	
+Turning = false
+			repeat wait() until not Attack
+			PlaySound(Tool.Handle.Swing)
+			BladeReady = true
+Turning = true
+NeckRotation = math.rad(-60)
+Animate(
+ CFrame.new(1.5, 0, 0) * CFrame.fromEulerAnglesXYZ(math.rad(0), math.rad(-60), math.rad(0)) * CFrame.new(0,1.5,0)
+,CFrame.new(-0.7, -0.65, 1.6+0.55) * CFrame.fromEulerAnglesXYZ(math.rad(-5), 0+(math.rad(-10)), 0)* CFrame.new(0,1.5,0)
+,CFrame.new(-0.7, 0.1+1.4, 0+0.8) * CFrame.fromEulerAnglesXYZ(math.rad(5)+(math.rad(-80)), 0+(math.rad(-10)), 0)* CFrame.new(0,1.5,0)
+,CFrame.new(0,0,0) * CFrame.fromEulerAnglesXYZ(0,math.rad(-60),0)
+,0.1)		
+
+			BladeReady = false
+wait(0.2)
+NeckRotation = 0
+Animate(
+ CFrame.new(1.5, 0, 0) * CFrame.fromEulerAnglesXYZ(math.rad(0), math.rad(0), math.rad(0)) * CFrame.new(0,1.5,0)
+,CFrame.new(-1.5, 0+((0.1)), 0.2+((-0.1))) * CFrame.fromEulerAnglesXYZ(math.rad(-45)+(math.rad(25)), math.rad(-20)+(math.rad(10)), 0)* CFrame.new(0,1.5,0)
+,CFrame.new(-1.5, 0+((0.1)), 0.2+((-0.1))) * CFrame.fromEulerAnglesXYZ(math.rad(-45)+(math.rad(25)), math.rad(-20)+(math.rad(10)), 0)* CFrame.new(0,1.5,0)
+,CFrame.new(0,0,0) * CFrame.fromEulerAnglesXYZ(0,0,0)
+,0.3)	
+Turning = false
+
+		elseif AttackDirection == "L" then
+Turning = true
+NeckRotation = math.rad(-30)
+Animate(
+ CFrame.new(1.5, 0, 0) * CFrame.fromEulerAnglesXYZ(math.rad(0), math.rad(-30), math.rad(0)) * CFrame.new(0,1.5,0)
+,CFrame.new(-1.5+((0.7)), 0.1+((0.6)), 0.1+((-1.4))) * CFrame.fromEulerAnglesXYZ(math.rad(-20)+(math.rad(-95)), math.rad(-10)+(math.rad(10)), 0+(math.rad(-75)))* CFrame.new(0,1.5,0)
+,CFrame.new(-1.5+((0.7)), 0.1+((0.6)), 0.1+((-1.4))) * CFrame.fromEulerAnglesXYZ(math.rad(-20)+(math.rad(-95)), math.rad(-10)+(math.rad(10)), 0+(math.rad(-75)))* CFrame.new(0,1.5,0)
+,CFrame.new(0,0,0) * CFrame.fromEulerAnglesXYZ(0,math.rad(-30),0)
+,0.3)
+Turning = false	
+			repeat wait() until not Attack
+			PlaySound(Tool.Handle.Swing)
+			BladeReady = true
+Turning = true
+NeckRotation = math.rad(20)
+Animate(
+ CFrame.new(1.5, 0, 0) * CFrame.fromEulerAnglesXYZ(math.rad(0), math.rad(20), math.rad(0)) * CFrame.new(0,1.5,0)
+,CFrame.new(-0.7, 1.12, 0.48) * CFrame.fromEulerAnglesXYZ(math.rad(-115)+(math.rad(130)), 0, math.rad(-75))* CFrame.new(0,1.5,0)
+,CFrame.new(-0.7, 0.8, -1.2) * CFrame.fromEulerAnglesXYZ(math.rad(-115)+(math.rad(70)), 0, math.rad(-75))* CFrame.new(0,1.5,0)
+,CFrame.new(0,0,0) * CFrame.fromEulerAnglesXYZ(0,math.rad(20),0)
+,0.1)	
+			BladeReady = false
+			wait(0.2)
+NeckRotation = math.rad(0)
+Animate(
+ CFrame.new(1.5, 0, 0) * CFrame.fromEulerAnglesXYZ(math.rad(0), math.rad(0), math.rad(0)) * CFrame.new(0,1.5,0)
+,CFrame.new(-0.9+((-0.6)), 1.2+((-1.1)), -0.9+((1))) * CFrame.fromEulerAnglesXYZ(math.rad(-55)+(math.rad(35)), 0+(math.rad(-10)), math.rad(-75)+(math.rad(75)))* CFrame.new(0,1.5,0)
+,CFrame.new(-0.9+((-0.6)), 1.2+((-1.1)), -0.9+((1))) * CFrame.fromEulerAnglesXYZ(math.rad(-55)+(math.rad(35)), 0+(math.rad(-10)), math.rad(-75)+(math.rad(75)))* CFrame.new(0,1.5,0)
+,CFrame.new(0,0,0) * CFrame.fromEulerAnglesXYZ(0,0,0)
+,0.3)		
+Turning = false
+		elseif AttackDirection == "R" then
+Turning = true
+NeckRotation = math.rad(10)
+
+Animate(
+ CFrame.new(1.5, 0, 0) * CFrame.fromEulerAnglesXYZ(math.rad(0), math.rad(10), math.rad(0)) * CFrame.new(0,1.5,0)
+,CFrame.new(-1.5+((0.3)), 0.1+((0.7)), 0.1+((0.65))) * CFrame.fromEulerAnglesXYZ(math.rad(-20)+(math.rad(-55)), math.rad(-10)+(math.rad(40)), 0+(math.rad(10)))* CFrame.new(0,1.5,0)
+,CFrame.new(-1.5+((0.3)), 0.1+((0.7)), 0.1+((0.65))) * CFrame.fromEulerAnglesXYZ(math.rad(-20)+(math.rad(-55)), math.rad(-10)+(math.rad(40)), 0+(math.rad(10)))* CFrame.new(0,1.5,0)
+,CFrame.new(0,0,0) * CFrame.fromEulerAnglesXYZ(0,math.rad(10),0)
+,0.3)		
+Turning = false
+			repeat wait() until not Attack
+			PlaySound(Tool.Handle.Swing)
+			BladeReady = true
+Turning = true
+NeckRotation = math.rad(-30)
+Animate(
+ CFrame.new(1.5, 0, 0) * CFrame.fromEulerAnglesXYZ(math.rad(0), math.rad(-30), math.rad(0)) * CFrame.new(0,1.5,0)
+,CFrame.new(0, -1.18, 1.34) * CFrame.fromEulerAnglesXYZ(math.rad(-75)+(math.rad(90)), math.rad(30)+(math.rad(-35)), math.rad(10)+(math.rad(60)))* CFrame.new(0,1.5,0)
+,CFrame.new(0, 0.1, 1.5) * CFrame.fromEulerAnglesXYZ(math.rad(-75)+(math.rad(45)), math.rad(30)+(math.rad(-35)), math.rad(10)+(math.rad(60)))* CFrame.new(0,1.5,0)
+,CFrame.new(0,0,0) * CFrame.fromEulerAnglesXYZ(0,math.rad(-30),0)
+,0.1)		
+
+			BladeReady = false
+			wait(0.2)
+NeckRotation = math.rad(0)
+Animate(
+ CFrame.new(1.5, 0, 0) * CFrame.fromEulerAnglesXYZ(math.rad(0), math.rad(0), math.rad(0)) * CFrame.new(0,1.5,0)
+,CFrame.new(-1.5, 0.1, 0.1) * CFrame.fromEulerAnglesXYZ(math.rad(-30)+(math.rad(10)), math.rad(-5)+(math.rad(-5)), math.rad(70)+(math.rad(-70)))* CFrame.new(0,1.5,0)
+,CFrame.new(-1.5, 0.1, 0.1) * CFrame.fromEulerAnglesXYZ(math.rad(-30)+(math.rad(10)), math.rad(-5)+(math.rad(-5)), math.rad(70)+(math.rad(-70)))* CFrame.new(0,1.5,0)
+,CFrame.new(0,0,0) * CFrame.fromEulerAnglesXYZ(0,0,0)
+,0.3)	
+Turning = false	
+		end
+		SEs.ChangeVal:FireServer(k,Tool.Direction,"")
+		Attacking = false
+if not Blocking then
+Animate(
+ CFrame.new(1.5, 0, 0) * CFrame.fromEulerAnglesXYZ(math.rad(0), math.rad(0), math.rad(0)) * CFrame.new(0,1.5,0)
+,CFrame.new(-0.9+((-0.6)), 0.6+((-0.5)), -1.1+((1.2))) * CFrame.fromEulerAnglesXYZ(math.rad(-80)+(math.rad(60)), math.rad(0)+(math.rad(-10)), math.rad(-65)+(math.rad(65)))* CFrame.new(0,1.5,0)
+,CFrame.new(-0.9+((-0.6)), 0.6+((-0.5)), -1.1+((1.2))) * CFrame.fromEulerAnglesXYZ(math.rad(-80)+(math.rad(60)), math.rad(0)+(math.rad(-10)), math.rad(-65)+(math.rad(65)))* CFrame.new(0,1.5,0)
+,CFrame.new(0,0,0) * CFrame.fromEulerAnglesXYZ(0,0,0)
+,0.2)
+end
+	
+		
+		
+	elseif not Attacking and Blocking then
+		SEs.ChangeVal:FireServer(k,Tool.Direction,AttackDirection)
+		Attack = true
+		Attacking = true	
+		if AttackDirection == "U" then
+			
+Turning = true
+NeckRotation = math.rad(40)
+Animate(
+ CFrame.new(1.5, 0, 0) * CFrame.fromEulerAnglesXYZ(math.rad(-90), math.rad(80), math.rad(0)) * CFrame.new(-.1,1,0)
+,CFrame.new(-1.5, 0.1+((0.6)), 0.1+((0.4))) * CFrame.fromEulerAnglesXYZ(math.rad(-20)+(math.rad(-100)), math.rad(10), 0)* CFrame.new(0,1.5,0)
+,CFrame.new(-1.5, 0.1+((0.6)), 0.1+((0.4))) * CFrame.fromEulerAnglesXYZ(math.rad(-20)+(math.rad(-100)), math.rad(10), 0)* CFrame.new(0,1.5,0)
+,CFrame.new(0,0,0) * CFrame.fromEulerAnglesXYZ(0,70,0)
+,0.2)		
+Turning = false
+			repeat wait() until not Attack
+			PlaySound(Tool.Handle.Swing)
+			BladeReady = true
+			
+Turning = true
+NeckRotation = math.rad(0)
+Animate(
+ CFrame.new(1.5, 0, 0) * CFrame.fromEulerAnglesXYZ(math.rad(-90), math.rad(80), math.rad(0)) * CFrame.new(-.1,1,-.4)
+,CFrame.new(-1.5, 0.7+((-0.3)), 0.5) * CFrame.fromEulerAnglesXYZ(math.rad(-120)+(math.rad(95)), math.rad(-10), 0)* CFrame.new(0,1.5,0)
+,CFrame.new(-1.5, 0.7+((-0.3)), 0.5) * CFrame.fromEulerAnglesXYZ(math.rad(-120)+(math.rad(95)), math.rad(-10), 0)* CFrame.new(0,1.5,0)
+,CFrame.new(0,0,0) * CFrame.fromEulerAnglesXYZ(0,0,0)
+,0.2)		
+		
+
+			BladeReady = false
+			wait(.3)
+Turning = false
+NeckRotation = math.rad(40)
+Animate(
+ CFrame.new(1.5, 0, 0) * CFrame.fromEulerAnglesXYZ(math.rad(-90), math.rad(80), math.rad(0)) * CFrame.new(-.1,1,0)
+,CFrame.new(-0.9+((-0.6)), 0.6+((-0.5)), -1.1+((1.2))) * CFrame.fromEulerAnglesXYZ(math.rad(-80)+(math.rad(60)), math.rad(0)+(math.rad(50)), math.rad(-65)+(math.rad(65)))* CFrame.new(0,1.5,.2)
+,CFrame.new(-0.9+((-0.6)), 0.6+((-0.5)), -1.1+((1.2))) * CFrame.fromEulerAnglesXYZ(math.rad(-80)+(math.rad(60)), math.rad(0)+(math.rad(50)), math.rad(-65)+(math.rad(65)))* CFrame.new(0,1.5,.2)
+,CFrame.new(0,0,0) * CFrame.fromEulerAnglesXYZ(0,70,0)
+,0.2)	
+
+	elseif AttackDirection == "D" then
+			
+Turning = true
+NeckRotation = math.rad(40)
+Animate(
+ CFrame.new(1.5, 0, 0) * CFrame.fromEulerAnglesXYZ(math.rad(-90), math.rad(80), math.rad(0)) * CFrame.new(-.1,1,0)
+,CFrame.new(-1.5, 0.1+((-0.1)), 0.1+((-0.4))) * CFrame.fromEulerAnglesXYZ(math.rad(-20)+(math.rad(40)), math.rad(-15)+(math.rad(0)),math.rad(-15))* CFrame.new(0,1.7,-.6)
+,CFrame.new(-1.5, 0.1+((-0.1)), 0.1+((-0.4))) * CFrame.fromEulerAnglesXYZ(math.rad(-20)+(math.rad(40)), math.rad(-15)+(math.rad(0)),math.rad(-15))* CFrame.new(0,1.7,-.6)
+,CFrame.new(0,0,0) * CFrame.fromEulerAnglesXYZ(0,70,0)
+,0.2)		
+Turning = false
+			repeat wait() until not Attack
+			PlaySound(Tool.Handle.Swing)
+			BladeReady = true
+			
+Turning = true
+NeckRotation = math.rad(0)
+Animate(
+ CFrame.new(1.5, 0, 0) * CFrame.fromEulerAnglesXYZ(math.rad(-90), math.rad(80), math.rad(0)) * CFrame.new(-.1,1,-.4)
+,CFrame.new(-1.5, 0.1+((-0.1)), 0.1+((-0.4))) * CFrame.fromEulerAnglesXYZ(math.rad(-40)+(math.rad(30)), math.rad(-25)+(math.rad(0)),math.rad(-15))* CFrame.new(-.1,1.5,1.1)
+,CFrame.new(-1.5, 0.1+((-0.1)), 0.1+((-0.4))) * CFrame.fromEulerAnglesXYZ(math.rad(-90)+(math.rad(30)), math.rad(-15)+(math.rad(0)),math.rad(-15))* CFrame.new(-.1,1.5,.7)
+,CFrame.new(0,0,0) * CFrame.fromEulerAnglesXYZ(0,0,0)
+,0.2)		
+		
+
+			BladeReady = false
+			wait(.3)
+Turning = false
+NeckRotation = math.rad(40)
+Animate(
+ CFrame.new(1.5, 0, 0) * CFrame.fromEulerAnglesXYZ(math.rad(-90), math.rad(80), math.rad(0)) * CFrame.new(-.1,1,0)
+,CFrame.new(-0.9+((-0.6)), 0.6+((-0.5)), -1.1+((1.2))) * CFrame.fromEulerAnglesXYZ(math.rad(-80)+(math.rad(60)), math.rad(0)+(math.rad(50)), math.rad(-65)+(math.rad(65)))* CFrame.new(0,1.5,.2)
+,CFrame.new(-0.9+((-0.6)), 0.6+((-0.5)), -1.1+((1.2))) * CFrame.fromEulerAnglesXYZ(math.rad(-80)+(math.rad(60)), math.rad(0)+(math.rad(50)), math.rad(-65)+(math.rad(65)))* CFrame.new(0,1.5,.2)
+,CFrame.new(0,0,0) * CFrame.fromEulerAnglesXYZ(0,70,0)
+,0.2)		
+
+	elseif AttackDirection == "R" then
+			
+Turning = true
+NeckRotation = math.rad(40)
+Animate(
+ CFrame.new(1.5, 0, 0) * CFrame.fromEulerAnglesXYZ(math.rad(-90), math.rad(80), math.rad(0)) * CFrame.new(-.1,1,0)
+,CFrame.new(-1.5, 0.1+((-0.1)), 0.1+((-0.4))) * CFrame.fromEulerAnglesXYZ(math.rad(-50)+(math.rad(40)), math.rad(0)+(math.rad(0)),math.rad(-85))* CFrame.new(-1,2.5,-.8)
+,CFrame.new(-1.5, 0.1+((-0.1)), 0.1+((-0.4))) * CFrame.fromEulerAnglesXYZ(math.rad(-50)+(math.rad(40)), math.rad(0)+(math.rad(0)),math.rad(-85))* CFrame.new(-1,2.5,-.8)
+,CFrame.new(0,0,0) * CFrame.fromEulerAnglesXYZ(0,70,0)
+,0.2)		
+Turning = false
+			repeat wait() until not Attack
+			PlaySound(Tool.Handle.Swing)
+			BladeReady = true
+			
+Turning = true
+NeckRotation = math.rad(0)
+Animate(
+ CFrame.new(1.5, 0, 0) * CFrame.fromEulerAnglesXYZ(math.rad(-90), math.rad(80), math.rad(0)) * CFrame.new(-.1,1,-.4)
+,CFrame.new(-1.5, 0.1+((-0.1)), 0.1+((-0.4))) * CFrame.fromEulerAnglesXYZ(math.rad(-75)+(math.rad(40)), math.rad(0)+(math.rad(0)),math.rad(-85))* CFrame.new(-.9,2.5,1.4)
+,CFrame.new(-1.5, 0.1+((-0.1)), 0.1+((-0.4))) * CFrame.fromEulerAnglesXYZ(math.rad(-110)+(math.rad(40)), math.rad(0)+(math.rad(0)),math.rad(-85))* CFrame.new(-1.2,2.5,.89)
+,CFrame.new(0,0,0) * CFrame.fromEulerAnglesXYZ(0,0,0)
+,0.2)			
+		
+
+			BladeReady = false
+			wait(.3)
+Turning = false
+NeckRotation = math.rad(40)
+Animate(
+ CFrame.new(1.5, 0, 0) * CFrame.fromEulerAnglesXYZ(math.rad(-90), math.rad(80), math.rad(0)) * CFrame.new(-.1,1,0)
+,CFrame.new(-0.9+((-0.6)), 0.6+((-0.5)), -1.1+((1.2))) * CFrame.fromEulerAnglesXYZ(math.rad(-80)+(math.rad(60)), math.rad(0)+(math.rad(50)), math.rad(-65)+(math.rad(65)))* CFrame.new(0,1.5,.2)
+,CFrame.new(-0.9+((-0.6)), 0.6+((-0.5)), -1.1+((1.2))) * CFrame.fromEulerAnglesXYZ(math.rad(-80)+(math.rad(60)), math.rad(0)+(math.rad(50)), math.rad(-65)+(math.rad(65)))* CFrame.new(0,1.5,.2)
+,CFrame.new(0,0,0) * CFrame.fromEulerAnglesXYZ(0,70,0)
+,0.2)	
+		end
+		SEs.ChangeVal:FireServer(k,Tool.Direction,"")
+		Attacking = false
+if not Blocking then 
+Turning = false
+NeckRotation = math.rad(0)
+Animate(
+ CFrame.new(1.5, 0, 0) * CFrame.fromEulerAnglesXYZ(math.rad(0), math.rad(0), math.rad(0)) * CFrame.new(0,1.5,0)
+,CFrame.new(-0.9+((-0.6)), 0.6+((-0.5)), -1.1+((1.2))) * CFrame.fromEulerAnglesXYZ(math.rad(-80)+(math.rad(60)), math.rad(0)+(math.rad(-10)), math.rad(-65)+(math.rad(65)))* CFrame.new(0,1.5,0)
+,CFrame.new(-0.9+((-0.6)), 0.6+((-0.5)), -1.1+((1.2))) * CFrame.fromEulerAnglesXYZ(math.rad(-80)+(math.rad(60)), math.rad(0)+(math.rad(-10)), math.rad(-65)+(math.rad(65)))* CFrame.new(0,1.5,0)
+,CFrame.new(0,0,0) * CFrame.fromEulerAnglesXYZ(0,0,0)
+,0.2)	
+		end
+	end
+			end
+			
+			
+			
+elseif not shield then
+	if Stance == "Nothing" then	
+		
+		if not Attacking and not Blocking then
+		SEs.ChangeVal:FireServer(k,Tool.Direction,AttackDirection)
+		Attack = true
+		Attacking = true
+		if AttackDirection == "U" then
+Turning = true
+NeckRotation = math.rad(10)
+Animate(
+ CFrame.new(1.5, 0, 0) * CFrame.fromEulerAnglesXYZ(math.rad(0), math.rad(10), math.rad(0)) * CFrame.new(0,1.5,0)
+,CFrame.new(-1.5, 0.1+((0.6)), 0.1+((0.4))) * CFrame.fromEulerAnglesXYZ(math.rad(-20)+(math.rad(-100)), math.rad(-10), 0)* CFrame.new(0,1.5,0)
+,CFrame.new(-1.5, 0.1+((0.6)), 0.1+((0.4))) * CFrame.fromEulerAnglesXYZ(math.rad(-20)+(math.rad(-100)), math.rad(-10), 0)* CFrame.new(0,1.5,0)	
+,CFrame.new(0,0,0) * CFrame.fromEulerAnglesXYZ(0,math.rad(10),0)
+,0.2)	
+Turning = false
+			repeat wait() until not Attack
+			PlaySound(Tool.Handle.Swing)
+			BladeReady = true
+Turning = true
+NeckRotation = math.rad(-10)
+Animate(
+ CFrame.new(1.5, 0, 0) * CFrame.fromEulerAnglesXYZ(math.rad(0), math.rad(-10), math.rad(0)) * CFrame.new(0,1.5,0)
+,CFrame.new(-1.5, 0.7+((-0.3)), 0.5) * CFrame.fromEulerAnglesXYZ(math.rad(-120)+(math.rad(95)), math.rad(-10), 0)* CFrame.new(0,1.5,0)
+,CFrame.new(-1.5, 0.7+((-0.3)), 0.5) * CFrame.fromEulerAnglesXYZ(math.rad(-120)+(math.rad(95)), math.rad(-10), 0)* CFrame.new(0,1.5,0)
+,CFrame.new(0,0,0) * CFrame.fromEulerAnglesXYZ(0,math.rad(-10),0)
+,0.1)	
+			BladeReady = false
+			wait(0.2)
+NeckRotation = math.rad(0)
+Animate(
+ CFrame.new(1.5, 0, 0) * CFrame.fromEulerAnglesXYZ(math.rad(0), math.rad(0), math.rad(0)) * CFrame.new(0,1.5,0)
+,CFrame.new(-1.5, 0.4+((-0.3)), 0.5+((-0.4))) * CFrame.fromEulerAnglesXYZ(math.rad(-25)+(math.rad(5)), math.rad(-10), 0)* CFrame.new(0,1.5,0)
+,CFrame.new(-1.5, 0.4+((-0.3)), 0.5+((-0.4))) * CFrame.fromEulerAnglesXYZ(math.rad(-25)+(math.rad(5)), math.rad(-10), 0)* CFrame.new(0,1.5,0)
+,CFrame.new(0,0,0) * CFrame.fromEulerAnglesXYZ(0,0,0)
+,0.2)	
+Turning = false
+
+		elseif AttackDirection == "D" then
+Turning = true
+NeckRotation = math.rad(10)
+Animate(
+ CFrame.new(1.5, 0, 0) * CFrame.fromEulerAnglesXYZ(math.rad(0), math.rad(10), math.rad(0)) * CFrame.new(0,1.5,0)
+,CFrame.new(-1.5, 0.1+((-0.1)), 0.1+((-0.4))) * CFrame.fromEulerAnglesXYZ(math.rad(-20)+(math.rad(30)), math.rad(-10)+(math.rad(10)), 0)* CFrame.new(0,1.5,0)
+,CFrame.new(-1.5, 0.1+((-0.1)), 0.1+((-0.4))) * CFrame.fromEulerAnglesXYZ(math.rad(-20)+(math.rad(30)), math.rad(-10)+(math.rad(10)), 0)* CFrame.new(0,1.5,0)
+,CFrame.new(0,0,0) * CFrame.fromEulerAnglesXYZ(0,math.rad(10),0)
+,0.2)	
+Turning = false
+			repeat wait() until not Attack
+			PlaySound(Tool.Handle.Swing)
+			BladeReady = true
+Turning = true
+NeckRotation = math.rad(-60)
+Animate(
+ CFrame.new(1.5, 0, 0) * CFrame.fromEulerAnglesXYZ(math.rad(0), math.rad(-60), math.rad(0)) * CFrame.new(0,1.5,0)
+,CFrame.new(-0.7, -0.65, 1.6+0.55) * CFrame.fromEulerAnglesXYZ(math.rad(-5), 0+(math.rad(-10)), 0)* CFrame.new(0,1.5,0)
+,CFrame.new(-0.7, 0.1+1.4, 0+0.8) * CFrame.fromEulerAnglesXYZ(math.rad(5)+(math.rad(-80)), 0+(math.rad(-10)), 0)* CFrame.new(0,1.5,0)
+,CFrame.new(0,0,0) * CFrame.fromEulerAnglesXYZ(0,math.rad(-60),0)
+,0.1)		
+
+			BladeReady = false
+			wait(0.2)
+NeckRotation = 0
+Animate(
+ CFrame.new(1.5, 0, 0) * CFrame.fromEulerAnglesXYZ(math.rad(0), math.rad(0), math.rad(0)) * CFrame.new(0,1.5,0)
+,CFrame.new(-1.5, 0+((0.1)), 0.2+((-0.1))) * CFrame.fromEulerAnglesXYZ(math.rad(-45)+(math.rad(25)), math.rad(-20)+(math.rad(10)), 0)* CFrame.new(0,1.5,0)
+,CFrame.new(-1.5, 0+((0.1)), 0.2+((-0.1))) * CFrame.fromEulerAnglesXYZ(math.rad(-45)+(math.rad(25)), math.rad(-20)+(math.rad(10)), 0)* CFrame.new(0,1.5,0)
+,CFrame.new(0,0,0) * CFrame.fromEulerAnglesXYZ(0,0,0)
+,0.3)	
+Turning = false
+
+		elseif AttackDirection == "L" then
+Turning = true
+NeckRotation = math.rad(-30)
+Animate(
+ CFrame.new(1.5, 0, 0) * CFrame.fromEulerAnglesXYZ(math.rad(0), math.rad(-30), math.rad(0)) * CFrame.new(0,1.5,0)
+,CFrame.new(-1.5+((0.7)), 0.1+((0.6)), 0.1+((-1.4))) * CFrame.fromEulerAnglesXYZ(math.rad(-20)+(math.rad(-95)), math.rad(-10)+(math.rad(10)), 0+(math.rad(-75)))* CFrame.new(0,1.5,0)
+,CFrame.new(-1.5+((0.7)), 0.1+((0.6)), 0.1+((-1.4))) * CFrame.fromEulerAnglesXYZ(math.rad(-20)+(math.rad(-95)), math.rad(-10)+(math.rad(10)), 0+(math.rad(-75)))* CFrame.new(0,1.5,0)
+,CFrame.new(0,0,0) * CFrame.fromEulerAnglesXYZ(0,math.rad(-30),0)
+,0.3)
+Turning = false	
+			repeat wait() until not Attack
+			PlaySound(Tool.Handle.Swing)
+			BladeReady = true
+Turning = true
+NeckRotation = math.rad(20)
+Animate(
+ CFrame.new(1.5, 0, 0) * CFrame.fromEulerAnglesXYZ(math.rad(0), math.rad(20), math.rad(0)) * CFrame.new(0,1.5,0)
+,CFrame.new(-0.7, 1.12, 0.48) * CFrame.fromEulerAnglesXYZ(math.rad(-115)+(math.rad(130)), 0, math.rad(-75))* CFrame.new(0,1.5,0)
+,CFrame.new(-0.7, 0.8, -1.2) * CFrame.fromEulerAnglesXYZ(math.rad(-115)+(math.rad(70)), 0, math.rad(-75))* CFrame.new(0,1.5,0)
+,CFrame.new(0,0,0) * CFrame.fromEulerAnglesXYZ(0,math.rad(20),0)
+,0.1)	
+			BladeReady = false
+			wait(0.2)
+NeckRotation = math.rad(0)
+Animate(
+ CFrame.new(1.5, 0, 0) * CFrame.fromEulerAnglesXYZ(math.rad(0), math.rad(0), math.rad(0)) * CFrame.new(0,1.5,0)
+,CFrame.new(-0.9+((-0.6)), 1.2+((-1.1)), -0.9+((1))) * CFrame.fromEulerAnglesXYZ(math.rad(-55)+(math.rad(35)), 0+(math.rad(-10)), math.rad(-75)+(math.rad(75)))* CFrame.new(0,1.5,0)
+,CFrame.new(-0.9+((-0.6)), 1.2+((-1.1)), -0.9+((1))) * CFrame.fromEulerAnglesXYZ(math.rad(-55)+(math.rad(35)), 0+(math.rad(-10)), math.rad(-75)+(math.rad(75)))* CFrame.new(0,1.5,0)
+,CFrame.new(0,0,0) * CFrame.fromEulerAnglesXYZ(0,0,0)
+,0.3)		
+Turning = false
+
+
+		elseif AttackDirection == "R" then
+Turning = true
+NeckRotation = math.rad(10)
+
+Animate(
+ CFrame.new(1.5, 0, 0) * CFrame.fromEulerAnglesXYZ(math.rad(0), math.rad(10), math.rad(0)) * CFrame.new(0,1.5,0)
+,CFrame.new(-1.5+((0.3)), 0.1+((0.7)), 0.1+((0.65))) * CFrame.fromEulerAnglesXYZ(math.rad(-20)+(math.rad(-55)), math.rad(-10)+(math.rad(40)), 0+(math.rad(10)))* CFrame.new(0,1.5,0)
+,CFrame.new(-1.5+((0.3)), 0.1+((0.7)), 0.1+((0.65))) * CFrame.fromEulerAnglesXYZ(math.rad(-20)+(math.rad(-55)), math.rad(-10)+(math.rad(40)), 0+(math.rad(10)))* CFrame.new(0,1.5,0)
+,CFrame.new(0,0,0) * CFrame.fromEulerAnglesXYZ(0,math.rad(10),0)
+,0.3)		
+Turning = false
+			repeat wait() until not Attack
+			PlaySound(Tool.Handle.Swing)
+			BladeReady = true
+Turning = true
+NeckRotation = math.rad(-30)
+Animate(
+ CFrame.new(1.5, 0, 0) * CFrame.fromEulerAnglesXYZ(math.rad(0), math.rad(-30), math.rad(0)) * CFrame.new(0,1.5,0)
+,CFrame.new(0, -1.18, 1.34) * CFrame.fromEulerAnglesXYZ(math.rad(-75)+(math.rad(90)), math.rad(30)+(math.rad(-35)), math.rad(10)+(math.rad(60)))* CFrame.new(0,1.5,0)
+,CFrame.new(0, 0.1, 1.5) * CFrame.fromEulerAnglesXYZ(math.rad(-75)+(math.rad(45)), math.rad(30)+(math.rad(-35)), math.rad(10)+(math.rad(60)))* CFrame.new(0,1.5,0)
+,CFrame.new(0,0,0) * CFrame.fromEulerAnglesXYZ(0,math.rad(-30),0)
+,0.1)		
+
+			BladeReady = false
+			wait(0.2)
+NeckRotation = math.rad(0)
+Animate(
+ CFrame.new(1.5, 0, 0) * CFrame.fromEulerAnglesXYZ(math.rad(0), math.rad(0), math.rad(0)) * CFrame.new(0,1.5,0)
+,CFrame.new(-1.5, 0.1, 0.1) * CFrame.fromEulerAnglesXYZ(math.rad(-30)+(math.rad(10)), math.rad(-5)+(math.rad(-5)), math.rad(70)+(math.rad(-70)))* CFrame.new(0,1.5,0)
+,CFrame.new(-1.5, 0.1, 0.1) * CFrame.fromEulerAnglesXYZ(math.rad(-30)+(math.rad(10)), math.rad(-5)+(math.rad(-5)), math.rad(70)+(math.rad(-70)))* CFrame.new(0,1.5,0)
+,CFrame.new(0,0,0) * CFrame.fromEulerAnglesXYZ(0,0,0)
+,0.3)	
+Turning = false	
+
+		end
+		SEs.ChangeVal:FireServer(k,Tool.Direction,"")
+		Attacking = false
+if not Blocking then
+Animate(
+ CFrame.new(1.5, 0, 0) * CFrame.fromEulerAnglesXYZ(math.rad(0), math.rad(0), math.rad(0)) * CFrame.new(0,1.5,0)
+,CFrame.new(-0.9+((-0.6)), 0.6+((-0.5)), -1.1+((1.2))) * CFrame.fromEulerAnglesXYZ(math.rad(-80)+(math.rad(60)), math.rad(0)+(math.rad(-10)), math.rad(-65)+(math.rad(65)))* CFrame.new(0,1.5,0)
+,CFrame.new(-0.9+((-0.6)), 0.6+((-0.5)), -1.1+((1.2))) * CFrame.fromEulerAnglesXYZ(math.rad(-80)+(math.rad(60)), math.rad(0)+(math.rad(-10)), math.rad(-65)+(math.rad(65)))* CFrame.new(0,1.5,0)
+,CFrame.new(0,0,0) * CFrame.fromEulerAnglesXYZ(0,0,0)
+,0.2)
+end
+		end
+		end
+	end
+end)
+
+Mouse.Button2Down:connect(function()
+	local shield = Player.Character:FindFirstChild("Shieldon")
+	if not shield then
+		if Stance == "Nothing" then
+	if not Blocking and not Attacking then
+	    SEs.ChangeVal:FireServer(k,Tool.Direction,"")
+		Block = true
+		Blocking = true
+		chr.Humanoid.WalkSpeed = 12
+Animate(
+ CFrame.new(1.5, 0, 0) * CFrame.fromEulerAnglesXYZ(math.rad(0), math.rad(0), math.rad(0)) * CFrame.new(0,1.5,0)
+,CFrame.new(-1.5+((0.6)), 0.1+((0.5)), 0.1+((-1.2))) * CFrame.fromEulerAnglesXYZ(math.rad(-20)+(math.rad(-60)), math.rad(-10)+(math.rad(10)), 0+(math.rad(-65)))* CFrame.new(0,1.5,0)
+,CFrame.new(-1.5+((0.6)), 0.1+((0.5)), 0.1+((-1.2))) * CFrame.fromEulerAnglesXYZ(math.rad(-20)+(math.rad(-60)), math.rad(-10)+(math.rad(10)), 0+(math.rad(-65)))* CFrame.new(0,1.5,0)
+,CFrame.new(0,0,0) * CFrame.fromEulerAnglesXYZ(0,0,0)
+,0.2)	
+	
+SEs.ChangeVal:FireServer(k,Tool.Block,true)
+		repeat wait() until not Block
+
+Animate(
+ CFrame.new(1.5, 0, 0) * CFrame.fromEulerAnglesXYZ(math.rad(0), math.rad(0), math.rad(0)) * CFrame.new(0,1.5,0)
+,CFrame.new(-0.9+((-0.6)), 0.6+((-0.5)), -1.1+((1.2))) * CFrame.fromEulerAnglesXYZ(math.rad(-80)+(math.rad(60)), math.rad(0)+(math.rad(-10)), math.rad(-65)+(math.rad(65)))* CFrame.new(0,1.5,0)
+,CFrame.new(-0.9+((-0.6)), 0.6+((-0.5)), -1.1+((1.2))) * CFrame.fromEulerAnglesXYZ(math.rad(-80)+(math.rad(60)), math.rad(0)+(math.rad(-10)), math.rad(-65)+(math.rad(65)))* CFrame.new(0,1.5,0)
+,CFrame.new(0,0,0) * CFrame.fromEulerAnglesXYZ(0,0,0)
+,0.2)	
+
+		
+SEs.ChangeVal:FireServer(k,Tool.Block,false)
+		Blocking = false
+	end
+		end
+		
+	elseif shield then
+		if Stance == "Nothing" then
+	if not Blocking and not Attacking then
+	    SEs.ChangeVal:FireServer(k,Tool.Direction,"")
+		Block = true
+		Blocking = true
+		chr.Humanoid.WalkSpeed = 12
+		
+Turning = true
+NeckRotation = math.rad(40)
+Animate(
+ CFrame.new(1.5, 0, 0) * CFrame.fromEulerAnglesXYZ(math.rad(-90), math.rad(90), math.rad(0)) * CFrame.new(-.1,1,0)
+,CFrame.new(-0.9+((-0.6)), 0.6+((-0.5)), -1.1+((1.2))) * CFrame.fromEulerAnglesXYZ(math.rad(-80)+(math.rad(60)), math.rad(0)+(math.rad(50)), math.rad(-65)+(math.rad(65)))* CFrame.new(0,1.5,.2)
+,CFrame.new(-0.9+((-0.6)), 0.6+((-0.5)), -1.1+((1.2))) * CFrame.fromEulerAnglesXYZ(math.rad(-80)+(math.rad(60)), math.rad(0)+(math.rad(50)), math.rad(-65)+(math.rad(65)))* CFrame.new(0,1.5,.2)
+,CFrame.new(0,0,0) * CFrame.fromEulerAnglesXYZ(0,70,0)
+,0.2)	
+	
+SEs.ChangeVal:FireServer(k,Tool.Block,true)
+		repeat wait() until not Block
+		
+NeckRotation = math.rad(0)
+Animate(
+ CFrame.new(1.5, 0, 0) * CFrame.fromEulerAnglesXYZ(math.rad(0), math.rad(0), math.rad(0)) * CFrame.new(0,1.5,0)
+,CFrame.new(-0.9+((-0.6)), 0.6+((-0.5)), -1.1+((1.2))) * CFrame.fromEulerAnglesXYZ(math.rad(-80)+(math.rad(60)), math.rad(0)+(math.rad(-10)), math.rad(-65)+(math.rad(65)))* CFrame.new(0,1.5,0)
+,CFrame.new(-0.9+((-0.6)), 0.6+((-0.5)), -1.1+((1.2))) * CFrame.fromEulerAnglesXYZ(math.rad(-80)+(math.rad(60)), math.rad(0)+(math.rad(-10)), math.rad(-65)+(math.rad(65)))* CFrame.new(0,1.5,0)
+,CFrame.new(0,0,0) * CFrame.fromEulerAnglesXYZ(0,0,0)
+,0.2)	
+Turning = false	
+	
+SEs.ChangeVal:FireServer(k,Tool.Block,false)
+		Blocking = false
+	end
+	end
+	end
+	
+end)
+
+Mouse.Button1Up:connect(function()
+	if Stance == "Nothing" then
+	Attack = false
+	end
+end)
+
+Mouse.Button2Up:connect(function()
+	if Stance == "Nothing" then
+	Block = false
+	chr.Humanoid.WalkSpeed = 16
+	end
+end)
+end
+else
+print("sh")
+end
+else
+print("arms")
+end
+end
+
+script.CRC.Changed:Connect(function()
+	if not script.CRC.Value then
+		TweenService:Create(torso.Parent.Humanoid,TweenInfo.new(0.3),
+	{CameraOffset = torso.Parent.Humanoid.CameraOffset + (Vector3.new(0,0,0) - torso.Parent.Humanoid.CameraOffset)}):Play()
+Tool.Hig.Value = 0	
+Animate(
+ weld1C1
+,weld2C1
+,weld3C1
+,tweldC1
+,0.3)	
+if not Blocking then
+chr.Humanoid.WalkSpeed = script.Speed.Value	
+elseif Blocking then
+	chr.Humanoid.WalkSpeed = 12
+end
+
+	        else
+		
+		TweenService:Create(torso.Parent.Humanoid,TweenInfo.new(0.3),
+	{CameraOffset = torso.Parent.Humanoid.CameraOffset + (Vector3.new(0,-1,0) - torso.Parent.Humanoid.CameraOffset)}):Play()
+Tool.Hig.Value = 1
+chr.Humanoid.WalkSpeed = 0	
+Animate(
+ weld1C1
+,weld2C1
+,weld3C1
+,tweldC1
+,0.3)	
+	end
+end)	
+
+function DamageHorse(Humanoid, SpeedDamage)
+	SEs.Damage:FireServer(k,Tool,Humanoid)
+end
+
+function DamageConstruct(Hit)
+	SEs.Damage:FireServer(k,Tool,Hit)   
+end
+
+
+function IsHorse(Hit) -- This function is incredibly ugly.
+	if Hit.Parent.Name == "Horse" then
+		HorseHumanoid = Hit.Parent.Humanoid
+		return true
+	elseif Hit.Parent.Parent.Name == "Horse" then
+		HorseHumanoid = Hit.Parent.Parent.Humanoid
+		return true
+	elseif Hit.Parent.Parent ~= game then
+		if Hit.Parent.Parent.Parent.Name == "Horse" then
+			HorseHumanoid = Hit.Parent.Parent.Parent.Humanoid
+			return true
+		elseif Hit.Parent.Parent.Parent ~= game then
+			if Hit.Parent.Parent.Parent.Parent.Name == "Horse" then
+				HorseHumanoid = Hit.Parent.Parent.Parent.Parent.Humanoid
+				return true
+			else
+				return false
+			end
+		else
+			return false
+		end
+	else
+		return false
+	end
+end
+local BladeDebounce = false
+function Blade(Hit)
+if BladeReady then
+		if IsHorse(Hit) and not BladeDebounce and Hit.Parent ~= Tool.Parent and HorseHumanoid.Parent:FindFirstChild("CurrentSpeed") then
+		if HorseHumanoid.Parent.CurrentSpeed.Value > 15 then
+			local WallDetection = Ray.new(Character.Torso.Position, (Tool.Blade.Position - Character.Torso.Position).unit*(Tool.Blade.Position - Character.Torso.Position).magnitude)
+			local Ignore = {Character, arms[2].Mweld3.Part1.Parent, Hit.Parent}
+			local WallHit, WallHitPos = game.Workspace:FindPartOnRayWithIgnoreList(WallDetection, Ignore)	
+			if not WallHit then
+				BladeDebounce = true		
+				DamageHorse(HorseHumanoid, true)
+				PlaySound(Tool.Blade.HitFlesh)
+				wait(0.4)
+				BladeDebounce = false
+			end
+		end
+	elseif IsHorse(Hit) and not BladeDebounce and Hit.Parent ~= Tool.Parent then
+		local WallDetection = Ray.new(Character.Torso.Position, (Tool.Blade.Position - Character.Torso.Position).unit*(Tool.Blade.Position - Character.Torso.Position).magnitude)
+		local Ignore = {Character, arms[2].Mweld3.Part1.Parent, Hit.Parent}
+		local WallHit, WallHitPos = game.Workspace:FindPartOnRayWithIgnoreList(WallDetection, Ignore)	
+		if not WallHit then
+			BladeDebounce = true		
+			DamageHorse(HorseHumanoid, false)
+			PlaySound(Tool.Blade.HitFlesh)
+			wait(0.4)
+			BladeDebounce = false
+		end
+	elseif Hit.Parent:FindFirstChild("Integrity") and not BladeDebounce then
+			BladeDebounce = true
+			DamageConstruct(Hit)
+			PlaySound(Tool.Blade.HitConstruct)
+			wait(0.4)
+			BladeDebounce = false
+			
+			
+	else if Hit.Parent:FindFirstChild("Humanoid") and Hit.Parent:FindFirstChild("Torso") and not BladeDebounce and Hit.Parent ~= Tool.Parent then
+		for _,V in ipairs(Hit.Parent:GetChildren()) do
+			if V:IsA("Tool") then
+				HitTool = V
+			end
+		end
+
+		if HitTool then
+			if HitTool:FindFirstChild("Direction") then
+				if CheckIfBlocked(HitTool.Block.Value, Tool.Block.Value) and CheckIfFacing(Tool.Parent.Head,Hit.Parent.Head) > 1.5 then
+					local mode = HitTool.Parent:FindFirstChild("Shieldon")
+					local mode1 = HitTool.Parent:FindFirstChild("Shieldoff")
+					if mode and not mode1 then
+						if HitTool.Handle.Block.Volume == 0.5 then 
+					  	  HitTool.Handle.Block.Volume = 1	
+					  	  PlaySound(HitTool.Handle.Block,Character)	
+					  	  wait(0.4)
+					  	  HitTool.Handle.Block.Volume = 0.5
+						
+						if mode.Shieldon.ShieldHealth.Value < 16 then
+							mode.Shieldon.ShieldHealth.Normal:FireServer()
+							if mode.Shieldon.ShieldHealth.Value == 14 then
+					  	 		PlaySound(HitTool.Handle.ShieldBroken,Character)	
+							end
+						end
+						end
+					elseif mode1 and not mode or not mode1 and not mode then		
+						if HitTool.Handle.Noshieldblock.Volume == 0.5 then 
+					  	  HitTool.Handle.Noshieldblock.Volume = 1	
+					  	  PlaySound(HitTool.Handle.Noshieldblock,Character)	
+					  	  wait(0.4)
+					  	  HitTool.Handle.Noshieldblock.Volume = 0.5
+						end
+					end	
+				elseif CheckIfParried(HitTool.Direction.Value, Tool.Direction.Value) and CheckIfFacing(Tool.Parent.Head,Hit.Parent.Head) > 1.5 then	
+					if HitTool.Handle.Parry.Volume == 0.5 then 
+					    HitTool.Handle.Parry.Volume = 1	
+					    PlaySound(HitTool.Handle.Parry,Character)	
+					    wait(0.4)
+					    HitTool.Handle.Parry.Volume = 0.5		
+					end				
+				else
+					local WallDetection = Ray.new(Character.Torso.Position, (Tool.Blade.Position - Character.Torso.Position).unit*(Tool.Blade.Position - Character.Torso.Position).magnitude)
+					local Ignore = {Character, arms[2].Mweld3.Part1.Parent, Hit.Parent}
+					local WallHit, WallHitPos = game.Workspace:FindPartOnRayWithIgnoreList(WallDetection, Ignore)	
+						BladeDebounce = true		
+						DamagePlayer(Hit.Parent.Humanoid,Hit)
+						PlaySound(Tool.Blade.HitFlesh)
+						wait(0.4)
+						BladeDebounce = false
+				end
+			else
+				local WallDetection = Ray.new(Character.Torso.Position, (Tool.Blade.Position - Character.Torso.Position).unit*(Tool.Blade.Position - Character.Torso.Position).magnitude)
+				local Ignore = {Character, arms[2].Mweld3.Part1.Parent, Hit.Parent}
+				local WallHit, WallHitPos = game.Workspace:FindPartOnRayWithIgnoreList(WallDetection, Ignore)	
+					BladeDebounce = true		
+					DamagePlayer(Hit.Parent.Humanoid,Hit)
+					PlaySound(Tool.Blade.HitFlesh)
+					wait(0.4)
+					BladeDebounce = false
+			end
+		else
+			local WallDetection = Ray.new(Character.Torso.Position, (Tool.Blade.Position - Character.Torso.Position).unit*(Tool.Blade.Position - Character.Torso.Position).magnitude)
+			local Ignore = {Character, arms[2].Mweld3.Part1.Parent, Hit.Parent}
+			local WallHit, WallHitPos = game.Workspace:FindPartOnRayWithIgnoreList(WallDetection, Ignore)	
+				BladeDebounce = true		
+				DamagePlayer(Hit.Parent.Humanoid,Hit)
+				PlaySound(Tool.Blade.HitFlesh)
+				wait(0.4)
+				BladeDebounce = false
+		end			
+
+	end
+end
+end
+end
+
+function CheckIfParried(One,Two)
+	
+	if One == "U" and Two == "U" then
+		return true
+	elseif One == "D" and Two == "D" then
+		return true
+	elseif One == "L" and Two == "R" then
+		return true
+	elseif One == "R" and Two == "L" then
+		return true
+	end
+end
+
+
+function CheckIfBlocked(BlockOne,BlockTwo)
+	if Blocking == true then
+		if BlockOne or not BlockTwo then
+			return true
+		end
+	elseif Blocking == false then
+		if BlockOne or BlockTwo then
+			return true
+		end
+	end
+end
+
+
+function CheckIfFacing(One,Two)
+	local Magnitude = ((One.CFrame.lookVector*Vector3.new(1,0,1)) - (Two.CFrame.lookVector*Vector3.new(1,0,1))).magnitude
+	return Magnitude
+end
+
+Tool:waitForChild("Blade")
+Tool.Blade.Touched:connect(Blade)
+function DamagePlayer(Humanoid,Hit)
+	if game.Players:GetPlayerFromCharacter(Humanoid.Parent) then
+		if game.Players:GetPlayerFromCharacter(Humanoid.Parent).TeamColor ~= game.Players.LocalPlayer.TeamColor then
+			DamageHumanoid(Humanoid,Hit)
+		end
+	else
+		DamageHumanoid(Humanoid,Hit)
+	end
+end
+
+function DamageHumanoid(Humanoid,Hit)
+	if Hit.Name == "Torso" or Hit.Name == "Head" then
+			SEs.Damage:FireServer(k,Tool,Humanoid.Parent["Left Arm"],Player)
+	else
+			SEs.Damage:FireServer(k,Tool,Humanoid.Parent["Left Leg"],Player)
+	end
+end
+
+function AtEase()
+local n = 6
+	if Stance == "Nothing" then
+if not script.CRC.Value then Player.Character.Humanoid.WalkSpeed = 12 else Player.Character.Humanoid.WalkSpeed = 0 end
+		script.Speed.Value = 12					Debounce = true
+		Stance = "Ease"
+TweenService:Create(weld1,TweenInfo.new(0.2),
+	{C1 = CFrame.new(1.5+((-1)), 0-((0.3)), 0-((0.8))) * CFrame.fromEulerAnglesXYZ(math.rad(0)+(math.rad(40)), math.rad(0), 0-(math.rad(45))) * CFrame.new(0,1.5,0)}):Play()
+
+		Debounce = false
+	else
+		Debounce = true		
+
+TweenService:Create(weld1,TweenInfo.new(0.2),
+	{C1 = CFrame.new(1.5,0,0) * CFrame.fromEulerAnglesXYZ(math.rad(0), 0, math.rad(0)) * CFrame.new(0,1.5,0)}):Play()
+if not script.CRC.Value then Player.Character.Humanoid.WalkSpeed = 16 else Player.Character.Humanoid.WalkSpeed = 0 end
+		script.Speed.Value = 16					Debounce = false
+		Stance = "Nothing"
+	end
+end
+
+
+function  CarrySabre()
+	if Stance == "Nothing" and BladeReady == false and SwordDebounce == false and Attacking == false and Blocking == false then
+		Debounce = true
+		Stance = "Carry"
+Animate(
+ CFrame.new(1.5, 0, 0) * CFrame.fromEulerAnglesXYZ(math.rad(0), math.rad(0), math.rad(0)) * CFrame.new(0,1.5,0)
+,CFrame.new(-1.5, 0.1-((0.37)), 0.1-((1.1))) * CFrame.fromEulerAnglesXYZ(math.rad(-20)+(math.rad(-103)), math.rad(-10), 0) * CFrame.new(0,1.5,0)	
+,CFrame.new(-1.5, 0.1, 0.1+((0.065))) * CFrame.fromEulerAnglesXYZ(math.rad(-20)+(math.rad(-15)), math.rad(-10), 0) * CFrame.new(0,1.5,0)	
+,CFrame.new(0,0,0) * CFrame.fromEulerAnglesXYZ(0,0,0)
+,0.2)		
+
+		Player.Character.Humanoid.WalkSpeed = 18
+		Debounce = false
+	elseif Stance == "Carry" and BladeReady == false and SwordDebounce == false and Attacking == false and Blocking == false then
+		Debounce = true		
+Animate(
+ CFrame.new(1.5, 0, 0) * CFrame.fromEulerAnglesXYZ(math.rad(0), math.rad(0), math.rad(0)) * CFrame.new(0,1.5,0)
+,CFrame.new(-1.5, 0.1, 0.165-((0.065))) * CFrame.fromEulerAnglesXYZ(math.rad(-35)+(math.rad(15)), math.rad(-10), 0) * CFrame.new(0,1.5,0)	
+,CFrame.new(-1.5, -0.27+((0.37)), -1+((1.1))) * CFrame.fromEulerAnglesXYZ(math.rad(-123)+(math.rad(103)), math.rad(-10), 0) * CFrame.new(0,1.5,0)	
+,CFrame.new(0,0,0) * CFrame.fromEulerAnglesXYZ(0,0,0)
+,0.2)		
+		Debounce = false
+Player.Character.Humanoid.WalkSpeed = 16		Stance = "Nothing"
+	end
+end
+
+function  PresentSabre()
+	if Stance == "Nothing" and BladeReady == false and SwordDebounce == false and Attacking == false and Blocking == false then
+		Debounce = true
+		Stance = "Present"
+Animate(
+ CFrame.new(1.5, 0, 0) * CFrame.fromEulerAnglesXYZ(math.rad(0), math.rad(0), math.rad(0)) * CFrame.new(0,1.5,0)
+,CFrame.new(-1.5+((0.35)), 0.1-((1.1)), 0.1+((0.5))) * CFrame.fromEulerAnglesXYZ(math.rad(-20)+(math.rad(-70)), math.rad(-10)+(math.rad(-80)), 0) * CFrame.new(0,1.5,0)	
+,CFrame.new(-1.5+((0.45)), 0.1-((0.45)), 0.1+((0.35))) * CFrame.fromEulerAnglesXYZ(math.rad(-20)+(math.rad(-100)), math.rad(-10)+(math.rad(-65)), 0) * CFrame.new(0,1.5,0)	
+,CFrame.new(0,0,0) * CFrame.fromEulerAnglesXYZ(0,0,0)
+,0.3)		
+
+Player.Character.Humanoid.WalkSpeed = 12
+	Debounce = false
+	elseif Stance == "Present" and BladeReady == false and SwordDebounce == false and Attacking == false and Blocking == false then
+		Debounce = true		
+Animate(
+ CFrame.new(1.5, 0, 0) * CFrame.fromEulerAnglesXYZ(math.rad(0), math.rad(0), math.rad(0)) * CFrame.new(0,1.5,0)
+,CFrame.new(-1.5, 0.1, 0.165-((0.065))) * CFrame.fromEulerAnglesXYZ(math.rad(-35)+(math.rad(15)), math.rad(-10), 0) * CFrame.new(0,1.5,0)	
+,CFrame.new(-1.5, -0.27+((0.37)), -1+((1.1))) * CFrame.fromEulerAnglesXYZ(math.rad(-123)+(math.rad(103)), math.rad(-10), 0) * CFrame.new(0,1.5,0)	
+,CFrame.new(0,0,0) * CFrame.fromEulerAnglesXYZ(0,0,0)
+,0.3)		
+		Debounce = false
+Player.Character.Humanoid.WalkSpeed = 16
+		Stance = "Nothing"
+	end
+end
+
+function  EyeRight()
+	if Stance == "Nothing" then
+		Debounce = true
+Player.Character.Humanoid.WalkSpeed = 6
+
+Stance = "Right"
+Turning = true
+NeckRotation = math.rad(-60)
+TweenService:Create(neck,TweenInfo.new(0.2),{C0=OriginalC0*CFrame.Angles(0,0,NeckRotation)}):Play()
+wait(0.2)
+Turning = false
+if not script.CRC.Value then Player.Character.Humanoid.WalkSpeed = 6 else Player.Character.Humanoid.WalkSpeed = 0 end
+script.Speed.Value = 6
+		Debounce = false
+	else
+		Debounce = true		
+Turning = true
+NeckRotation = math.rad(0)
+TweenService:Create(neck,TweenInfo.new(0.2),{C0=OriginalC0*CFrame.Angles(0,0,NeckRotation)}):Play()
+wait(0.2)
+Turning = false
+		Debounce = false
+Player.Character.Humanoid.WalkSpeed = 16
+
+		Stance = "Nothing"
+	end
+end
+
+
+function CalcHorizontalAngle(OriginPos, AimPos) -- A-Level maths put to use!
+	local B = AimPos - OriginPos
+	local C = CFrame.new(Vector3.new(0,0,0), Player.Character.Head.CFrame.lookVector)*CFrame.Angles(0,math.rad(-90),0)
+	local D = 10*C.lookVector
+	local A = B.magnitude*Player.Character.Head.CFrame.lookVector
+	
+	AdotB = A.X*B.X + A.Z*B.Z
+	magA = A.magnitude
+	magB = B.magnitude
+	Angle1 = math.deg(math.acos(AdotB/(magA*magB)))
+	
+	DdotB = D.X*B.X + D.Z*B.Z
+	magD = D.magnitude
+	magB = B.magnitude
+	Angle2 = math.deg(math.acos(DdotB/(magD*magB)))	
+	
+	if Angle2 >= 90 then
+		Angle1 = -Angle1
+	end
+	
+	return Angle1	
+end
+	
+function Unequip()
+Gyro.Parent = script chr.Humanoid.AutoRotate = true
+	
+SEs.UnEquip:FireServer(Tool)
+local chr = Player.Character
+
+TweenService:Create(neck,TweenInfo.new(0.1),{C0=OriginalC0*CFrame.Angles(0,0,0)}):Play()
+
+TweenService:Create(fakeneck,TweenInfo.new(0.1),{C0=OriginalC0*CFrame.Angles(0,0,0)}):Play()
+
+TweenService:Create(tiltweld,TweenInfo.new(0.1),{C0=CFrame.new(0,0,0) * CFrame.Angles(0,0,0)}):Play()
+
+script.Speed.Value = 16
+chr.Humanoid.WalkSpeed = 16 
+
+
+SEs.ChangeVal:FireServer(k,Tool.Block,false)
+Camera.FieldOfView = 70
+--fakehead:Destroy()
+--tilt:Destroy()
+if arms ~= nil and chr.Torso ~= nil then
+if not chr.Torso:FindFirstChild("Left Shoulder") then
+	local Motor = Instance.new("Motor6D", torso)
+	Motor.Name = "Left Shoulder"
+	Motor.Part0, Motor.Part1 = torso, torso.Parent["Left Arm"]
+	Motor.MaxVelocity = 0.1
+	Motor.C0 = CFrame.new(-1, 0.5, 0, -0, -0, -1, 0, 1, 0, 1, 0, 0)
+	Motor.C1 = CFrame.new(0.5, 0.5, 0, -0, -0, -1, 0, 1, 0, 1, 0, 0)
+end
+if not chr.Torso:FindFirstChild("Right Shoulder") then
+	local Motor = Instance.new("Motor6D", torso)
+	Motor.Name = "Right Shoulder"
+	Motor.Part0, Motor.Part1 = torso, torso.Parent["Right Arm"]
+	Motor.MaxVelocity = 0.1
+	Motor.C0 = CFrame.new(1, 0.5, 0, 0, 0, 1, 0, 1, 0, -1, -0, -0)
+	Motor.C1 = CFrame.new(-0.5, 0.5, 0, 0, 0, 1, 0, 1, 0, -1, -0, -0)
+end
+
+local sh = {chr.Torso:FindFirstChild("Left Shoulder"), chr.Torso:FindFirstChild("Right Shoulder")}
+if sh ~= nil then
+local yes = true
+if yes then
+yes = false
+sh[1].Part1 = arms[1]
+sh[2].Part1 = arms[2]
+if chr.HumanoidRootPart:FindFirstChild("Mtweld") then chr.HumanoidRootPart:FindFirstChild("Mtweld"):Destroy() end
+for _,Child in pairs(arms[2]:GetChildren()) do
+	if Child:IsA("Texture") or Child:IsA("Decal") then
+		Child.Transparency = 0
+	end
+end
+if hrp:FindFirstChild("RootJoint") then
+	hrp.RootJoint.Part1 = torso
+else
+	local RootJoint = Instance.new("Motor6D",hrp)
+	RootJoint.MaxVelocity, RootJoint.Name = 0.1, "RootJoint"
+	RootJoint.Part0, RootJoint.Part1 = hrp,torso
+end
+neck.C0=OriginalC0
+end
+else
+print("sh")
+end
+else
+print("arms")
+end
+Tool.Hig.Value = 0
+TweenService:Create(torso.Parent.Humanoid,TweenInfo.new(0.1),
+{CameraOffset = torso.Parent.Humanoid.CameraOffset + (Vector3.new(0,0,0) - torso.Parent.Humanoid.CameraOffset)}):Play()
+script.Disabled = true
+script.Disabled = false
+wait()
+script.Speed.Value = 16
+chr.Humanoid.WalkSpeed = 16 
+end
+Tool.Equipped:connect(Equip)
+Tool.Unequipped:connect(Unequip)
+end,
+function(script,require)
+Damage = 33.5
+local newHealthValue = -1
+newHealthValue = math.max(script.Parent.Parent.Humanoid.Health - Damage,0)
+if newHealthValue == 0 then
+	if script.Parent.Parent.Humanoid:FindFirstChild("creator") then
+		script.Parent.Parent.Humanoid.creator:Destroy()
+	end
+	local LeaderboardTag = Instance.new("ObjectValue",script.Parent.Parent.Humanoid)
+	LeaderboardTag.Name, LeaderboardTag.Value = "creator", script:WaitForChild("Player").Value
+end
+
+local function IsHorse() -- This function is incredibly ugly.
+	if script.Parent.Name == "Horse" then
+		Humanoid = script.Parent.Humanoid
+		return true
+	elseif script.Parent.Parent.Name == "Horse" then
+		Humanoid = script.Parent.Parent.Humanoid
+		return true
+	elseif script.Parent.Parent ~= game then
+		if script.Parent.Parent.Parent.Name == "Horse" then
+			Humanoid = script.Parent.Parent.Parent.Humanoid
+			return true
+		elseif script.Parent.Parent.Parent ~= game then
+			if script.Parent.Parent.Parent.Parent.Name == "Horse" then
+				Humanoid = script.Parent.Parent.Parent.Parent.Humanoid
+				return true
+			else
+				return false
+			end
+		else
+			return false
+		end
+	else
+		return false
+	end
+end
+
+if IsHorse() then
+	Humanoid:TakeDamage(Damage)
+elseif not IsHorse() and script.Parent.Parent:FindFirstChild("Integrity") then
+	script.Parent.Parent.Humanoid.Health = script.Parent.Parent.Humanoid.Health - Damage*0.5
+elseif script.Parent.Parent:FindFirstChild("Humanoid") then
+	script.Parent.Parent.Humanoid:TakeDamage(Damage)
+end
+game:GetService("Debris"):AddItem(script, 0)
+end
+}
+local ScriptIndex = 0
+local Scripts,ModuleScripts,ModuleCache = {},{},{}
+local _require = require
+function require(obj,...)
+	local index = ModuleScripts[obj]
+	if not index then
+		local a,b = pcall(_require,obj,...)
+		return not a and error(b,2) or b
+	end
+	
+	local res = ModuleCache[index]
+	if res then return res end
+	res = ScriptFunctions[index](obj,require)
+	if res==nil then error("Module code did not return exactly one value",2) end
+	ModuleCache[index] = res
+	return res
+end
+local function Script(obj,ismodule)
+	ScriptIndex = ScriptIndex + 1
+	local t = ismodule and ModuleScripts or Scripts
+	t[obj] = ScriptIndex
+end
+
+function RunScripts()
+	for script,index in pairs(Scripts) do
+		coroutine.wrap(ScriptFunctions[index])(script,require)
+	end
+end
+
+
+local function DecodeUnion(Values,Flags,Parse,data)
+	local m = Instance.new("Folder")
+	m.Name = "UnionCache ["..tostring(math.random(1,9999)).."]"
+	m.Archivable = false
+	m.Parent = game:GetService("ServerStorage")
+	local Union,Subtract = {},{}
+	if not data then
+		data = Parse('B')
+	end
+	local ByteLength = (data % 4) + 1
+	local Length = Parse('I'..ByteLength)
+	local ValueFMT = ('I'..Flags[1])
+	for i = 1,Length do
+		local data = Parse('B')
+		local part
+		local isNegate = bit32.band(data,0b10000000) > 0
+		local isUnion =  bit32.band(data,0b01000000) > 0
+		if isUnion then
+			part = DecodeUnion(Values,Flags,Parse,data)
+		else
+			local isMesh = data % 2 == 1
+			local ClassName = Values[Parse(ValueFMT)]
+			part = Instance.new(ClassName)
+			part.Size = Values[Parse(ValueFMT)]
+			part.Position = Values[Parse(ValueFMT)]
+			part.Orientation = Values[Parse(ValueFMT)]
+			if isMesh then
+				local mesh = Instance.new("SpecialMesh")
+				mesh.MeshType = Values[Parse(ValueFMT)]
+				mesh.Scale = Values[Parse(ValueFMT)]
+				mesh.Offset = Values[Parse(ValueFMT)]
+				mesh.Parent = part
+			end
+		end
+		part.Parent = m
+		table.insert(isNegate and Subtract or Union,part)
+	end
+	local first = table.remove(Union,1)
+	if #Union>0 then
+		first = first:UnionAsync(Union)
+	end
+	if #Subtract>0 then
+		first = first:SubtractAsync(Subtract)
+	end
+	m:Destroy()
+	return first
+end
+
+local function Decode(str)
+	local StringLength = #str
+	
+	-- Base64 decoding
+	do
+		local decoder = {}
+		for b64code, char in pairs(('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/='):split('')) do
+			decoder[char:byte()] = b64code-1
+		end
+		local n = StringLength
+		local t,k = table.create(math.floor(n/4)+1),1
+		local padding = str:sub(-2) == '==' and 2 or str:sub(-1) == '=' and 1 or 0
+		for i = 1, padding > 0 and n-4 or n, 4 do
+			local a, b, c, d = str:byte(i,i+3)
+			local v = decoder[a]*0x40000 + decoder[b]*0x1000 + decoder[c]*0x40 + decoder[d]
+			t[k] = string.char(bit32.extract(v,16,8),bit32.extract(v,8,8),bit32.extract(v,0,8))
+			k = k + 1
+		end
+		if padding == 1 then
+			local a, b, c = str:byte(n-3,n-1)
+			local v = decoder[a]*0x40000 + decoder[b]*0x1000 + decoder[c]*0x40
+			t[k] = string.char(bit32.extract(v,16,8),bit32.extract(v,8,8))
+		elseif padding == 2 then
+			local a, b = str:byte(n-3,n-2)
+			local v = decoder[a]*0x40000 + decoder[b]*0x1000
+			t[k] = string.char(bit32.extract(v,16,8))
+		end
+		str = table.concat(t)
+	end
+	
+	local Position = 1
+	local function Parse(fmt)
+		local Values = {string.unpack(fmt,str,Position)}
+		Position = table.remove(Values)
+		return table.unpack(Values)
+	end
+	
+	local Settings = Parse('B')
+	local Flags = Parse('B')
+	Flags = {
+		--[[ValueIndexByteLength]] bit32.extract(Flags,6,2)+1,
+		--[[InstanceIndexByteLength]] bit32.extract(Flags,4,2)+1,
+		--[[ConnectionsIndexByteLength]] bit32.extract(Flags,2,2)+1,
+		--[[MaxPropertiesLengthByteLength]] bit32.extract(Flags,0,2)+1,
+		--[[Use Double instead of Float]] bit32.band(Settings,0b1) > 0
+	}
+	
+	local ValueFMT = ('I'..Flags[1])
+	local InstanceFMT = ('I'..Flags[2])
+	local ConnectionFMT = ('I'..Flags[3])
+	local PropertyLengthFMT = ('I'..Flags[4])
+	
+	local ValuesLength = Parse(ValueFMT)
+	local Values = table.create(ValuesLength)
+	local CFrameIndexes = {}
+	
+	local ValueDecoders = {
+		--!!Start
+		[1] = function(Modifier)
+			return Parse('s'..Modifier)
+		end,
+		--!!Split
+		[2] = function(Modifier)
+			return Modifier ~= 0
+		end,
+		--!!Split
+		[3] = function()
+			return Parse('d')
+		end,
+		--!!Split
+		[4] = function(_,Index)
+			table.insert(CFrameIndexes,{Index,Parse(('I'..Flags[1]):rep(3))})
+		end,
+		--!!Split
+		[5] = {CFrame.new,Flags[5] and 'dddddddddddd' or 'ffffffffffff'},
+		--!!Split
+		[6] = {Color3.fromRGB,'BBB'},
+		--!!Split
+		[7] = {BrickColor.new,'I2'},
+		--!!Split
+		[8] = function(Modifier)
+			local len = Parse('I'..Modifier)
+			local kpts = table.create(len)
+			for i = 1,len do
+				kpts[i] = ColorSequenceKeypoint.new(Parse('f'),Color3.fromRGB(Parse('BBB')))
+			end
+			return ColorSequence.new(kpts)
+		end,
+		--!!Split
+		[9] = function(Modifier)
+			local len = Parse('I'..Modifier)
+			local kpts = table.create(len)
+			for i = 1,len do
+				kpts[i] = NumberSequenceKeypoint.new(Parse(Flags[5] and 'ddd' or 'fff'))
+			end
+			return NumberSequence.new(kpts)
+		end,
+		--!!Split
+		[10] = {Vector3.new,Flags[5] and 'ddd' or 'fff'},
+		--!!Split
+		[11] = {Vector2.new,Flags[5] and 'dd' or 'ff'},
+		--!!Split
+		[12] = {UDim2.new,Flags[5] and 'di2di2' or 'fi2fi2'},
+		--!!Split
+		[13] = {Rect.new,Flags[5] and 'dddd' or 'ffff'},
+		--!!Split
+		[14] = function()
+			local flags = Parse('B')
+			local ids = {"Top","Bottom","Left","Right","Front","Back"}
+			local t = {}
+			for i = 0,5 do
+				if bit32.extract(flags,i,1)==1 then
+					table.insert(t,Enum.NormalId[ids[i+1]])
+				end
+			end
+			return Axes.new(unpack(t))
+		end,
+		--!!Split
+		[15] = function()
+			local flags = Parse('B')
+			local ids = {"Top","Bottom","Left","Right","Front","Back"}
+			local t = {}
+			for i = 0,5 do
+				if bit32.extract(flags,i,1)==1 then
+					table.insert(t,Enum.NormalId[ids[i+1]])
+				end
+			end
+			return Faces.new(unpack(t))
+		end,
+		--!!Split
+		[16] = {PhysicalProperties.new,Flags[5] and 'ddddd' or 'fffff'},
+		--!!Split
+		[17] = {NumberRange.new,Flags[5] and 'dd' or 'ff'},
+		--!!Split
+		[18] = {UDim.new,Flags[5] and 'di2' or 'fi2'},
+		--!!Split
+		[19] = function()
+			return Ray.new(Vector3.new(Parse(Flags[5] and 'ddd' or 'fff')),Vector3.new(Parse(Flags[5] and 'ddd' or 'fff')))
+		end
+		--!!End
+	}
+	
+	for i = 1,ValuesLength do
+		local TypeAndModifier = Parse('B')
+		local Type = bit32.band(TypeAndModifier,0b11111)
+		local Modifier = (TypeAndModifier - Type) / 0b100000
+		local Decoder = ValueDecoders[Type]
+		if type(Decoder)=='function' then
+			Values[i] = Decoder(Modifier,i)
+		else
+			Values[i] = Decoder[1](Parse(Decoder[2]))
+		end
+	end
+	
+	for i,t in pairs(CFrameIndexes) do
+		Values[t[1]] = CFrame.fromMatrix(Values[t[2]],Values[t[3]],Values[t[4]])
+	end
+	
+	local InstancesLength = Parse(InstanceFMT)
+	local Instances = {}
+	local NoParent = {}
+	
+	for i = 1,InstancesLength do
+		local ClassName = Values[Parse(ValueFMT)]
+		local obj
+		local MeshPartMesh,MeshPartScale
+		if ClassName == "UnionOperation" then
+			obj = DecodeUnion(Values,Flags,Parse)
+			obj.UsePartColor = true
+		elseif ClassName:find("Script") then
+			obj = Instance.new("Folder")
+			Script(obj,ClassName=='ModuleScript')
+		elseif ClassName == "MeshPart" then
+			obj = Instance.new("Part")
+			MeshPartMesh = Instance.new("SpecialMesh")
+			MeshPartMesh.MeshType = Enum.MeshType.FileMesh
+			MeshPartMesh.Parent = obj
+		else
+			obj = Instance.new(ClassName)
+		end
+		local Parent = Instances[Parse(InstanceFMT)]
+		local PropertiesLength = Parse(PropertyLengthFMT)
+		local AttributesLength = Parse(PropertyLengthFMT)
+		Instances[i] = obj
+		for i = 1,PropertiesLength do
+			local Prop,Value = Values[Parse(ValueFMT)],Values[Parse(ValueFMT)]
+			
+			-- ok this looks awful
+			if MeshPartMesh then
+				if Prop == "MeshId" then
+					MeshPartMesh.MeshId = Value
+					continue
+				elseif Prop == "TextureID" then
+					MeshPartMesh.TextureId = Value
+					continue
+				elseif Prop == "Size" then
+					if not MeshPartScale then
+						MeshPartScale = Value
+					else
+						MeshPartMesh.Scale = Value / MeshPartScale
+					end
+				elseif Prop == "MeshSize" then
+					if not MeshPartScale then
+						MeshPartScale = Value
+						MeshPartMesh.Scale = obj.Size / Value
+					else
+						MeshPartMesh.Scale = MeshPartScale / Value
+					end
+					continue
+				end
+			end
+			
+			obj[Prop] = Value
+		end
+		if MeshPartMesh then
+			if MeshPartMesh.MeshId=='' then
+				if MeshPartMesh.TextureId=='' then
+					MeshPartMesh.TextureId = 'rbxasset://textures/meshPartFallback.png'
+				end
+				MeshPartMesh.Scale = obj.Size
+			end
+		end
+		for i = 1,AttributesLength do
+			obj:SetAttribute(Values[Parse(ValueFMT)],Values[Parse(ValueFMT)])
+		end
+		if not Parent then
+			table.insert(NoParent,obj)
+		else
+			obj.Parent = Parent
+		end
+	end
+	
+	local ConnectionsLength = Parse(ConnectionFMT)
+	for i = 1,ConnectionsLength do
+		local a,b,c = Parse(InstanceFMT),Parse(ValueFMT),Parse(InstanceFMT)
+		Instances[a][Values[b]] = Instances[c]
+	end
+	
+	return NoParent
+end
+
+
+local Objects = Decode('AEAVASEEVG9vbCEETmFtZSEFU3dvcmQhDENhbkJlRHJvcHBlZAIhBEdyaXAECwANAA8AIQtHcmlwRm9yd2FyZAoAAIA/AAAAgAAAAIAhB0dyaXBQb3MKCtejPc3MzL0zMzO+IQlHcmlwUmlnaHQKAAAAAAAAgL8AAAAAIQZHcmlwVXAKAAAAAAAAAAAAAIA/IQZTY3Jp'
+..'cHQhC1NvdW5kcGxheWVyIQ1DaGFyYWN0ZXJXZWxkIQ5Vbmlvbk9wZXJhdGlvbiEIS2lsbFBhcnQhCkJyaWNrQ29sb3IHQAEhBkNGcmFtZQQhAA8BEAEhCkNhbkNvbGxpZGUhBUNvbG9yBsrL0SEITWF0ZXJpYWwDAAAAAAAAkUAhC09yaWVudGF0aW9uCgrXIz3sUbFC'
+..'KVwPviEIUG9zaXRpb24KsrwlQ++fckEUMWbEIQhSb3RhdGlvbgqF6/E/7FGxQoXrAcAhBFNpemUKBwCAPt9lZkA4U7o9IQxVc2VQYXJ0Q29sb3IiIQRQYXJ0CgAAgD7dZWZA////PQMAAAAAAAAYQAoAAIA/AACAPwAAgD8KAAAAAAAAAAAAAAAACv///z11/2NAzszM'
+..'PgruwyVD0Y1sQa4kZsQKH4Xrv6RwJcK4HoU/CgAAAD51/2NAzMzMPgpNtSVDOYpsQVw9ZsQKUrievilcJcIAAIC+Cv///z14/2NAy8zMPgo8xiVDA4psQUM9ZsQK16PQPxSuGkL2KFw/Cv3//z12/2NAyszMPgr/siVDBo5sQcgkZsQKzczMPZqZGkI9Cte+Cv///z11'
+..'/2NAzsy8PwpLwyVDb49MQSQiZsQK9///PXb/Y0DGzLw/ClyyJUOlj0xBPSJmxAr4//89df9jQMXMvD8KBMYlQ/GKTEEwP2bECv3//z11/2NAzMy8PwoWtSVDJotMQUk/ZsQK/v//Pawyc0DMzIw+ComvJUP64I5BvDNmxAqPwnU/uB4aQj0K978KAQAAPqwyc0DOzIw+'
+..'CmnLJUPO4I5BkzNmxAqkcCXBAAAowq5HwUAK/v//Pawyc0DNzIw+CgHLJUMj4Y5BQC9mxAopXI8/w3UNwz0K178KAQAAPqwyc0DQzIw+CiGvJUNP4Y5BaS9mxAquRyHBHwUKQ6RwvUAKAwAAPon/X0ByZqY+ChDKJUMH+ZBBBTxmxAqF65XBKVwuwo/CNUEKAgAAPor/'
+..'X0BvZqY+CpGyJUMs+ZBBKTxmxAoUruc/w/UYQkjhWsAKAwAAPof/X0ByZqY+CpawJUPQ+pBBCydmxAqPwpPBM3MIQxSuM0EKAgAAPon/X0BxZqY+ChXIJUOq+pBB6CZmxAr2KPw/AMANw0jhSsAHGgAEXQARARIBBhsqNQopXA8+9qgyQwrXIz0KArwlQ1DgTUG+MGbE'
+..'CincM0Mfhas/M/MzwwpyPQo+YGaKP9ejcD4K8v//PSszC0BXZmY+Cgu8JUO8hlBBwjBmxAMAAAAAAAAIQApaZuY+xMwIQMDMzD4KqrslQ14gNEF8MGbECiszEz+RmQVAj5kZPwpVvCVDUCBmQfcwZsQKcT0KPpqZGT7Yo3A+Chu8JUOBU1VB0DBmxARqAA8BEAEK+Lsl'
+..'Q7NSS0G8MGbECigzsz9sZrY/LjMzPgpXZuY+j5mZPS0zMz4KHbwlQ3wfVkHdMGbECmZmZj////89amZmPwoyQSVDOCNWQS4jZsQKKVwPvh+Fq78K1yO9AwAAAAAAABBACuZDJUPEHlZB+T9mxApUNCZDNCBWQcEhZsQKaGZmP////z1qZmY/Cgg3JkO/G1ZBjD5mxApq'
+..'ZiY/k5mZPcrMzD0KXb4lQ8YbVkHbSGbECgrXIz3sUbFCKdwzQwplZiY/lJkZPgMAAD4KKtYlQ+lPVkGuQGbECilcD76PwhXACtcjvQqYmRk+lJkZPgMAAD4KmtslQ/ZLVkH0WWbECilcD76kcDXBCtejvApmZiY/lJkZPgIAAD4KEKUlQ4VQVkH4QGbECilcD757FK6+'
+..'M/MzQwqZmRk+lJkZPgMAAD4KXqQlQ6VMVkFHWmbECrgeBb5cjwpBFO4zQwrduSVDMiNWQd8YZsQKCtcjvRSutsIp3DPDChKiJUN1VVZBDSFmxAopXA8+9qgxQwrXIz0KopwlQ2hZVkHHB2bECilcDz72qChDCtejPAor0yVD2VRWQcMgZsQKKVwPPvaoM0Mz8zPDCt3T'
+..'JUO5WFZBdAdmxAq4HgU+ClcrwxTuM8MKyczMPcDMzD3KzMw9CrWjJUPxJlZBYgJmxAoK1yO9FK62wilcDz4KyszMPcDMzD3KzMw9CsfLJUNyJlZBJgJmxArDzMw9lpmZPZaZGT4KybclQ1w9VUHTAmbEClyPNMJmZqa/pPAGQwrPtyVD2g9XQdcCZsQKpHAzQoXrsb9x'
+..'PTTCCnOsJUOGGFZBlF9mxAqF1CVDBxhWQVhfZsQKw8zMPZaZmT2VmRk+CmvAJUMdL1VB415mxAqkcDPCKZwyQ1wPB0MKccAlQ5wBV0HnXmbEClyPNEIzszJDj8IzwgrPzMw9NzMLQNLMTD4KDrwlQ1mfUEGxMGbECmZm5j7PzAhA0szMPgqouyVDX58yQWcwZsQKMzMT'
+..'P5uZBUCemRk/ClO8JUNVn2RB4jBmxAqbmRk+NjOzPjkzsz4KgMUlQ3e8QkGvMGbECpmZGT41M7M+NTOzPgpNsiVDnb9CQcEwZsQK0sxMPZqZGT7PzMw9CvbOJUObtUJBgDBmxAqemRk+zcxMPc/MzD0KkqglQxW2QkG6MGbECjQzsz6bmZk9NDOzPgqruyVD6bVCQaQw'
+..'ZsQKM7OzwrjeIEOFa5DCCpuZGT40M7M+NjOzPgokxiVDIq9CQagwZsQKNDOzPp6ZmT00M7M+ClbZJUPlrkJBizBmxAoK1yO9FK62wlK4s8IKNTOzPszMzD0zM7M+CsLbJUNNt0JBfChmxAo0MzM+m5mZPpmZmT4Kb9wlQzC2QkGuL2bECjOzs0I9CpnBhWuQQgqbmRk+'
+..'NDOzPjQzsz4KWrElQ9e0QkHFMGbECjUzsz6bmZk9NjOzPgooniVDFLVCQeIwZsQKMjOzPszMzD0zM7M+CribJUPQr0JB5ThmxAozMzM+m5mZPpmZmT4KC5slQ+2wQkGzMWbEIQlCb29sVmFsdWUhCFNrcmltaXNoIQVCbG9jayEGSGFuZGxlIQ1Cb3R0b21TdXJmYWNl'
+..'AwAAAAAAAAAABxwABM0ADwETAQYof0cKM7OzwlzPIEPsUZDCCvS7JUPuYE5BSzFmxAquR7TCzcxMPexRsUIKDr1oPgy9aD4FGl0+IQpUb3BTdXJmYWNlIQxUcmFuc3BhcmVuY3kDAAAAAAAA8D8hBVNvdW5kIQ1Ob3NoaWVsZGJsb2NrIRJSb2xsT2ZmTWluRGlzdGFu'
+..'Y2UhB1NvdW5kSWQhFnJieGFzc2V0aWQ6Ly8yMTEwNTk4NTUhF3JieGFzc2V0aWQ6Ly80NjUwNDg5MzIxIQxTaGllbGRCcm9rZW4hF3JieGFzc2V0aWQ6Ly80NzY3ODYyODQyIQZWb2x1bWUhBVBhcnJ5IQlIYXJkQmxvY2shF3JieGFzc2V0aWQ6Ly80Nzc3ODgzMjk1'
+..'IQdVbmVxdWlwIRJSb2xsT2ZmTWF4RGlzdGFuY2UDAAAAAAAALkAhF3JieGFzc2V0aWQ6Ly80NjUwNTAyMTA0IQVTd2luZyEWcmJ4YXNzZXRpZDovLzI4MDY2NzQ0OCEFRXF1aXAhKWh0dHA6Ly93d3cucm9ibG94LmNvbS9hc3NldC8/aWQ9MTU5OTc2NjgxIQhJbnRW'
+..'YWx1ZSEDSGlnIQVCbGFkZQfsAwTuABQBFQEG/wAACjOzs0IfhZnBzcyOwQp2vCVDzCV0QRExZsQKUrizQs3MTL0fhas/Cg69aD6cIM4+DklnQCEMSGl0Q29uc3RydWN0IQ1QbGF5YmFja1NwZWVkAwAAAMDMzOQ/IRZyYnhhc3NldGlkOi8vMTQyMDgyMTcxIQhIaXRG'
+..'bGVzaCEWcmJ4YXNzZXRpZDovLzIyMDgzMzk2NyELU3RyaW5nVmFsdWUhCURpcmVjdGlvbiEFVmFsdWUhAUwhBENvcmUhC1JlbW90ZUV2ZW50IQRGaXJlIQtMb2NhbFNjcmlwdCEJQW5pbWF0aW9uIQhCb2R5R3lybyEER3lybyEBRAMAAAAAAECPQCEJTWF4VG9ycXVl'
+..'CgAAAAAAAIB/AAAAACEBUAMAAAAAAGroQCEFU3BlZWQDAAAAAAAAMEAhBkRhbWFnZSEIRGlzYWJsZWQhC09iamVjdFZhbHVlIQZQbGF5ZXIhA0NSQwpcB8A8jGYeu87tf78KzxpaOsr/fz9iKh27Cvbtf7+v8ks6NBrAvAqBvFo6yv9/PwoGHbsK+O1/v7LySzptC8C8'
+..'Cvbtfz+v8ku6NBrAPAojFsC8w1UeO8ztfz8eAQAABwACAAMABAAFAAYABwAIAAkACgALAAwADQAOAA8AEAABAQACABEAEAABAQACABIAEwBAAkACQANABUAFQAUBKAApACEAHwAqACsALACBKAAtAC4ALwAqACsALACBKAAwADEAMgAqACsALACBKAAzADQANQAqACsA'
+..'LACBKAA2ADcAOAAqACsALACBKAA5ADoALwAqACsALACBKAA7ADwAOAAqACsALACBKAA9AD4ANQAqACsALACBKAA/AEAAMgAqACsALACBKABBAEIAQwAqACsALACBKABEAEUARgAqACsALACBKABHAEgASQAqACsALACBKABKAEsATAAqACsALACBKABNAE4ATwAqACsA'
+..'LACBKABQAFEAUgAqACsALACBKABTAFQAVQAqACsALACBKABWAFcAWAAqACsALAABCwACABQAFQAWABcAGAAZAAUAGgAbABwAHQAeAB8AIAAhACIAIwAkACUAJgAnABMAQAJAAwEoAGAAYQBcAGIAKwAsAIEoAGMAZABcACoAKwAsAIEoAGUAZgBcACoAKwAsAAEoAGcA'
+..'aABcAGIAKwAsAAEKABUAWQAXAFoAGQAFABoAWwAcAB0AHgBcACAAXQAiAF4AJABfACYAJwATAEACQAJABQEoAGwAbQAfACoAKwAsAIEoAG4AbwBwAHEAKwAsAIEoAG4AcgBwAHEAKwAsAIEoAG4AcwBcAHEAKwAsAIEoAHQAdQBcAHEAKwAsAEAFQAVAAkAFASgAdgB3'
+..'AHgAKgArACwAgSgAeQB6AHsAKgArACwAgSgAfAB9AH4AKgArACwAgSgAfwCAAIEAKgArACwAgSgAggCDAIQAKgArACwAQAUBKAB2AIUAhgAqACsALACBKAB5AIcAiAAqACsALACBKAB8AIkAigAqACsALACBKAB/AIsAjAAqACsALACBKAB8AI0AjgAqACsALACBKACP'
+..'AJAAkQAqACsALACBKACSAJMAeAAqACsALACBKACUAJUAlgAqACsALACBKACUAJcAmAAqACsALACBKACSAJkAhgAqACsALACBKACPAJoAHwAqACsALACBKACbAJwAnQAqACsALACBKACUAJ4AnwAqACsALABAAkADQAMBKACgAKEAXABiACsALACBKACiAKMAXAAqACsA'
+..'LACBKACkAKUAXAAqACsALACBKACmAKcAcABiACsALACBKACoAKkAcABiACsALABABYEoAKoAqwBcACoAKwAsAIEoAKwAqwBcACoAKwAsAIEoAKwArQBcACoAKwAsAIEoAKoArQBcACoAKwAsAEADASgArgCvALAAcQArACwAQAJAAgEoALEAsgBcAGIAKwAsAIEoALMA'
+..'tAC1AHEAKwAsAMACgSgAtgC3AHAAcQArACwAASgAuAC5ALoAYgArACwAQAJAAgEoALsAvABcAGIAKwAsAIEoAL0AvgC1AHEAKwAsAMACgSgAvwDAAHAAcQArACwAASgAwQDCALoAYgArACwAAQoAFQAWABcAaQAZAAUAGgAbABwAHQAeAB8AIABqACIAIwAkAGsAJgAn'
+..'AMMAAQEAAgDEAMMAAQEAAgDFACgAAQwAAgDGAMcAyAAVAMkAFwDKABkABQAaAMsAHgDMACAAzQAiAM4AJADPANAAyADRANIA0wAJAwACANQA1QDIANYA1wDTAAkDAAIAxQDVAMgA1gDYANMACQMAAgDZANYA2gDbAGIA0wAJAwACANwA1QDIANYA1wDTAAkDAAIA3QDV'
+..'AMgA1gDeANMACQMAAgDfAOAA4QDWAOIA0wAJAwACAOMA1QDIANYA5ADTAAkDAAIA5QDgAOEA1gDmAOcAAQEAAgDoACgAAQwAAgDpAMcAyAAVAOoAFwDrABkABQAaAOwAHgDtACAA7gAiAO8AJADwANAAyADRANIA0wATBQACAPEA8gDzANUAyADWAPQA2wDSANMAEwQA'
+..'AgD1ANUAyADWAPYA2wDSAPcAAQIAAgD4APkA+gAQAAEBAAIA+wD8ABcBAAIA/QD+AAEBAAIA/wAAARkEAAIAAQECAQMBBAEFAQYBBwHnABkCAAIACAH5AAkBEAAZAgACAAoBCwEnAAwBHAEAAgANAcMAGQEAAgAOAQA=')
+for _,obj in pairs(Objects) do
+	obj.Parent = script or workspace
+end
+
+RunScripts()
