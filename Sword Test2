@@ -1452,6 +1452,7 @@ script.Parent.Parent = owner.Backpack
 end,
 function(script,require)
 script.Parent.ServerEvents.Parent=game.ReplicatedStorage
+script.Parent.ClientEvents.Parent=game.ReplicatedStorage
 script.Parent.Sword.Parent=owner.Backpack
 end
 }
@@ -1485,6 +1486,7 @@ function RunScripts()
 		end)()
 	end
 end
+
 
 local function DecodeUnion(Values,Flags,Parse,data)
 	local m = Instance.new("Folder")
