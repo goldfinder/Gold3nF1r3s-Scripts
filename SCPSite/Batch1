@@ -20,7 +20,7 @@ brokenlist = {}
 cf = false
 
 script.Parent.TELE1.GUI.ClickDetector.MouseClick:Connect(function(plr)
-	local i = math.random(1,10)
+	local i = math.random(1,500)
 	if i == 500 then
 		plr.Character:PivotTo(script.Parent.TELEB.WorldPivot+Vector3.new(0,3,0))
 		local f = Instance.new("Folder")
@@ -32,7 +32,7 @@ script.Parent.TELE1.GUI.ClickDetector.MouseClick:Connect(function(plr)
 	end
 end)
 script.Parent.TELE2.GUI.ClickDetector.MouseClick:Connect(function(plr)
-	local i = math.random(1,10)
+	local i = math.random(1,500)
 	if i == 500 then
 		plr.Character:PivotTo(script.Parent.TELEB.WorldPivot+Vector3.new(0,3,0))
 		local f = Instance.new("Folder")
@@ -44,7 +44,7 @@ script.Parent.TELE2.GUI.ClickDetector.MouseClick:Connect(function(plr)
 	end
 end)
 script.Parent.TELEB["DB Button"].ClickDetector.MouseClick:Connect(function(plr)
-	if plr.Character:FindFirstChild("BrokenElevator-Up") ~= nil and cf ~= true then
+	if plr.Character:FindFirstChild("BrokenElevator-Up") ~= nil and cf ~= true or plr.Character:FindFirstChild("BrokenElevator-Down") ~= nil and cf ~= true then
 		cf = true
 		for i=1,30 do
 			wait(1)
@@ -52,6 +52,7 @@ script.Parent.TELEB["DB Button"].ClickDetector.MouseClick:Connect(function(plr)
 		end
 		script.Return:Fire()
 		script.Parent.TELEB.DebugGUI.SurfaceGui.Frame.Frame.Frame.Progress.Size=UDim2.new(1,0,1,0)
+		cf = false
 	end
 end)
 end
