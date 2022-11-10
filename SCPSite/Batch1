@@ -1,6 +1,6 @@
 -- Converted using Mokiros's Model to Script Version 3
 -- Converted string size: 5300 characters
-
+-- Code may need to be repaired for broke elevator.
 local ScriptFunctions = {
 function(script,require)
 script.Return.Event:Connect(function()
