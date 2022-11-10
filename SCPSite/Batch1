@@ -20,7 +20,7 @@ brokenlist = {}
 cf = false
 
 script.Parent.TELE1.GUI.ClickDetector.MouseClick:Connect(function(plr)
-	local i = math.random(1,500)
+	local i = math.random(1,10)
 	if i == 500 then
 		plr.Character:PivotTo(script.Parent.TELEB.WorldPivot+Vector3.new(0,3,0))
 		local f = Instance.new("Folder")
@@ -32,7 +32,7 @@ script.Parent.TELE1.GUI.ClickDetector.MouseClick:Connect(function(plr)
 	end
 end)
 script.Parent.TELE2.GUI.ClickDetector.MouseClick:Connect(function(plr)
-	local i = math.random(1,500)
+	local i = math.random(1,10)
 	if i == 500 then
 		plr.Character:PivotTo(script.Parent.TELEB.WorldPivot+Vector3.new(0,3,0))
 		local f = Instance.new("Folder")
