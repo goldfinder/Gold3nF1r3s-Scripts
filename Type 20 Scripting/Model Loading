@@ -224,7 +224,6 @@ local function Decode(str)
 		local a,b,c = Parse(InstanceFMT),Parse(ValueFMT),Parse(InstanceFMT)
 		Instances[a][Values[b]] = Instances[c]
 	end
-	
 	return NoParent
 end
 local Objects = Decode('AEAbASEFTW9kZWwhBE5hbWUhB1R5cGUgMjAhCldvcmxkUGl2b3QEDAENAQ4BIQhNZXNoUGFydCEHUmVsZWFzZSEIQW5jaG9yZWQiIQpCcmlja0NvbG9yB2wBIQZDRnJhbWUEFQANAQ4BIQpDYW5Db2xsaWRlAiEFQ29sb3IGS0tLIQhNYXRlcmlhbAMAAAAAAABxQCEI'
