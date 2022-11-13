@@ -1,3 +1,4 @@
+warn("No creditable user for original code.  Original code: 'https://pastebin.com/raw/9fQuLpvc' | Current code:  'https://github.com/goldfinder/Gold3nF1r3s-Scripts/blob/main/WunderWaffe.Lua'")
 local ls = NLS([[local plr = owner
 	local mouse = plr:GetMouse()
 	mouse.KeyDown:Connect(function(key)
