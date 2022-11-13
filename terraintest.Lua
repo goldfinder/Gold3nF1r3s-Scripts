@@ -6,9 +6,9 @@ local Players = game:GetService("Players")
 
 
 
-local BASE_HEIGHT 		= 100				-- The main height factor for the terrain.
+local BASE_HEIGHT 		= 50				-- The main height factor for the terrain.
 
-local CHUNK_SCALE 		= 3 				-- The grid scale for terrain generation. Should be kept relatively low if used in real-time.
+local CHUNK_SCALE 		= 2 				-- The grid scale for terrain generation. Should be kept relatively low if used in real-time.
 
 local RENDER_DISTANCE 	= 50 				-- The length/width of chunks in voxels that should be around the player at all times
 
