@@ -1,7 +1,7 @@
 prefix = "PLU>"
 NUMLIST = {"0","1","2","3","4","5","6","7","8","9"}
 function isempty(s)
-	if string.len(s) == 1 then return true
+	if string.len(s) == 1 or string.len(s) == 0 then return true
 	else
 		return false
 	end
@@ -35,6 +35,9 @@ owner.Chatted:Connect(function(msg)
 	local MWP
 	if x1 and x1==1 then
 		MWP = string.sub(first, #prefix+1, #first)
+		if isempty(MWP) then
+			MWP = owner.UserId
+		end
 		local string = string.split(MWP,"")
 		local useable = true
 		for i=1,#string do
