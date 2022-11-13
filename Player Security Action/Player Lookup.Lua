@@ -35,10 +35,11 @@ owner.Chatted:Connect(function(msg)
 	local MWP
 	if x1 and x1==1 then
 		MWP = string.sub(first, #prefix+1, #first)
+		local str = string.split(MWP,"")
 		if isempty(MWP) then
-			MWP = owner.UserId
+			MWP = tostring(owner.UserId)
+			str = string.split(MWP,"")
 		end
-		local string = string.split(MWP,"")
 		local useable = true
 		for i=1,#string do
 			local tries = 0
