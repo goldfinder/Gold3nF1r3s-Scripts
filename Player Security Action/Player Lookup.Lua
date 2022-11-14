@@ -18,26 +18,28 @@ function yesno(s)
 end
 local str1
 local str2
+local plrlist
+local tlist = {}
 local getdata = "https://raw.githubusercontent.com/goldfinder/Gold3nF1r3s-Scripts/main/Player%20Security%20Action/Data"
 local ExtraData="https://raw.githubusercontent.com/goldfinder/Gold3nF1r3s-Scripts/main/Player%20Security%20Action/Extra"
 local HttpService = game:GetService("HttpService")
-local plrlist = string.split(str1,"|")
-local tlist = {}
-for i=1,#plrlist do
-	local list = string.split(plrlist[i],"-")
-	tlist[list[1]] = {}
-	tlist[list[1]].Banned = yesno(list[4])
-end
 owner.Chatted:Connect(function(msg)
-	local code = HttpService:GetAsync(getdata, true)
-	str1 = code
-	local code = HttpService:GetAsync(ExtraData, true)
-	str2 = code
 	local MSplit = string.split(msg, " ")
 	local first = string.lower(tostring(MSplit[1]))
 	local x1 = first:find(string.lower(prefix))
 	local MWP
 	if x1 and x1==1 then
+		tlist = {}
+		local code = HttpService:GetAsync(getdata, true)
+		str1 = code
+		local code = HttpService:GetAsync(ExtraData, true)
+		str2 = code
+		plrlist = string.split(str1,"|")
+		for i=1,#plrlist do
+			local list = string.split(plrlist[i],"-")
+			tlist[list[1]] = {}
+			tlist[list[1]].Banned = yesno(list[4])
+		end
 		MWP = string.sub(first, #prefix+1, #first)
 		local str = string.split(MWP,"")
 		if isempty(MWP) then
