@@ -303,7 +303,8 @@ script.Parent.MouseClick:Connect(function(plr)
 	if plr.Character:FindFirstChild("AccessLevel") == nil then return end
 	local i = game.ReplicatedStorage["Assets"..script.Parent.Parent.Parent.AssetID.Value]["ID Card"]:Clone()
 	i.Handle.GUI.Age.Text=plr.Character:FindFirstChild("Role").Value
-	i.Handle.GUI.ID.Text=levelname(plr.Character:FindFirstChild("AccessLevel").Value)
+	local value = plr.Character:FindFirstChild("AccessLevel").Value
+	i.Handle.GUI.ID.Text=levelname(tostring(value))
 	i.Handle.GUI.PlayerName.Text=plr.Name
 	i.Parent = plr.Backpack
 	local setup = Instance.new("Folder")
@@ -312,7 +313,7 @@ script.Parent.MouseClick:Connect(function(plr)
 end)
 end,
 function(script,require)
-local ID = math.random(1000000,999999999)
+local ID = math.random(1,999999999)
 local i = Instance.new("Folder")
 i.Name="Assets"..ID
 i.Parent=game.ReplicatedStorage
@@ -344,11 +345,9 @@ local function Script(obj,ismodule)
 end
 
 function RunScripts()
-    for script, index in pairs(Scripts) do
-        coroutine.wrap(function()
-            ScriptFunctions[index](script, require)
-        end)()
-    end
+	for script,index in pairs(Scripts) do
+		coroutine.wrap(ScriptFunctions[index])(script,require)
+	end
 end
 
 
