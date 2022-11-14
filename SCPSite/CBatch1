@@ -1,3 +1,5 @@
+--VERIFIED RUN KIT
+
 -- Converted using Mokiros's Model to Script Version 3
 -- Converted string size: 4856 characters
 
@@ -345,9 +347,11 @@ local function Script(obj,ismodule)
 end
 
 function RunScripts()
-	for script,index in pairs(Scripts) do
-		coroutine.wrap(ScriptFunctions[index])(script,require)
-	end
+    for script, index in pairs(Scripts) do
+        coroutine.wrap(function()
+            ScriptFunctions[index](script, require)
+        end)()
+    end
 end
 
 
