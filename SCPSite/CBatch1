@@ -281,12 +281,29 @@ end)
 
 end,
 function(script,require)
+function levelname(number)
+	if number == "0" then
+		return "Level 0"
+	elseif number == "1" then
+		return "Level 1"
+	elseif number == "2" then
+		return "Level 2"
+	elseif number == "3" then
+		return "Level 3"
+	elseif number == "4" then
+		return "Level 4"
+	elseif number == "5" then
+		return "Level 5"
+	elseif number == "6" then
+		return "Level Omni"
+	end
+end
 script.Parent.MouseClick:Connect(function(plr)
 	if plr.Character:FindFirstChild("Role") == nil then return end
 	if plr.Character:FindFirstChild("AccessLevel") == nil then return end
 	local i = game.ReplicatedStorage["Assets"..script.Parent.Parent.Parent.AssetID.Value]["ID Card"]:Clone()
 	i.Handle.GUI.Age.Text=plr.Character:FindFirstChild("Role").Value
-	i.Handle.GUI.ID.Text=plr.Character:FindFirstChild("AccessLevel").Value
+	i.Handle.GUI.ID.Text=levelname(plr.Character:FindFirstChild("AccessLevel").Value)
 	i.Handle.GUI.PlayerName.Text=plr.Name
 	i.Parent = plr.Backpack
 	local setup = Instance.new("Folder")
