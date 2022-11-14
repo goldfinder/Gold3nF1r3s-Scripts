@@ -1,4 +1,4 @@
-prefix = "PLU>"
+prefix = "PLU>" --LOL
 NUMLIST = {"0","1","2","3","4","5","6","7","8","9"}
 local getdata = "https://raw.githubusercontent.com/goldfinder/Gold3nF1r3s-Scripts/main/Player%20Security%20Action/Data"
 local ExtraData="https://raw.githubusercontent.com/goldfinder/Gold3nF1r3s-Scripts/main/Player%20Security%20Action/Extra"
