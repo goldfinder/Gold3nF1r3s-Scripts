@@ -1,0 +1,681 @@
+-- Converted using Mokiros's Model to Script Version 3
+-- Converted string size: 4836 characters
+
+local ScriptFunctions = {
+function(script,require)
+script.Parent.MouseClick:Connect(function(plr)
+	if plr.Character:FindFirstChild("Role") == nil then return end
+	if plr.Character:FindFirstChild("AccessLevel") == nil then return end
+	local i = game.ReplicatedStorage["Assets"..script.Parent.Parent.Parent.Parent.AssetID.Value]["ID Card"]:Clone()
+	i.Handle.GUI.Age.Text=plr.Character:FindFirstChild("Role").Value
+	i.Handle.GUI.ID.Text=plr.Character:FindFirstChild("AccessLevel").Value
+	i.Handle.GUI.PlayerName.Text=plr.Name
+	i.Parent = plr.Backpack
+end)
+end,
+function(script,require)
+script.Parent.L0A.ClickDetector.MouseClick:Connect(function(plr)
+	if plr.Character:FindFirstChild("AccessLevel") ~= nil then
+		script.Parent.L0A.SurfaceGui.TextLabel.Text="Already have a access level."
+		wait(3)
+		script.Parent.L0A.SurfaceGui.TextLabel.Text="Level 0 Access"
+	else
+		script.Parent.L0A.SurfaceGui.TextLabel.Text="Added Access."
+		local inst = Instance.new("NumberValue")
+		inst.Value = 0
+		inst.Name="AccessLevel"
+		inst.Parent = plr.Character
+		wait(3)
+		script.Parent.L0A.SurfaceGui.TextLabel.Text="Level 0 Access"
+	end
+end)
+
+script.Parent.L1A.ClickDetector.MouseClick:Connect(function(plr)
+	if plr.Character:FindFirstChild("AccessLevel") ~= nil then
+		script.Parent.L1A.SurfaceGui.TextLabel.Text="Already have a access level."
+		wait(3)
+		script.Parent.L1A.SurfaceGui.TextLabel.Text="Level 1 Access"
+	else
+		script.Parent.L1A.SurfaceGui.TextLabel.Text="Added Access."
+		local inst = Instance.new("NumberValue")
+		inst.Value = 1
+		inst.Name="AccessLevel"
+		inst.Parent = plr.Character
+		wait(3)
+		script.Parent.L1A.SurfaceGui.TextLabel.Text="Level 1 Access"
+	end
+end)
+
+script.Parent.L2A.ClickDetector.MouseClick:Connect(function(plr)
+	if plr.Character:FindFirstChild("AccessLevel") ~= nil then
+		script.Parent.L2A.SurfaceGui.TextLabel.Text="Already have a access level."
+		wait(3)
+		script.Parent.L2A.SurfaceGui.TextLabel.Text="Level 2 Access"
+	else
+		script.Parent.L2A.SurfaceGui.TextLabel.Text="Added Access."
+		local inst = Instance.new("NumberValue")
+		inst.Value = 2
+		inst.Name="AccessLevel"
+		inst.Parent = plr.Character
+		wait(3)
+		script.Parent.L2A.SurfaceGui.TextLabel.Text="Level 2 Access"
+	end
+end)
+
+script.Parent.L3A.ClickDetector.MouseClick:Connect(function(plr)
+	if plr.Character:FindFirstChild("AccessLevel") ~= nil then
+		script.Parent.L3A.SurfaceGui.TextLabel.Text="Already have a access level."
+		wait(3)
+		script.Parent.L3A.SurfaceGui.TextLabel.Text="Level 3 Access"
+	else
+		script.Parent.L3A.SurfaceGui.TextLabel.Text="Added Access."
+		local inst = Instance.new("NumberValue")
+		inst.Value = 3
+		inst.Name="AccessLevel"
+		inst.Parent = plr.Character
+		wait(3)
+		script.Parent.L3A.SurfaceGui.TextLabel.Text="Level 3 Access"
+	end
+end)
+
+script.Parent.L4A.ClickDetector.MouseClick:Connect(function(plr)
+	if plr.Character:FindFirstChild("AccessLevel") ~= nil then
+		script.Parent.L4A.SurfaceGui.TextLabel.Text="Already have a access level."
+		wait(3)
+		script.Parent.L4A.SurfaceGui.TextLabel.Text="Level 4 Access"
+	else
+		script.Parent.L4A.SurfaceGui.TextLabel.Text="Added Access."
+		local inst = Instance.new("NumberValue")
+		inst.Value = 4
+		inst.Name="AccessLevel"
+		inst.Parent = plr.Character
+		wait(3)
+		script.Parent.L4A.SurfaceGui.TextLabel.Text="Level 4 Access"
+	end
+end)
+
+script.Parent.L5A.ClickDetector.MouseClick:Connect(function(plr)
+	if plr.Character:FindFirstChild("AccessLevel") ~= nil then
+		script.Parent.L5A.SurfaceGui.TextLabel.Text="Already have a access level."
+		wait(3)
+		script.Parent.L5A.SurfaceGui.TextLabel.Text="Level 5 Access"
+	else
+		script.Parent.L5A.SurfaceGui.TextLabel.Text="Added Access."
+		local inst = Instance.new("NumberValue")
+		inst.Value = 2
+		inst.Name="AccessLevel"
+		inst.Parent = plr.Character
+		wait(3)
+		script.Parent.L5A.SurfaceGui.TextLabel.Text="Level 5 Access"
+	end
+end)
+
+script.Parent.L6A.ClickDetector.MouseClick:Connect(function(plr)
+	if plr.Character:FindFirstChild("AccessLevel") ~= nil then
+		script.Parent.L6A.SurfaceGui.TextLabel.Text="Already have a access level."
+		wait(3)
+		script.Parent.L6A.SurfaceGui.TextLabel.Text="Level Omni Access"
+	else
+		script.Parent.L6A.SurfaceGui.TextLabel.Text="Added Access."
+		local inst = Instance.new("NumberValue")
+		inst.Value = 6
+		inst.Name="AccessLevel"
+		inst.Parent = plr.Character
+		wait(3)
+		script.Parent.L6A.SurfaceGui.TextLabel.Text="Level Omni Access"
+	end
+end)
+
+end,
+function(script,require)
+script.Parent.L0A.ClickDetector.MouseClick:Connect(function(plr)
+	if plr.Character:FindFirstChild("Role") ~= nil then
+		script.Parent.L0A.SurfaceGui.TextLabel.Text="Already have a role."
+		wait(3)
+		script.Parent.L0A.SurfaceGui.TextLabel.Text="Foundation Personnel"
+	else
+		script.Parent.L0A.SurfaceGui.TextLabel.Text="Added Role."
+		local inst = Instance.new("StringValue")
+		inst.Value = "Foundation Personnel"
+		inst.Name="Role"
+		inst.Parent = plr.Character
+		wait(3)
+		script.Parent.L0A.SurfaceGui.TextLabel.Text="Foundation Personnel"
+	end
+end)
+
+script.Parent.L1A.ClickDetector.MouseClick:Connect(function(plr)
+	local TLT = "Researcher"
+	if plr.Character:FindFirstChild("Role") ~= nil then
+		script.Parent.L1A.SurfaceGui.TextLabel.Text="Already have a role."
+		wait(3)
+		script.Parent.L1A.SurfaceGui.TextLabel.Text=TLT
+	else
+		script.Parent.L0A.SurfaceGui.TextLabel.Text="Added Role."
+		local inst = Instance.new("StringValue")
+		inst.Value = TLT
+		inst.Name="Role"
+		inst.Parent = plr.Character
+		wait(3)
+		script.Parent.L0A.SurfaceGui.TextLabel.Text=TLT
+	end
+end)
+
+script.Parent.L2A.ClickDetector.MouseClick:Connect(function(plr)
+	local TLT = "Security"
+	if plr.Character:FindFirstChild("Role") ~= nil then
+		script.Parent.L1A.SurfaceGui.TextLabel.Text="Already have a role."
+		wait(3)
+		script.Parent.L1A.SurfaceGui.TextLabel.Text=TLT
+	else
+		script.Parent.L0A.SurfaceGui.TextLabel.Text="Added Role."
+		local inst = Instance.new("StringValue")
+		inst.Value = TLT
+		inst.Name="Role"
+		inst.Parent = plr.Character
+		wait(3)
+		script.Parent.L0A.SurfaceGui.TextLabel.Text=TLT
+	end
+end)
+
+script.Parent.L3A.ClickDetector.MouseClick:Connect(function(plr)
+	local TLT = "MTF"
+	if plr.Character:FindFirstChild("Role") ~= nil then
+		script.Parent.L1A.SurfaceGui.TextLabel.Text="Already have a role."
+		wait(3)
+		script.Parent.L1A.SurfaceGui.TextLabel.Text=TLT
+	else
+		script.Parent.L0A.SurfaceGui.TextLabel.Text="Added Role."
+		local inst = Instance.new("StringValue")
+		inst.Value = TLT
+		inst.Name="Role"
+		inst.Parent = plr.Character
+		wait(3)
+		script.Parent.L0A.SurfaceGui.TextLabel.Text=TLT
+	end
+end)
+
+script.Parent.L4A.ClickDetector.MouseClick:Connect(function(plr)
+	local TLT = "SRT"
+	if plr.Character:FindFirstChild("Role") ~= nil then
+		script.Parent.L1A.SurfaceGui.TextLabel.Text="Already have a role."
+		wait(3)
+		script.Parent.L1A.SurfaceGui.TextLabel.Text=TLT
+	else
+		script.Parent.L0A.SurfaceGui.TextLabel.Text="Added Role."
+		local inst = Instance.new("StringValue")
+		inst.Value = TLT
+		inst.Name="Role"
+		inst.Parent = plr.Character
+		wait(3)
+		script.Parent.L0A.SurfaceGui.TextLabel.Text=TLT
+	end
+end)
+
+script.Parent.L5A.ClickDetector.MouseClick:Connect(function(plr)
+	local TLT = "O5 Council"
+	if plr.Character:FindFirstChild("Role") ~= nil then
+		script.Parent.L1A.SurfaceGui.TextLabel.Text="Already have a role."
+		wait(3)
+		script.Parent.L1A.SurfaceGui.TextLabel.Text=TLT
+	else
+		script.Parent.L0A.SurfaceGui.TextLabel.Text="Added Role."
+		local inst = Instance.new("StringValue")
+		inst.Value = TLT
+		inst.Name="Role"
+		inst.Parent = plr.Character
+		wait(3)
+		script.Parent.L0A.SurfaceGui.TextLabel.Text=TLT
+	end
+end)
+
+script.Parent.L6A.ClickDetector.MouseClick:Connect(function(plr)
+	local TLT = "The Administrator"
+	local TLTS = "TA (LOCKED)"
+	if plr.UserId == 21490931 then
+		if plr.Character:FindFirstChild("Role") ~= nil then
+			script.Parent.L1A.SurfaceGui.TextLabel.Text="Already have a role."
+			wait(3)
+			script.Parent.L1A.SurfaceGui.TextLabel.Text=TLTS
+		else
+			script.Parent.L0A.SurfaceGui.TextLabel.Text="Added Role."
+			local inst = Instance.new("StringValue")
+			inst.Value = TLT
+			inst.Name="Role"
+			inst.Parent = plr.Character
+			wait(3)
+			script.Parent.L0A.SurfaceGui.TextLabel.Text=TLTS
+		end
+	else
+		script.Parent.L1A.SurfaceGui.TextLabel.Text="This role is locked."
+		wait(3)
+		script.Parent.L1A.SurfaceGui.TextLabel.Text=TLTS
+	end
+end)
+
+end,
+function(script,require)
+script.Parent.L0A.ClickDetector.MouseClick:Connect(function(plr)
+	if plr.Character:FindFirstChild("AccessLevel") ~= nil then
+		script.Parent.L0A.SurfaceGui.TextLabel.Text="Already have a access level."
+		wait(3)
+		script.Parent.L0A.SurfaceGui.TextLabel.Text="Level 0 Access"
+	else
+		script.Parent.L0A.SurfaceGui.TextLabel.Text="Added Access."
+		local inst = Instance.new("NumberValue")
+		inst.Value = 0
+		inst.Name="AccessLevel"
+		inst.Parent = plr.Character
+		wait(3)
+		script.Parent.L0A.SurfaceGui.TextLabel.Text="Level 0 Access"
+	end
+end)
+
+script.Parent.L1A.ClickDetector.MouseClick:Connect(function(plr)
+	if plr.Character:FindFirstChild("AccessLevel") ~= nil then
+		script.Parent.L1A.SurfaceGui.TextLabel.Text="Already have a access level."
+		wait(3)
+		script.Parent.L1A.SurfaceGui.TextLabel.Text="Level 1 Access"
+	else
+		script.Parent.L1A.SurfaceGui.TextLabel.Text="Added Access."
+		local inst = Instance.new("NumberValue")
+		inst.Value = 1
+		inst.Name="AccessLevel"
+		inst.Parent = plr.Character
+		wait(3)
+		script.Parent.L1A.SurfaceGui.TextLabel.Text="Level 1 Access"
+	end
+end)
+
+script.Parent.L2A.ClickDetector.MouseClick:Connect(function(plr)
+	if plr.Character:FindFirstChild("AccessLevel") ~= nil then
+		script.Parent.L2A.SurfaceGui.TextLabel.Text="Already have a access level."
+		wait(3)
+		script.Parent.L2A.SurfaceGui.TextLabel.Text="Level 2 Access"
+	else
+		script.Parent.L2A.SurfaceGui.TextLabel.Text="Added Access."
+		local inst = Instance.new("NumberValue")
+		inst.Value = 2
+		inst.Name="AccessLevel"
+		inst.Parent = plr.Character
+		wait(3)
+		script.Parent.L2A.SurfaceGui.TextLabel.Text="Level 2 Access"
+	end
+end)
+
+script.Parent.L3A.ClickDetector.MouseClick:Connect(function(plr)
+	if plr.Character:FindFirstChild("AccessLevel") ~= nil then
+		script.Parent.L3A.SurfaceGui.TextLabel.Text="Already have a access level."
+		wait(3)
+		script.Parent.L3A.SurfaceGui.TextLabel.Text="Level 3 Access"
+	else
+		script.Parent.L3A.SurfaceGui.TextLabel.Text="Added Access."
+		local inst = Instance.new("NumberValue")
+		inst.Value = 3
+		inst.Name="AccessLevel"
+		inst.Parent = plr.Character
+		wait(3)
+		script.Parent.L3A.SurfaceGui.TextLabel.Text="Level 3 Access"
+	end
+end)
+
+script.Parent.L4A.ClickDetector.MouseClick:Connect(function(plr)
+	if plr.Character:FindFirstChild("AccessLevel") ~= nil then
+		script.Parent.L4A.SurfaceGui.TextLabel.Text="Already have a access level."
+		wait(3)
+		script.Parent.L4A.SurfaceGui.TextLabel.Text="Level 4 Access"
+	else
+		script.Parent.L4A.SurfaceGui.TextLabel.Text="Added Access."
+		local inst = Instance.new("NumberValue")
+		inst.Value = 4
+		inst.Name="AccessLevel"
+		inst.Parent = plr.Character
+		wait(3)
+		script.Parent.L4A.SurfaceGui.TextLabel.Text="Level 4 Access"
+	end
+end)
+
+script.Parent.L5A.ClickDetector.MouseClick:Connect(function(plr)
+	if plr.Character:FindFirstChild("AccessLevel") ~= nil then
+		script.Parent.L5A.SurfaceGui.TextLabel.Text="Already have a access level."
+		wait(3)
+		script.Parent.L5A.SurfaceGui.TextLabel.Text="Level 5 Access"
+	else
+		script.Parent.L5A.SurfaceGui.TextLabel.Text="Added Access."
+		local inst = Instance.new("NumberValue")
+		inst.Value = 2
+		inst.Name="AccessLevel"
+		inst.Parent = plr.Character
+		wait(3)
+		script.Parent.L5A.SurfaceGui.TextLabel.Text="Level 5 Access"
+	end
+end)
+
+script.Parent.L6A.ClickDetector.MouseClick:Connect(function(plr)
+	if plr.Character:FindFirstChild("AccessLevel") ~= nil then
+		script.Parent.L6A.SurfaceGui.TextLabel.Text="Already have a access level."
+		wait(3)
+		script.Parent.L6A.SurfaceGui.TextLabel.Text="Level Omni Access"
+	else
+		script.Parent.L6A.SurfaceGui.TextLabel.Text="Added Access."
+		local inst = Instance.new("NumberValue")
+		inst.Value = 6
+		inst.Name="AccessLevel"
+		inst.Parent = plr.Character
+		wait(3)
+		script.Parent.L6A.SurfaceGui.TextLabel.Text="Level Omni Access"
+	end
+end)
+
+end,
+function(script,require)
+local ID = math.random(1000000,999999999)
+local i = Instance.new("Folder")
+i.Name="Assets"..ID
+i.Parent=game.ReplicatedStorage
+script.Parent["ID Card"].Parent=i
+script.Parent.AssetID.Value=ID
+end
+}
+local ScriptIndex = 0
+local Scripts,ModuleScripts,ModuleCache = {},{},{}
+local _require = require
+function require(obj,...)
+	local index = ModuleScripts[obj]
+	if not index then
+		local a,b = pcall(_require,obj,...)
+		return not a and error(b,2) or b
+	end
+	
+	local res = ModuleCache[index]
+	if res then return res end
+	res = ScriptFunctions[index](obj,require)
+	if res==nil then error("Module code did not return exactly one value",2) end
+	ModuleCache[index] = res
+	return res
+end
+local function Script(obj,ismodule)
+	ScriptIndex = ScriptIndex + 1
+	local t = ismodule and ModuleScripts or Scripts
+	t[obj] = ScriptIndex
+end
+
+function RunScripts()
+	for script,index in pairs(Scripts) do
+		coroutine.wrap(ScriptFunctions[index])(script,require)
+	end
+end
+
+
+local function Decode(str)
+	local StringLength = #str
+	
+	-- Base64 decoding
+	do
+		local decoder = {}
+		for b64code, char in pairs(('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/='):split('')) do
+			decoder[char:byte()] = b64code-1
+		end
+		local n = StringLength
+		local t,k = table.create(math.floor(n/4)+1),1
+		local padding = str:sub(-2) == '==' and 2 or str:sub(-1) == '=' and 1 or 0
+		for i = 1, padding > 0 and n-4 or n, 4 do
+			local a, b, c, d = str:byte(i,i+3)
+			local v = decoder[a]*0x40000 + decoder[b]*0x1000 + decoder[c]*0x40 + decoder[d]
+			t[k] = string.char(bit32.extract(v,16,8),bit32.extract(v,8,8),bit32.extract(v,0,8))
+			k = k + 1
+		end
+		if padding == 1 then
+			local a, b, c = str:byte(n-3,n-1)
+			local v = decoder[a]*0x40000 + decoder[b]*0x1000 + decoder[c]*0x40
+			t[k] = string.char(bit32.extract(v,16,8),bit32.extract(v,8,8))
+		elseif padding == 2 then
+			local a, b = str:byte(n-3,n-2)
+			local v = decoder[a]*0x40000 + decoder[b]*0x1000
+			t[k] = string.char(bit32.extract(v,16,8))
+		end
+		str = table.concat(t)
+	end
+	
+	local Position = 1
+	local function Parse(fmt)
+		local Values = {string.unpack(fmt,str,Position)}
+		Position = table.remove(Values)
+		return table.unpack(Values)
+	end
+	
+	local Settings = Parse('B')
+	local Flags = Parse('B')
+	Flags = {
+		--[[ValueIndexByteLength]] bit32.extract(Flags,6,2)+1,
+		--[[InstanceIndexByteLength]] bit32.extract(Flags,4,2)+1,
+		--[[ConnectionsIndexByteLength]] bit32.extract(Flags,2,2)+1,
+		--[[MaxPropertiesLengthByteLength]] bit32.extract(Flags,0,2)+1,
+		--[[Use Double instead of Float]] bit32.band(Settings,0b1) > 0
+	}
+	
+	local ValueFMT = ('I'..Flags[1])
+	local InstanceFMT = ('I'..Flags[2])
+	local ConnectionFMT = ('I'..Flags[3])
+	local PropertyLengthFMT = ('I'..Flags[4])
+	
+	local ValuesLength = Parse(ValueFMT)
+	local Values = table.create(ValuesLength)
+	local CFrameIndexes = {}
+	
+	local ValueDecoders = {
+		--!!Start
+		[1] = function(Modifier)
+			return Parse('s'..Modifier)
+		end,
+		--!!Split
+		[2] = function(Modifier)
+			return Modifier ~= 0
+		end,
+		--!!Split
+		[3] = function()
+			return Parse('d')
+		end,
+		--!!Split
+		[4] = function(_,Index)
+			table.insert(CFrameIndexes,{Index,Parse(('I'..Flags[1]):rep(3))})
+		end,
+		--!!Split
+		[5] = {CFrame.new,Flags[5] and 'dddddddddddd' or 'ffffffffffff'},
+		--!!Split
+		[6] = {Color3.fromRGB,'BBB'},
+		--!!Split
+		[7] = {BrickColor.new,'I2'},
+		--!!Split
+		[8] = function(Modifier)
+			local len = Parse('I'..Modifier)
+			local kpts = table.create(len)
+			for i = 1,len do
+				kpts[i] = ColorSequenceKeypoint.new(Parse('f'),Color3.fromRGB(Parse('BBB')))
+			end
+			return ColorSequence.new(kpts)
+		end,
+		--!!Split
+		[9] = function(Modifier)
+			local len = Parse('I'..Modifier)
+			local kpts = table.create(len)
+			for i = 1,len do
+				kpts[i] = NumberSequenceKeypoint.new(Parse(Flags[5] and 'ddd' or 'fff'))
+			end
+			return NumberSequence.new(kpts)
+		end,
+		--!!Split
+		[10] = {Vector3.new,Flags[5] and 'ddd' or 'fff'},
+		--!!Split
+		[11] = {Vector2.new,Flags[5] and 'dd' or 'ff'},
+		--!!Split
+		[12] = {UDim2.new,Flags[5] and 'di2di2' or 'fi2fi2'},
+		--!!Split
+		[13] = {Rect.new,Flags[5] and 'dddd' or 'ffff'},
+		--!!Split
+		[14] = function()
+			local flags = Parse('B')
+			local ids = {"Top","Bottom","Left","Right","Front","Back"}
+			local t = {}
+			for i = 0,5 do
+				if bit32.extract(flags,i,1)==1 then
+					table.insert(t,Enum.NormalId[ids[i+1]])
+				end
+			end
+			return Axes.new(unpack(t))
+		end,
+		--!!Split
+		[15] = function()
+			local flags = Parse('B')
+			local ids = {"Top","Bottom","Left","Right","Front","Back"}
+			local t = {}
+			for i = 0,5 do
+				if bit32.extract(flags,i,1)==1 then
+					table.insert(t,Enum.NormalId[ids[i+1]])
+				end
+			end
+			return Faces.new(unpack(t))
+		end,
+		--!!Split
+		[16] = {PhysicalProperties.new,Flags[5] and 'ddddd' or 'fffff'},
+		--!!Split
+		[17] = {NumberRange.new,Flags[5] and 'dd' or 'ff'},
+		--!!Split
+		[18] = {UDim.new,Flags[5] and 'di2' or 'fi2'},
+		--!!Split
+		[19] = function()
+			return Ray.new(Vector3.new(Parse(Flags[5] and 'ddd' or 'fff')),Vector3.new(Parse(Flags[5] and 'ddd' or 'fff')))
+		end
+		--!!End
+	}
+	
+	for i = 1,ValuesLength do
+		local TypeAndModifier = Parse('B')
+		local Type = bit32.band(TypeAndModifier,0b11111)
+		local Modifier = (TypeAndModifier - Type) / 0b100000
+		local Decoder = ValueDecoders[Type]
+		if type(Decoder)=='function' then
+			Values[i] = Decoder(Modifier,i)
+		else
+			Values[i] = Decoder[1](Parse(Decoder[2]))
+		end
+	end
+	
+	for i,t in pairs(CFrameIndexes) do
+		Values[t[1]] = CFrame.fromMatrix(Values[t[2]],Values[t[3]],Values[t[4]])
+	end
+	
+	local InstancesLength = Parse(InstanceFMT)
+	local Instances = {}
+	local NoParent = {}
+	
+	for i = 1,InstancesLength do
+		local ClassName = Values[Parse(ValueFMT)]
+		local obj
+		local MeshPartMesh,MeshPartScale
+		if ClassName == "UnionOperation" then
+			obj = DecodeUnion(Values,Flags,Parse)
+			obj.UsePartColor = true
+		elseif ClassName:find("Script") then
+			obj = Instance.new("Folder")
+			Script(obj,ClassName=='ModuleScript')
+		elseif ClassName == "MeshPart" then
+			obj = Instance.new("Part")
+			MeshPartMesh = Instance.new("SpecialMesh")
+			MeshPartMesh.MeshType = Enum.MeshType.FileMesh
+			MeshPartMesh.Parent = obj
+		else
+			obj = Instance.new(ClassName)
+		end
+		local Parent = Instances[Parse(InstanceFMT)]
+		local PropertiesLength = Parse(PropertyLengthFMT)
+		local AttributesLength = Parse(PropertyLengthFMT)
+		Instances[i] = obj
+		for i = 1,PropertiesLength do
+			local Prop,Value = Values[Parse(ValueFMT)],Values[Parse(ValueFMT)]
+			
+			-- ok this looks awful
+			if MeshPartMesh then
+				if Prop == "MeshId" then
+					MeshPartMesh.MeshId = Value
+					continue
+				elseif Prop == "TextureID" then
+					MeshPartMesh.TextureId = Value
+					continue
+				elseif Prop == "Size" then
+					if not MeshPartScale then
+						MeshPartScale = Value
+					else
+						MeshPartMesh.Scale = Value / MeshPartScale
+					end
+				elseif Prop == "MeshSize" then
+					if not MeshPartScale then
+						MeshPartScale = Value
+						MeshPartMesh.Scale = obj.Size / Value
+					else
+						MeshPartMesh.Scale = MeshPartScale / Value
+					end
+					continue
+				end
+			end
+			
+			obj[Prop] = Value
+		end
+		if MeshPartMesh then
+			if MeshPartMesh.MeshId=='' then
+				if MeshPartMesh.TextureId=='' then
+					MeshPartMesh.TextureId = 'rbxasset://textures/meshPartFallback.png'
+				end
+				MeshPartMesh.Scale = obj.Size
+			end
+		end
+		for i = 1,AttributesLength do
+			obj:SetAttribute(Values[Parse(ValueFMT)],Values[Parse(ValueFMT)])
+		end
+		if not Parent then
+			table.insert(NoParent,obj)
+		else
+			obj.Parent = Parent
+		end
+	end
+	
+	local ConnectionsLength = Parse(ConnectionFMT)
+	for i = 1,ConnectionsLength do
+		local a,b,c = Parse(InstanceFMT),Parse(ValueFMT),Parse(InstanceFMT)
+		Instances[a][Values[b]] = Instances[c]
+	end
+	
+	return NoParent
+end
+
+
+local Objects = Decode('AADQIQVNb2RlbCEETmFtZSEHQ0JhdGNoMSEKV29ybGRQaXZvdATHyMkEysjJIQRQYXJ0IQhBbmNob3JlZCIhDUJvdHRvbVN1cmZhY2UDAAAAAAAAAAAhCkJyaWNrQ29sb3IHMAEhBkNGcmFtZQQTyMkhBUNvbG9yBixlHSEIUG9zaXRpb24KYFaGRcIbvj91SpxCIQRT'
+..'aXplCo/C9T8Uroc/j8L1PyEKVG9wU3VyZmFjZSENQ2xpY2tEZXRlY3RvciEGU2NyaXB0IQxCaWxsYm9hcmRHdWkhDlpJbmRleEJlaGF2aW9yAwAAAAAAAPA/IQZBY3RpdmUhEENsaXBzRGVzY2VuZGFudHMMAABAQAAAAACAPwAAIRVTdHVkc09mZnNldFdvcmxkU3Bh'
+..'Y2UKAAAAAAAAgEAAAAAAIQdUZXh0Qm94IQFBIRBCYWNrZ3JvdW5kQ29sb3IzBv///yEWQmFja2dyb3VuZFRyYW5zcGFyZW5jeQwAAIA/AAAAAIA/AAAhEENsZWFyVGV4dE9uRm9jdXMCIQRGb250AwAAAAAAAAhAIRFQbGFjZWhvbGRlckNvbG9yMyEPUGxhY2Vob2xk'
+..'ZXJUZXh0ISdDb25maXJtIFNDUCBJbmZvcm1hdGlvbiAoT05DRSBQRVIgTElGRSkhD1Nob3dOYXRpdmVJbnB1dCEEVGV4dCEAIQpUZXh0Q29sb3IzBgAAACEMVGV4dEVkaXRhYmxlIQpUZXh0U2NhbGVkIQhUZXh0U2l6ZQMAAAAAAAAsQCELVGV4dFdyYXBwZWQHxwAE'
+..'O8jJBmNfYgpgVoZF4MZ+P3VKnEIKAAAAQAAAAEAAAABAIQRUb29sIQdJRCBDYXJkIQRHcmlwBELLySEHR3JpcFBvcwoNHdQ9ACaKPUCV4z4hBkhhbmRsZSELQmFja1N1cmZhY2UDAAAAAAAAJEAH6QMETszJBvj4+CEMRnJvbnRTdXJmYWNlIQhNYXRlcmlhbAMAAAAA'
+..'AABxQCELT3JpZW50YXRpb24KAAAAAAAAtEIAAAAAColZhkUg9OM+ADuWQiEIUm90YXRpb24KAAAAAMP1s0IAAAAACv//vz9mZmY/zcxMPSEKU3VyZmFjZUd1aSEDR1VJIQpJbWFnZUxhYmVsIQpQcm9maWxlUGljIQtBbmNob3JQb2ludAsAAIA/AAAAPwa0tLQhD0Jv'
+..'cmRlclNpemVQaXhlbAwAAIA/7P8AAAA/zv8MAAAAAPoAAAAAAJABIQZaSW5kZXgDAAAAAAAAAEAhBUltYWdlIUlodHRwOi8vd3d3LnJvYmxveC5jb20vVGh1bWJzL0F2YXRhci5hc2h4P3g9MTUwJnk9MjAwJkZvcm1hdD1QbmcmdXNlcm5hbWU9IQlUZXh0TGFiZWwh'
+..'ClBsYXllck5hbWULAAAAAAAAAD8MAAAAABQAMzOzPs7/DAAAAAD0AQAAAABkAAMAAAAAAAAiQCEOVGV4dFhBbGlnbm1lbnQhA0FnZQwAAAAAFAAAAAA/zv8hBUxldmVsIQJJRAwAAAAAFABmZiY/zv8hBFJvbGUhBUZyYW1lIQhNYWRlIGJ5OgwAAAAAAAAAAAAA9AEM'
+..'AACAPwAAAAAAPgAAIQ53d3cucm9ibG94LmNvbSEQR29sZDNuRjFyMydzIFNDUCEQVGV4dFN0cm9rZUNvbG9yMwb/AAAhFlRleHRTdHJva2VUcmFuc3BhcmVuY3kDAAAAAAAA4D8Ezc7JBHnOyQr9ZIZF/HlXQHysk0IKAAAAAGbms0IAAAAACrDIikAEpR1AgJlaPyED'
+..'TDFBB0cBBIDOyQaqAAAKkmGGRfy4eUC8rpNCCgAAAACF67NCAAAAAAoAAIBAAACAPwAUgzohDkxpZ2h0SW5mbHVlbmNlIQ1QaXhlbHNQZXJTdHVkAwAAAAAAAGlAIQpTaXppbmdNb2RlIQ5MZXZlbCAxIEFjY2VzcwMAAAAAAABKQCEDTDBBBIvOyQqSYYZF8as1QLyu'
+..'k0IhE1JlbW92ZSBBY2Nlc3MgTGV2ZWwEz87JIQNMNkEHNQEEks7JBjSOQAqSYYZFHEXjQFVLikIKAAAAAKTws0IAAAAAIQtUQSAoTE9DS0VEKSEDTDVBBJfOyQqSYYZFrGvBQFVIikIhCk81IENvdW5jaWwEms7JCv1khkX8eXdAFUaKQgqwyIpARMj3QICZWj8hA0w0'
+..'QQSezskKkmGGRTYzn0BVSIpCIQNSUlQhA0wzQQSizskKkmGGRRJ0eUBVSIpCIQNNVEYhA0wyQQSmzskKkmGGRQ46NUBVSIpCIQhTZWN1cml0eQSpzskKkmGGRXKG4T9VSIpCIQpSZXNlYXJjaGVyBKzOyQqSYYZFuNgyP1VIikIhFEZvdW5kYXRpb24gUGVyc29ubmVs'
+..'BNDOyQSwzskKkmGGRRxF40ANaoBCIQtPbW5pIEFjY2VzcwSzzskKkmGGRaxrwUANZ4BCIQ5MZXZlbCA1IEFjY2VzcwS2zskK/WSGRfx5d0DNZIBCBLjOyQqSYYZFNjOfQA1ngEIhDkxldmVsIDQgQWNjZXNzBLvOyQqSYYZFEnR5QA1ngEIhDkxldmVsIDMgQWNjZXNz'
+..'BL7OyQqSYYZFDjo1QA1ngEIhDkxldmVsIDIgQWNjZXNzBMHOyQqSYYZFcobhPw1ngEIEw87JCpJhhkW42DI/DWeAQiEOTGV2ZWwgMCBBY2Nlc3MhC051bWJlclZhbHVlIQdBc3NldElECmRbhkX8eXdAfiyNQgr//38/AAAAAAAAAAAKAAAAAAAAgD8AAAAACmBWhkUe'
+..'q4A/dUqcQgoAAIA/AAAAAAAAAAAKAAAAAAAAAAD+/3+/CuNkhkXmN8BAfKyTQgoAAAAAAAAAAAAAgL8K42SGRQl6d0AVRopCCuNkhkUJendAzWSAQlwBAAIAAgMEBQEBAQAEBgcCCAAICQoLDA0ODxAREhMUFRYLFwMAABgEAAAZAwUAGhscCR0JFB4fICEGDwACIiMk'
+..'JRsUJicoKSorJCwtLigvMDEyMyg0CTU2NwkHAggACAkKCww4DjkQOhI7FDwWCz0BAwACPj9AQUIHCQsAAkNERQxGDkcQSElFSktMTRJOT1AUUVIKAQACU1QLCAACVVZXI1hZKhJaFFtcXV5fYAsNAAJhVmIjJCUbEmMUZCllLwIxMjQJNTY3CWYLYAsNAAJnVmIjJCUb'
+..'EmgUZCllL2kxMjQJNTY3CWYLYAsNAAJqVmIjJCUbEmsUZCllL2wxMjQJNTY3CWYLbQsFAAJuIzJZCxJvFHBgEAwAAnEjJCUbFCYpKi9yMSQ0CTU2c3R1djcJAQEBAAR3BxIKAAgJCgsMOA54EDpMTRJ5T3oUexYLBxILAAJ8CAkKCwx9Dn4Qf0xNEoBPgRSCFgtSFAUA'
+..'GhsdCYMbhIWGG2AVCAAjJCUbFCYpKi+HMSQ1iDcJFxQAAAcSCwACiQgJCgsMfQ6KEH9MTRKLT4EUghYLUhgFABobHQmDG4SFhhtgGQgAIyQlGxQmKSovjDEkNYg3CRcYAAAYEgAAAQEBAASNBx0LAAKOCAkKCwyPDpAQkUxNEpJPkxSCFgtSHgUAGhsdCYMbhIWGG2Af'
+..'CAAjJCUbFCYpKi+UMSQ1iDcJFx4AAAcdCwAClQgJCgsMjw6WEJFMTRKXT5MUghYLUiIFABobHQmDG4SFhhtgIwgAIyQlGxQmKSovmDEkNYg3CRciAAAHHQoACAkKCww4DpkQOkxNEppPkxSbFgsHHQsAApwICQoLDI8OnRCRTE0Snk+TFIIWC1InBQAaGx0JgxuEhYYb'
+..'YCgIACMkJRsUJikqL58xJDWINwkXJwAABx0LAAKgCAkKCwyPDqEQkUxNEqJPkxSCFgtSKwUAGhsdCYMbhIWGG2AsCAAjJCUbFCYpKi+jMSQ1iDcJFysAAAcdCwACpAgJCgsMjw6lEJFMTRKmT5MUghYLUi8FABobHQmDG4SFhhtgMAgAIyQlGxQmKSovpzEkNYg3CRcv'
+..'AAAHHQsAAnwICQoLDI8OqBCRTE0SqU+TFIIWC1IzBQAaGx0JgxuEhYYbYDQIACMkJRsUJikqL6oxJDWINwkXMwAABx0LAAKJCAkKCwyPDqsQkUxNEqxPkxSCFgtSNwUAGhsdCYMbhIWGG2A4CAAjJCUbFCYpKi+tMSQ1iDcJFzcAABgdAAABAQEABK4HPAsAAo4ICQoL'
+..'DI8OrxCRTE0SsE9QFIIWC1I9BQAaGx0JgxuEhYYbYD4IACMkJRsUJikqL7ExJDWINwkXPQAABzwLAAKVCAkKCwyPDrIQkUxNErNPUBSCFgtSQQUAGhsdCYMbhIWGG2BCCAAjJCUbFCYpKi+0MSQ1iDcJF0EAAAc8CgAICQoLDDgOtRA6TE0Stk9QFJsWCwc8CwACnAgJ'
+..'CgsMjw63EJFMTRK4T1AUghYLUkYFABobHQmDG4SFhhtgRwgAIyQlGxQmKSovuTEkNYg3CRdGAAAHPAsAAqAICQoLDI8OuhCRTE0Su09QFIIWC1JKBQAaGx0JgxuEhYYbYEsIACMkJRsUJikqL7wxJDWINwkXSgAABzwLAAKkCAkKCwyPDr0QkUxNEr5PUBSCFgtSTgUA'
+..'GhsdCYMbhIWGG2BPCAAjJCUbFCYpKi+/MSQ1iDcJF04AAAc8CwACfAgJCgsMjw7AEJFMTRLBT1AUghYLUlIFABobHQmDG4SFhhtgUwgAIyQlGxQmKSovhzEkNYg3CRdSAAAHPAsAAokICQoLDI8OwhCRTE0Sw09QFIIWC1JWBQAaGx0JgxuEhYYbYFcIACMkJRsUJikq'
+..'L8QxJDWINwkXVgAAGDwAABgBAADFAQEAAsYA')
+for _,obj in pairs(Objects) do
+	obj.Parent = script or workspace
+end
+
+RunScripts()
