@@ -1,0 +1,40 @@
+command givedice:
+	permission: op+
+	trigger:
+		give 1 white concrete with name "&9[Dice]" to the player 
+on skript start:
+	delete {dc::*}
+on right click:
+	if "%tool%" is "white concrete named &9[Dice]":
+		if {dc::%uuid of player%} is set:
+			send "You are on cooldown."
+			stop
+		send "Rolling dice..."
+		set {dc::%uuid of player%} to 1
+		wait 1 second
+		set {_dr} to a random integer between 1 and 6
+		send "You rolled a %{_dr}%"
+		if {_dr} is 1:
+			apply swiftness 2 to the player for 30 seconds
+			apply strength 1 to the player for 30 seconds
+			apply resistance 1 to the player for 30 seconds
+		else if {_dr} is 2:
+			apply wither 2 to the player for 5 seconds
+			apply weakness 1 to the player for 30 seconds
+		else if {_dr} is 3:
+			apply wither 1 to the player for 5 seconds
+			apply weakness 1 to the player for 30 seconds
+			apply slowness 3 to the player for 30 seconds
+		else if {_dr} is 4:
+			apply strength 2 to the player for 30 seconds
+			apply swiftness 1 to the player for 30 seconds
+		else if {_dr} is 5:
+			loop all entities:
+				if the distance between loop-entity and player is smaller than 6:
+					apply wither 2 to the player for 30 seconds
+		else if {_dr} is 6:
+			apply wither 2 to the player for 30 seconds
+			apply weakness 3 to the player for 30 seconds
+			apply slowness 4 to the player for 30 seconds
+		wait 30 seconds
+		delete {dc::%uuid of player%}
