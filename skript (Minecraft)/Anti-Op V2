@@ -1,0 +1,83 @@
+
+command addowner [<player>]:
+	trigger:
+		if command sender is console:
+			set {owner::%uuid of arg-1%} to 1
+		else:
+			send "&7[YOU CANNOT ASSIGN %arg-1% AS A OWNER UNLESS CONSOLE]"
+
+command addoperator [<player>]:
+	trigger:
+		if {owner::%uuid of player%} is set:
+			set {operator::%uuid of arg-1%} to 1
+		else if command sender is console:
+			set {operator::%uuid of arg-1%} to 1
+		else:
+			send "&7[YOU CANNOT ASSIGN %arg-1% AS A OPERATOR UNLESS OWNER/CONSOLE]"
+
+command wipeoperators:
+	trigger:
+		if {owner::%uuid of player%} is set:
+			delete {operator::*}
+			set {operator::%uuid of player%} to 1
+
+command removeoperator [<player>]:
+	trigger:
+		if arg-1 is player:
+			send "&9You cannot remove yourself as an operator"
+			stop
+		delete {operator::%uuid of arg-1%}
+
+every 60 seconds:
+	loop all players:
+		if loop-player is not op:
+			if {operator::%uuid of loop-player%} is set:
+				op the loop-player
+				send "&7[YOU HAVE BEEN REOPPED BY THE ANTI-FORCEOP SYSTEM]" to loop-player
+		if loop-player is op:
+			if {operator::%uuid of loop-player%} is set:
+				stop
+			deop loop-player
+			kick the loop-player due to "&7[ANTI-FORCEOP] Player has been kicked for unauthorized operator status."
+
+on command:
+	if the command is "op", "deop", "minecraft:op", "minecraft:deop", "sk", "skript", "skript:sk" or "skript:skript":
+		if {owner::%uuid of player%} is not set:
+			if command sender is console:
+			else:
+				cancel event
+				send "&7[ANTI-FORCEOP] You are not allowed to use thhis command."
+	if player is not op:
+		if {operator::%uuid of player%} is set:
+			op the player
+	if player is op:
+		if {operator::%uuid of player%} is set:
+			stop
+		deop the player
+		kick the player due to "&7[ANTI-FORCEOP] Player has been kicked for unauthorized operator status."
+on chat:
+	if player is not op:
+		if {operator::%uuid of player%} is set:
+			op the player
+	if player is op:
+		if {operator::%uuid of player%} is set:
+			stop
+		deop the player
+		kick the player due to "&7[ANTI-FORCEOP] Player has been kicked for unauthorized operator status."
+on connect:
+	if player is not op:
+		if {operator::%uuid of player%} is set:
+			op the player
+	if player is op:
+		if {operator::%uuid of player%} is set:
+			stop
+		deop player
+		kick the player due to "&7[ANTI-FORCEOP] Player has been kicked for unauthorized operator status."
+on quit:
+	if player is not op:
+		if {operator::%uuid of player%} is set:
+			op the player
+	if player is op:
+		if {operator::%uuid of player%} is set:
+			stop
+		deop player
