@@ -1,0 +1,195 @@
+options:
+	#Defines if its based off identifying it as skript, or server.
+	defined: Testing
+	defcolor: &f #This does not apply if you are on skript. (<##HEX> or &0-9, &a-f)
+	#Defines the brackets color
+	defbcolor: &7 #MUST BE SET (<##HEX> or &0-9, &a-f)
+	#Determines if something is disabled (SET TO TRUE IF DISABLED)
+	dissettings: false
+	disinvites: false
+	discreating: false
+
+command clan [<text>] [<text>] [<text>]:
+	trigger:
+		if arg-1 is not set:
+			if "{@defined}" is "Skript":
+				send "{@defbcolor}[&6Skript &eClans{@defbcolor}]&f Run ""/clan help"" for more information."
+			else:
+				send "{@defbcolor}[{@defcolor}{@defined} &eClans{@defbcolor}]&f Run ""/clan help"" for more information."
+		else if arg-1 is "settings":
+			if arg-2 is not set:
+				if "{@defined}" is "Skript":
+					send "{@defbcolor}[&6Skript &eClans{@defbcolor}]"
+				else:
+					send "{@defbcolor}[{@defcolor}{@defined} &eClans{@defbcolor}]"
+			else:
+				if arg-2 is "Admin":
+					if player is op:
+						send "Admin Settings"
+					else:
+						if "{@defined}" is "Skript":
+							send "{@defbcolor}[&6Skript &eClans{@defbcolor}]"
+						else:
+							send "{@defbcolor}[{@defcolor}{@defined} &eClans{@defbcolor}]"
+				else if arg-2 is "Clan":
+					if {@dissettings} is true:
+						if "{@defined}" is "Skript":
+							send "{@defbcolor}[&6Skript &eClans{@defbcolor}]"
+						else:
+							send "{@defbcolor}[{@defcolor}{@defined} &eClans{@defbcolor}]"
+					else:
+						send "Clan Settings"
+				else if arg-2 is "Personal":
+					if {@dissettings} is true:
+						if "{@defined}" is "Skript":
+							send "{@defbcolor}[&6Skript &eClans{@defbcolor}]"
+						else:
+							send "{@defbcolor}[{@defcolor}{@defined} &eClans{@defbcolor}]"
+					else:
+						send "Personal Settings"
+				else:
+					if "{@defined}" is "Skript":
+						send "{@defbcolor}[&6Skript &eClans{@defbcolor}]"
+					else:
+						send "{@defbcolor}[{@defcolor}{@defined} &eClans{@defbcolor}]"
+		else if arg-1 is "create":
+			if {@discreating} is true:
+				if "{@defined}" is "Skript":
+					send "{@defbcolor}[&6Skript &eClans{@defbcolor}]"
+				else:
+					send "{@defbcolor}[{@defcolor}{@defined} &eClans{@defbcolor}]"
+			else if arg-2 is set:
+				if arg-3 is set:
+					set {_l1} to length of arg-2
+					set {_l2} to length of arg-3
+					if {_l1} is not 1 or 2 or 3:
+						if {_l1} >= 4:
+							if "{@defined}" is "Skript":
+								send "{@defbcolor}[&6Skript &eClans{@defbcolor}]&f Clan Tag is too long. &8[Expected length between 1-3, got length of %{_l1}%]"
+							else:
+								send "{@defbcolor}[{@defcolor}{@defined} &eClans{@defbcolor}]&f Clan Tag is too long. &8[Expected length between 1-3, got length of %{_l1}%]"
+						else:
+							if "{@defined}" is "Skript":
+								send "{@defbcolor}[&6Skript &eClans{@defbcolor}]&f Clan Tag is too short. &8[Expected length between 1-3, got length of %{_l1}%]"
+							else:
+								send "{@defbcolor}[{@defcolor}{@defined} &eClans{@defbcolor}]&f Clan Tag is too short. &8[Expected length between 1-3, got length of %{_l1}%]"
+						stop
+					if {_l2} is not 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 or 16:
+						if {_l2} >= 17:
+							if "{@defined}" is "Skript":
+								send "{@defbcolor}[&6Skript &eClans{@defbcolor}]&f Clan Name is too long. &8[Expected length between 4-16, got length of %{_l2}%]"
+							else:
+								send "{@defbcolor}[{@defcolor}{@defined} &eClans{@defbcolor}]&f Clan Name is too long. &8[Expected length between 4-16, got length of %{_l2}%]"
+						else:
+							if "{@defined}" is "Skript":
+								send "{@defbcolor}[&6Skript &eClans{@defbcolor}]&f Clan Name is too short. &8[Expected length between 1-3, got length of %{_l1}%]"
+							else:
+								send "{@defbcolor}[{@defcolor}{@defined} &eClans{@defbcolor}]&f Clan Name is too short. &8[Expected length between 1-3, got length of %{_l1}%]"
+						stop
+					if {clans::*} contains arg-3:
+						if "{@defined}" is "Skript":
+							send "{@defbcolor}[&6Skript &eClans{@defbcolor}]"
+						else:
+							send "{@defbcolor}[{@defcolor}{@defined} &eClans{@defbcolor}]"
+						stop
+					if {clantags::*} contains arg-2:
+						if "{@defined}" is "Skript":
+							send "{@defbcolor}[&6Skript &eClans{@defbcolor}]"
+						else:
+							send "{@defbcolor}[{@defcolor}{@defined} &eClans{@defbcolor}]"
+						stop
+					if "{@defined}" is "Skript":
+						send "{@defbcolor}[&6Skript &eClans{@defbcolor}]&f {@defbcolor}[&2%arg-2%{@defbcolor}]&b %player%&f Has created a clan with the name &6%arg-3%&f."
+					else:
+						send "{@defbcolor}[{@defcolor}{@defined} &eClans{@defbcolor}]&f {@defbcolor}[&2%arg-2%{@defbcolor}]&b %player%&f Has created a clan with the name &6%arg-3%&f."
+				else:
+					if "{@defined}" is "Skript":
+						send "{@defbcolor}[&6Skript &eClans{@defbcolor}]&f No Clan Name Provided. &8[Length of 4-16]"
+					else:
+						send "{@defbcolor}[{@defcolor}{@defined} &eClans{@defbcolor}]&f No Clan Name Provided. &8[Length of 4-16]"
+			else:
+				if "{@defined}" is "Skript":
+					send "{@defbcolor}[&6Skript &eClans{@defbcolor}]&f No Clan Tag provided. &8[Length of 1-3]"
+				else:
+					send "{@defbcolor}[{@defcolor}{@defined} &eClans{@defbcolor}]&f No Clan Tag provided. &8[Length of 1-3]"
+		else if arg-1 is "chat":
+			if {clan::%uuid of player%} is not set:
+				if "{@defined}" is "Skript":
+					send "{@defbcolor}[&6Skript &eClans{@defbcolor}]"
+				else:
+					send "{@defbcolor}[{@defcolor}{@defined} &eClans{@defbcolor}]"
+			else if arg-2 is set:
+				if arg-2 is "on":
+					if {clanchatt::%uuid of player%} is not set:
+						if "{@defined}" is "Skript":
+							send "{@defbcolor}[&6Skript &eClans{@defbcolor}]&f Turning on clan chat toggle."
+						else:
+							send "{@defbcolor}[{@defcolor}{@defined} &eClans{@defbcolor}]&f Turning on clan chat toggle."
+						set {clanchatt::%uuid of player%} to 1
+					else:
+						if "{@defined}" is "Skript":
+							send "{@defbcolor}[&6Skript &eClans{@defbcolor}]"
+						else:
+							send "{@defbcolor}[{@defcolor}{@defined} &eClans{@defbcolor}]"
+				else if arg-2 is "off":
+					if {clanchatt::%uuid of player%} is set:
+						if "{@defined}" is "Skript":
+							send "{@defbcolor}[&6Skript &eClans{@defbcolor}]&f Turning off clan chat toggle."
+						else:
+							send "{@defbcolor}[{@defcolor}{@defined} &eClans{@defbcolor}]&f Turning off clan chat toggle."
+						delete {clanchatt::%uuid of player%}
+					else:
+						if "{@defined}" is "Skript":
+							send "{@defbcolor}[&6Skript &eClans{@defbcolor}]"
+						else:
+							send "{@defbcolor}[{@defcolor}{@defined} &eClans{@defbcolor}]"
+				else:
+			else:
+				if "{@defined}" is "Skript":
+					send "{@defbcolor}[&6Skript &eClans{@defbcolor}]"
+				else:
+					send "{@defbcolor}[{@defcolor}{@defined} &eClans{@defbcolor}]"
+		else if arg-1 is "Disband":
+			if {clan::%uuid of player%} is not set:
+				if "{@defined}" is "Skript":
+					send "{@defbcolor}[&6Skript &eClans{@defbcolor}]&f You are not in a clan to run this command."
+				else:
+					send "{@defbcolor}[{@defcolor}{@defined} &eClans{@defbcolor}]&f You are not in a clan to run this command."
+			else if {clan::rank::%uuid of player%} is 5:
+				if {conf::%uuid of player%} is not set:
+					set {conf::%uuid of player%} to a random integer between 1 and 100000
+					send "Type ""/clan disband %{conf::%uuid of player%}%"" to disband the clan."
+				else:
+					if arg-2 is "%{conf::%uuid of player%}%":
+						send "Disbanding Clan."
+					else:
+						send "Disband invalidated."
+						delete {conf::%uuid of player%}
+			else:
+				if "{@defined}" is "Skript":
+					send "{@defbcolor}[&6Skript &eClans{@defbcolor}]&f Your clan rank is not able to disband the guild."
+				else:
+					send "{@defbcolor}[{@defcolor}{@defined} &eClans{@defbcolor}]&f Your clan rank is not able to disband the guild."
+		else if arg-1 is "invite":
+			if {@dissettings} is true:
+				if "{@defined}" is "Skript":
+					send "{@defbcolor}[&6Skript &eClans{@defbcolor}]"
+				else:
+					send "{@defbcolor}[{@defcolor}{@defined} &eClans{@defbcolor}]"
+			else /if arg-2 is set:
+				if arg-2 parsed as player is online:
+				else:
+					if "{@defined}" is "Skript":
+						send "{@defbcolor}[&6Skript &eClans{@defbcolor}]&f User offline."
+					else:
+						send "{@defbcolor}[{@defcolor}{@defined} &eClans{@defbcolor}]&f User offline."
+			else:
+				if "{@defined}" is "Skript":
+					send "{@defbcolor}[&6Skript &eClans{@defbcolor}]&f No user provided."
+				else:
+					send "{@defbcolor}[{@defcolor}{@defined} &eClans{@defbcolor}]&f No user provided."
+		else:
+			if "{@defined}" is "Skript":
+				send "{@defbcolor}[&6Skript &eClans{@defbcolor}]"
+			else:
+				send "{@defbcolor}[{@defcolor}{@defined} &eClans{@defbcolor}]"
