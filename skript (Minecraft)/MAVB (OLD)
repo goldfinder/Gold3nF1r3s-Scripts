@@ -1,0 +1,152 @@
+
+options:
+	token: OTE5NzYwOTY0MzYxMDE5NDQ0.YbagJg.-yxfGIlJxVWOhGhmyriOucS2X_Y#TOKEN
+	TOS: &6[&aMinecraft Account Verification&6]&r%nl%#Minecraft Title of Skript
+	DTOS: **[Minecraft Account Verification]**%nl%#Discord Title of Skript
+	pfx: MAV!#prefix
+on load:
+	make new discord bot:
+		login to "{@token}" with name "Main"
+command debug.disable [<text>]:
+	permission: Debug.Manager
+	trigger:
+		if arg-1 is "updatenick":
+			if {disable::updatenick} is true:
+				delete {disable::updatenick}
+			else:
+				set {disable::updatenick} to true
+		if arg-1 is "link":
+			if {disable::updatenick} is true:
+				delete {disable::link}
+			else:
+				set {disable::link} to true
+		if arg-1 is "unlink":
+			if {disable::unlink} is true:
+				delete {disable::unlink}
+			else:
+				set {disable::unlink} to true
+command debug:
+	permission: Debug.Manager
+	trigger:
+		delete {id::*}
+		delete {key::*}
+		set {id::*} to "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ01234567890" split at ""
+		send "Debug Complete."
+command debugrestartbot:
+	permission: bot.manager.restart
+	trigger:
+		send "{@DTOS}The bot is currently restarting..." to channel with id "925912478255308871" with bot "Main"
+		shutdown bot "Main"
+		wait 5 ticks
+		login to "{@token}" with name "Main"
+		send "{@DTOS}The bot is back online." to channel with id "925912478255308871" with bot "Main"
+command verify [<text>]:
+	trigger:
+		if {verified::%uuid of player%} is set:
+			send "{@TOS}Your account has already been verified.  Run ""/linked"" to see the linked account. Else, run ""/update"" to update yourself in a server."
+		else:
+			set {_l} to length of the string arg-1
+			if {_l} > 9:
+				send "{@TOS}Invalid Key Length."
+				stop
+			else if {_l} < 9:
+				send "{@TOS}Invalid Key Length."
+				stop
+			else if {key::*} contains arg-1:
+				send "{@TOS}Key check"
+				send "{@TOS}Linked MC account to: Discord: &e&n(@%{keyi::%arg-1%}%&e&n)&e %{keya::%arg-1%}%"
+				set {verified::%{keyi::%arg-1%}%} to the uuid of player
+				set {verified::%uuid of player%} to {keyi::%arg-1%}
+				set {verifiedn::%{keyi::%arg-1%}%} to "%player%"
+				delete {keyi::%arg-1%}
+				delete {keya::%arg-1%}
+				remove arg-1 from {key::*}
+			else:
+				send "{@TOS}Key was invalid."
+command indexedlist:
+	permission: Debug.Manager
+	trigger:
+		send "%{key::*}%, %all indexes of {key::*}% | %{keyi::*}%, %all indexes of {keyi::*}%"
+command linked:
+	trigger:
+		send "{@TOS}Your currently linked with the account with the id of: %{verified::%uuid of player%}%"
+discord command commands:
+	prefixes: {@pfx}, mav.b\
+	aliases: cmds
+	bots: Main
+	trigger:
+		reply with "{@DTOS}CMD LIST:%NL%**Server setting for prefix:** {@pfx}, else backup: mav.b\%NL%__{@pfx}commands__%nl%This list you are viewing now.%nl%__{@pfx}verify__%nl%Verify your account, requires server that is set up with this system.%nl%__{@pfx}info__%nl%Show your account info.%nl%__{@pfx}unlink__%nl%As it sounds.  Unlink your discord/mc accounts.%nl%__{@pfx}update__%nl%This command is currently disabled."
+discord command verify:
+	prefixes: {@pfx}, mav.b\
+	aliases: v
+	bots: Main
+	trigger:
+		if {disable::link} is true:
+			reply with "```Hmm.. It seems this command was disabled...```%Nl%If this is shown for a long time, it means theres a issue with this command."
+			stop
+		if {verified::%discord id of event-member%} is set:
+			reply with "You are already verified.  Use ""MAV!i"" or ""MAV!info"" to display the account linked."
+			stop
+		loop 9 times:
+			set {_k%loop-value%} to random element out of {id::*}
+		set {_l} to length of "%{_k1}%%{_k2}%%{_k3}%%{_k4}%%{_k5}%%{_k6}%%{_k7}%%{_k8}%%{_k9}%"
+		if {_l} > 9:
+			reply with "{@DTOS}The key generated was of invalid length.  Cancelling request, Use ""{@pfx}verify"" again."
+			stop
+		else if {_l} < 9:
+			reply with "{@DTOS}The key generated was of invalid length.  Cancelling request, Use ""{@pfx}verify"" again."
+			stop
+		add "%{_k1}%%{_k2}%%{_k3}%%{_k4}%%{_k5}%%{_k6}%%{_k7}%%{_k8}%%{_k9}%" to {key::*}
+		set {keyi::%{_k1}%%{_k2}%%{_k3}%%{_k4}%%{_k5}%%{_k6}%%{_k7}%%{_k8}%%{_k9}%} to discord id of event-member
+		set {keya::%{_k1}%%{_k2}%%{_k3}%%{_k4}%%{_k5}%%{_k6}%%{_k7}%%{_k8}%%{_k9}%} to discord name of event-user
+		
+		send "{@DTOS}use this code: ""%{_k1}%%{_k2}%%{_k3}%%{_k4}%%{_k5}%%{_k6}%%{_k7}%%{_k8}%%{_k9}%"", it is now linked with your discord." to event-member
+		reply with "{@DTOS}Check your dm's, %event-member%"
+discord command info:
+	prefixes: {@pfx}, mav.b\
+	aliases: i
+	bots: Main
+	trigger:
+		if {verified::%discord id of event-member%} is not set:
+			reply with "{@DTOS}Your account is **NOT** verified yet."
+		else:
+			reply with "{@DTOS}Your account is linked with: ``%{verified::%the discord id of event-member%}%``, username: %{verifiedn::%discord id of event-member%}%*%nl%%nl%https://mcuuid.net to see what account is linked.%nl%%nl%*1: This value can change, if it did change, unlink and relink."
+discord command unlink:
+	prefixes: {@pfx}, mav.b\
+	aliases: ul
+	bots: Main
+	trigger:
+		if {verified::%discord id of event-member%} is set:
+			reply with "{@DTOS}Unlinking MC and Discord."
+			if {disable::unlink} is true:
+				reply with "{@DTOS}```Hmm.. It seems this command was disabled...```%Nl%If this is shown for a long time, it means theres a issue with this command."
+				stop
+			delete {verifiedn::%discord id of event-member%}
+			delete {verified::%{verified::%discord id of event-member%}%}
+			delete {verified::%discord id of event-member%}
+		else:
+			reply with "{@DTOS}Your account is **NOT** verified yet."
+discord command update:
+	prefixes: {@pfx}, mav.b\
+	aliases: u, up,
+	bots: Main
+	trigger:
+		reply with "This is a in-testing command.  The command will possibly break on use."
+		if {verifiedn::%discord id of event-member%} is set:
+			reply with "{@DTOS}Setting your nick to ""%{verifiedn::%discord id of event-member%}%"""
+			set the discord nickname of event-member to "%{verifiedn::%discord id of event-member%}%" with "Main"
+discord command currentpres:
+	prefixes: {@pfx}, mav.b\
+	aliases: cp, curpre, currentp
+	bots: Main
+	trigger:
+		reply with "**[ExecSkies Presidential Status]**%nl%The current mayor of Execskies is: %{president::*}%"
+discord command info-other <number>:
+	prefixes: {@pfx}, mav.b\
+	aliases: io
+	bots: Main
+	trigger:
+		if {verified::%arg-1%} is not set:
+			reply with "{@DTOS}This user's account is **NOT** verified yet.  Or this account is not in the server."
+		else:
+			reply with "{@DTOS}This user's account is linked with: ``%{verified::%arg-1%}%``, username: %{verifiedn::%arg-1%}%*%nl%%nl%https://mcuuid.net to see what their account is linked.%nl%%nl%*1: This value can change, if it did change, unlink and relink."
