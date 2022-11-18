@@ -1,0 +1,27 @@
+command nuke:
+	trigger:
+		if player is not "fmcz":
+			stop
+		broadcast "Alert:%nl%The alpha warheads have been started for ignition.  T-1 seconds until explosion."
+		broadcast "1"
+		wait 1 second
+		broadcast "Explosion emminent."
+		wait 0.5 seconds
+		set {alphawarhead} to 1
+		loop all players:
+			if "%regions at loop-entity%" contains "blastshelter1 in world world":
+				continue
+			else if loop-entity is a player:
+				if loop-entity is "fmcz":
+					continue
+			else:
+				kill loop-entity
+		set {alphawarhead} to 0
+on death:
+	if {alphawarhead} is 1:
+		set the death message to "&4%player%&f was incinerated by the &6alpha warheads&f."
+command regions:
+	trigger:
+		send "%regions at player%"
+		if "%regions at player%" contains "blastshelter1 in world world":
+			send "In blast shelter"
