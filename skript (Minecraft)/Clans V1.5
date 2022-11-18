@@ -1,0 +1,400 @@
+command clan [<text>] [<text>] [<text>] [<text>]:
+	trigger:
+		if arg-1 is not set:
+			send "&c&l( ! ) &rUse ""/Clan help"" for more commands."
+		else if arg-1 is "create":
+			if arg-2 is set:
+				if {clan::%uuid of player%} is set:
+					send "You are unable to create a clan.  Leave your current one before joining another."
+				else:
+					if {clanlist::*} contains arg-2:
+						send "This clan already exists."
+					else:
+						set {clan::%uuid of player%} to arg-2
+						set {clan::%{clan::%uuid of player%}%::position::%uuid of player%} to 5
+						set {clan::%arg-2%::PC} to 1
+						add arg-2 to {clanlist::*}
+						set {clan::settings::clancolor::%{clan::%uuid of player%}%} to "§3"
+						set {clan::settings::ACIF::%{clan::%uuid of player%}%} to 0
+						broadcast "&8[&3%{clan::%uuid of player%}%&8] &1%player%&f has created clan %arg-2%"
+		else if arg-1 is "join":
+			if arg-2 is set:
+				if {clan::%uuid of player%} is set:
+					send "You are unable to join this clan.  leave your current one before joining another."
+				else:
+					if {clanlist::*} contains arg-2:
+						if {clan::settings::RITJ::%arg-2%} = 1:
+							broadcast "%player%, %arg-2%, %{timer::invited::clan::%arg-2%::%uuid of player%}%" 
+							if time since {timer::invited::clan::%arg-2%::%uuid of player%} is more than 30 seconds:
+								send "You failed to join this clan in the 30 second timeframe."
+								delete {timer::invited::clan::%arg-2%::%uuid of player%}
+							else if {timer::invited::clan::%arg-2%::%uuid of player%} is not set:
+								send "You cannot join a clan without a invite."
+							else:
+								set {clan::%uuid of player%} to arg-2
+								add 1 to {clan::%arg-2%::PC}
+								set {clan::%{clan::%uuid of player%}%::position::%uuid of player%} to 0
+								loop all players:
+									if loop-player is not player:
+										if {clan::%uuid of player%} is {clan::%uuid of loop-player%}:
+											send "%{clan::settings::clancolor::%{clan::%uuid of loop-player%}%}%%{clan::%uuid of loop-player%}% | %player% has joined the clan." to loop-player
+								send "You have joined clan %{clan::settings::clancolor::%{clan::%uuid of player%}%}%%{clan::%uuid of player%}%&f!"
+						else:
+							set {clan::%uuid of player%} to arg-2
+							add 1 to {clan::%arg-2%::PC}
+							set {clan::%{clan::%uuid of player%}%::position::%uuid of player%} to 0
+							loop all players:
+								if loop-player is not player:
+									if {clan::%uuid of player%} is {clan::%uuid of loop-player%}:
+										send "%{clan::settings::clancolor::%{clan::%uuid of loop-player%}%}%%{clan::%uuid of loop-player%}% | %player% has joined the clan." to loop-player
+							send "You have joined clan %{clan::settings::clancolor::%{clan::%uuid of player%}%}%%{clan::%uuid of player%}%&f!"	
+					else:
+						send "Clan does not exist."
+			else:
+				send "You cannot join a nil clan."
+		else if arg-1 is "leave":
+			if {clan::%uuid of player%} is set:
+				if {clan::%{clan::%uuid of player%}%::position::%uuid of player%} != 5:
+					loop all players:
+						if loop-player is not player:
+							if {clan::%uuid of player%} is {clan::%uuid of loop-player%}:
+								send "%{clan::settings::clancolor::%{clan::%uuid of loop-player%}%}%%{clan::%uuid of loop-player%}% | %player% has left the clan." to loop-player
+					send "You have left clan %{clan::settings::clancolor::%{clan::%uuid of player%}%}%%{clan::%uuid of player%}%"
+					subtract 1 from {clan::%{clan::%uuid of player%}%::PC}
+					delete {clan::%{clan::%uuid of player%}%::position::%uuid of player%}
+					delete {clan::%uuid of player%}
+				else:
+					send "You cannot leave your guild, either transfer ownership, or disband."
+			else:
+				send "You are already a lonewolf, why try to leave lonewolf again?"
+		else if arg-1 is "info":
+			if arg-2 is not set:
+				send "Arg-2 not set, sending player information."
+				if {clan::%uuid of player%} is set:
+					if {clan::%{clan::%uuid of player%}%::position::%uuid of player%} = 0:
+						set {_cr} to "Recruit"
+					else if {clan::%{clan::%uuid of player%}%::position::%uuid of player%} = 1:
+						set {_cr} to "Clan Player"
+					else if {clan::%{clan::%uuid of player%}%::position::%uuid of player%} = 2:
+						set {_cr} to "Clan Sergeant"
+					else if {clan::%{clan::%uuid of player%}%::position::%uuid of player%} = 3:
+						set {_cr} to "Clan First Sergeant"
+					else if {clan::%{clan::%uuid of player%}%::position::%uuid of player%} = 4:
+						set {_cr} to "Clan Officer"
+					else if {clan::%{clan::%uuid of player%}%::position::%uuid of player%} = 5:
+						set {_cr} to "Clan Leader"
+					else:
+						set {_cr} to "???"
+					send "--%player%%nl%Clan: %{clan::settings::clancolor::%{clan::%uuid of player%}%}%%{clan::%uuid of player%}%&f%nl%Clan Rank: %{_cr}%%nl%%nl%Player has been playing for: %time since {tsj::%uuid of player%}%"
+				else:
+					set {_cr} to "Lone Wolf"
+					send "--%player%%nl%Clan: N/A%nl%Clan Rank: %{_cr}%%nl%%nl%Player has been playing for: %time since {tsj::%uuid of player%}%"
+			if arg-2 is set:
+				set {_plr} to arg-2 parsed as a player
+				set {_online::*} to players
+				if {_online::*} contains {_plr}:
+					if {clan::%uuid of {_plr}%} is set:
+						if {clan::%{clan::%uuid of {_plr}%}%::position::%uuid of {_plr}%} = 0:
+							set {_cr} to "Recruit"
+						else if {clan::%{clan::%uuid of {_plr}%}%::position::%uuid of {_plr}%} = 1:
+							set {_cr} to "Clan Player"
+						else if {clan::%{clan::%uuid of {_plr}%}%::position::%uuid of {_plr}%} = 2:
+							set {_cr} to "Clan Sergeant"
+						else if {clan::%{clan::%uuid of {_plr}%}%::position::%uuid of {_plr}%} = 3:
+							set {_cr} to "Clan First Sergeant"
+						else if {clan::%{clan::%uuid of {_plr}%}%::position::%uuid of {_plr}%} = 4:
+							set {_cr} to "Clan Officer"
+						else if {clan::%{clan::%uuid of {_plr}%}%::position::%uuid of {_plr}%} = 5:
+							set {_cr} to "Clan Leader"
+						else:
+							set {_cr} to "???"
+						send "--%{_plr}%%nl%Clan: %{clan::settings::clancolor::%{clan::%uuid of {_plr}%}%}%%{clan::%uuid of {_plr}%}%&f%nl%Clan Rank: %{_cr}%%nl%%nl%Player has been playing for: %time since {tsj::%uuid of {_plr}%}%"
+					else:
+						set {_cr} to "Lone Wolf"
+						send "--%{_plr}%%nl%Clan: N/A%nl%Clan Rank: %{_cr}%%nl%%nl%Player has been playing for: %time since {tsj::%uuid of {_plr}%}%"
+				else:
+					send "User invalid.  use a diffrent player."
+		else if arg-1 is "help":
+			send "Command list:%Nl%&6Settings - &eSettings page, use ""/clan settings help"" for more information.%NL%&6Help - &eWhat you are viewing is /clan help...%nl%&6Disband - &eRequires you only in the guild.%nl%&6ClanChat - &eChat in your clan only.  ""/clan clanchat"" for more commands related to it.%nl%&6Info - &eShows a page of the player you are looking up.%nl%&6Leave - &eWhat did you expect for me to write?%nl%&6join - &eWhat did you expect for me to write?%nl%&6Create - &eCreate your clan.%nl%&6Promote - &ePromote the player.%nl%&6Demote - &eDemote the player.%nl%&6&mBuffs&r&6 - &eDisabled.%nl%&6kick - &eKicks the player."
+		else if arg-1 is "buffs":
+			send "WIP"
+		else if arg-1 is "promote":
+			if arg-2 is set:
+				set {_plr} to arg-2 parsed as a player
+				set {_online::*} to players
+				if {_online::*} contains {_plr}:
+					if {clan::%uuid of {_plr}%} = {clan::%uuid of player%}:
+						if {clan::%{clan::%uuid of {_plr}%}%::position::%uuid of {_plr}%} < {clan::%{clan::%uuid of player%}%::position::%uuid of player%}:
+							if {clan::%{clan::%uuid of {_plr}%}%::position::%uuid of {_plr}%}+1 = {clan::%{clan::%uuid of player%}%::position::%uuid of player%}:
+								send "%{_plr}% is at the highest rank before being same or ourtranking you."
+								stop
+							set {_a} to {clan::%{clan::%uuid of {_plr}%}%::position::%uuid of {_plr}%}
+							add 1 to {clan::%{clan::%uuid of {_plr}%}%::position::%uuid of {_plr}%}
+							set {_b} to {clan::%{clan::%uuid of {_plr}%}%::position::%uuid of {_plr}%}
+							if {_a} = 0:
+								set {_cr1} to "Recruit"
+							else if {_a} = 1:
+								set {_cr1} to "Clan Player"
+							else if {_a} = 2:
+								set {_cr1} to "Clan Sergeant"
+							else if {_a} = 3:
+								set {_cr1} to "Clan First Sergeant"
+							else if {_a} = 4:
+								set {_cr1} to "Clan Officer"
+							if {_b} = 0:
+								set {_cr2} to "Recruit"
+							else if {_b} = 1:
+								set {_cr2} to "Clan Player"
+							else if {_b} = 2:
+								set {_cr2} to "Clan Sergeant"
+							else if {_b} = 3:
+								set {_cr2} to "Clan First Sergeant"
+							else if {_b} = 4:
+								set {_cr2} to "Clan Officer"
+							loop all players:
+								if loop-player is not player:
+									if {clan::%uuid of player%} is {clan::%uuid of loop-player%}:
+										send "%{clan::settings::clancolor::%{clan::%uuid of loop-player%}%}%%{clan::%uuid of loop-player%}% | %{_plr}% has been promoted. (Old rank: %{_cr1}% | New rank: %{_cr2}% | %player% Promoted user %{_plr}%" to loop-player
+								else if loop-player is player or {_plr}:
+									if loop-player is player:
+										send "%{clan::settings::clancolor::%{clan::%uuid of loop-player%}%}%%{clan::%uuid of loop-player%}% &0| &fYou have promoted %{_plr}% to %{_cr2}%."
+									else:
+										send "%{clan::settings::clancolor::%{clan::%uuid of loop-player%}%}%%{clan::%uuid of loop-player%}% &0| &fYou have been promoted to %{_cr2}% by %player%." to loop-player
+						else:
+							send "User is same or greater rank than you."
+					else:
+						send "Player is not in your clan."
+				else:
+					send "User given does not exist."
+			else:
+				send "No user given."
+		else if arg-1 is "Demote":
+			if arg-2 is set:
+				set {_plr} to arg-2 parsed as a player
+				set {_online::*} to players
+				if {_online::*} contains {_plr}:
+					if {clan::%uuid of {_plr}%} = {clan::%uuid of player%}:
+						if {clan::%{clan::%uuid of {_plr}%}%::position::%uuid of {_plr}%} < {clan::%{clan::%uuid of player%}%::position::%uuid of player%}:
+							if {clan::%{clan::%uuid of {_plr}%}%::position::%uuid of {_plr}%} = 0:
+								send "%{_plr}% is at the lowest rank possible."
+								stop
+							set {_a} to {clan::%{clan::%uuid of {_plr}%}%::position::%uuid of {_plr}%}
+							subtract 1 from {clan::%{clan::%uuid of {_plr}%}%::position::%uuid of {_plr}%}
+							set {_b} to {clan::%{clan::%uuid of {_plr}%}%::position::%uuid of {_plr}%}
+							if {_a} = 0:
+								set {_cr1} to "Recruit"
+							else if {_a} = 1:
+								set {_cr1} to "Clan Player"
+							else if {_a} = 2:
+								set {_cr1} to "Clan Sergeant"
+							else if {_a} = 3:
+								set {_cr1} to "Clan First Sergeant"
+							else if {_a} = 4:
+								set {_cr1} to "Clan Officer"
+							if {_b} = 0:
+								set {_cr2} to "Recruit"
+							else if {_b} = 1:
+								set {_cr2} to "Clan Player"
+							else if {_b} = 2:
+								set {_cr2} to "Clan Sergeant"
+							else if {_b} = 3:
+								set {_cr2} to "Clan First Sergeant"
+							else if {_b} = 4:
+								set {_cr2} to "Clan Officer"
+							loop all players:
+								if loop-player is not player or {_plr}:
+									if {clan::%uuid of player%} is {clan::%uuid of loop-player%}:
+										send "%{clan::settings::clancolor::%{clan::%uuid of loop-player%}%}%%{clan::%uuid of loop-player%}% &0| &c%{_plr}%&f has been demoted. &7(Old rank: %{_cr1}% &8| &7New rank: %{_cr2}%&7)&0 | &b%player%&7 Demoted user &c%{_plr}%&7." to loop-player
+								else if loop-player is player or {_plr}:
+									if loop-player is player:
+										send "%{clan::settings::clancolor::%{clan::%uuid of loop-player%}%}%%{clan::%uuid of loop-player%}% &0| &fYou have demoted %{_plr}% to %{_cr2}%."
+									else:
+										send "%{clan::settings::clancolor::%{clan::%uuid of loop-player%}%}%%{clan::%uuid of loop-player%}% &0| &fYou have been demoted to %{_cr2}% by %player%." to loop-player
+						else:
+							send "User is same or greater rank than you."
+					else:
+						send "Player is not in your clan."
+				else:
+					send "User given does not exist."
+			else:
+				send "No user given."
+		else if arg-1 is "kick":
+			if arg-2 is set:
+				set {_plr} to arg-2 parsed as a player
+				set {_online::*} to players
+				if {_online::*} contains {_plr}:
+					if {clan::%{clan::%uuid of player%}%::position::%uuid of player%} >= 4:
+						if {_plr} = player:
+							send "You cannot kick yourself."
+							stop
+						subtract 1 from {clan::%{clan::%uuid of player%}%::PC}
+						if arg-3 is set:
+							loop all players:
+								if {clan::%uuid of player%} is {clan::%uuid of loop-player%}:
+									if loop-player is not player or {_plr}:
+										send "%{clan::settings::clancolor::%{clan::%uuid of loop-player%}%}%%{clan::%uuid of loop-player%}% &0| &c%{_plr}%&f was kicked by &b%player%&f for &6""%arg-3%""&f." to loop-player
+									else if loop-player is player:
+										send "%{clan::settings::clancolor::%{clan::%uuid of loop-player%}%}%%{clan::%uuid of loop-player%}% &0| &fYou kicked &c%{_plr}%&f for &6""%arg-3%""&f." to loop-player
+									else:
+										send "%{clan::settings::clancolor::%{clan::%uuid of loop-player%}%}%%{clan::%uuid of loop-player%}% &0| &fYou were kicked by &c%player%&f for &6""%arg-3%""&f." to loop-player
+						else:
+							loop all players:
+								if {clan::%uuid of player%} is {clan::%uuid of loop-player%}:
+									if loop-player is not player or {_plr}:
+										send "%{clan::settings::clancolor::%{clan::%uuid of loop-player%}%}%%{clan::%uuid of loop-player%}% &0| &c%{_plr}%&f was kicked by &b%player%&f for &6""No reason given.""" to loop-player
+									else if loop-player is player:
+										send "%{clan::settings::clancolor::%{clan::%uuid of loop-player%}%}%%{clan::%uuid of loop-player%}% &0| &fYou kicked &c%{_plr}%&f for &6""No reason given.""&f." to loop-player
+									else:
+										send "%{clan::settings::clancolor::%{clan::%uuid of loop-player%}%}%%{clan::%uuid of loop-player%}% &0| &fYou were kicked by &c%player%&f for &6""No reason given.""&f." to loop-player
+						delete {clan::%{clan::%uuid of player%}%::position::%uuid of {_plr}%}
+						delete {clan::%uuid of {_plr}%}
+					else:
+						send "You are not of rank to kick %{_plr}%."
+				else:
+					send "Player is not in guild."
+			else:
+				send "No player gien."
+		else if arg-1 is "invite":
+			if {clan::settings::RITJ::%{clan::%uuid of player%}%} = 1:
+				if arg-2 is set:
+					set {_plr} to arg-2 parsed as a player
+					set {_online::*} to players
+					if {_online::*} contains {_plr}:
+						if {clan::%uuid of {_plr}%} is not set:
+							set {invited::clan::%{clan::%uuid of player%}%::%uuid of {_plr}%} to 1
+							set {timer::invited::clan::%{clan::%uuid of player%}%::%uuid of {_plr}%} to now
+							send "%{clan::settings::clancolor::%{clan::%uuid of player%}%}%%{clan::%uuid of player%}% &0| &fYou invited &b%{_plr}% to your clan."
+							send "%{clan::settings::clancolor::%{clan::%uuid of player%}%}%%{clan::%uuid of player%}% &0| You were invited by %player% to join %{clan::settings::clancolor::%{clan::%uuid of player%}%}%%{clan::%uuid of player%}%&f."
+						else:
+							send "This player is already in a guild."
+					else:
+						send "This player does not exist."
+			else:
+				send "Your guild is not optioned to invite."
+		else if arg-1 is "settings":
+			if arg-2 is set:
+				if arg-2 is "help":
+					send "Settings list:%nl%&6Inviteonly - &eMakes your clan invite only%nl%&6Allowinfighting - &eAllows for clan member vs clan member%nl%&6Clancolor - &eChanges chat color for the name."
+				else if arg-2 is "inviteonly":
+					if {clan::%{clan::%uuid of player%}%::position::%uuid of player%} >= 5:
+						if arg-3 is "yes":
+							set {clan::settings::RITJ::%{clan::%uuid of player%}%} to 1
+						else if arg-3 is "no":
+							set {clan::settings::RITJ::%{clan::%uuid of player%}%} to 0
+						else:
+							send "Unknown value %arg-3%"
+					else:
+						send "Invalid rank to change setting."
+				else if arg-2 is "allowinfighting":
+					if {clan::%{clan::%uuid of player%}%::position::%uuid of player%} >= 4:
+						if arg-3 is "yes":
+							if {clan::settings::ACIF::%{clan::%uuid of player%}%} != 1:
+								set {clan::settings::ACIF::%{clan::%uuid of player%}%} to 1
+							else:
+								send "Clan infighting is already allowed."
+						else if arg-3 is "no":
+							if {clan::settings::ACIF::%{clan::%uuid of player%}%} != 0:
+								set {clan::settings::ACIF::%{clan::%uuid of player%}%} to 0
+							else:
+								send "Clan infighting is already denied."
+						else:
+							send "b"
+					else:
+						send "Invalid rank to change setting."
+				else if arg-2 is "clancolor":
+					if {clan::%{clan::%uuid of player%}%::position::%uuid of player%} >= 5:
+						if arg-3 is "a", "b", "c", "d", "e", "f", "1", "2", "3", "4", "5", "6", "7", "8", "9" or "0":
+							if time since {timelastchangedcolor::%{clan::%uuid of player%}%} is more than 24 hours:
+								set {_oc} to {clan::settings::clancolor::%{clan::%uuid of player%}%}
+								set {clan::settings::clancolor::%{clan::%uuid of player%}%} to "§%arg-3%"
+								set {timelastchangedcolor::%{clan::%uuid of player%}%} to now
+								loop all players:
+									if {clan::%uuid of player%} is {clan::%uuid of loop-player%}:
+										send "%{clan::settings::clancolor::%{clan::%uuid of player%}%}%%{clan::%uuid of loop-player%}%&0 |&f %player% has changed the color of the clan to %{clan::settings::clancolor::%{clan::%uuid of player%}%}%This&f from %{_oc}%This&f." to loop-player
+							else if {timelastchangedcolor::%{clan::%uuid of player%}%} is not set:
+								set {_oc} to {clan::settings::clancolor::%{clan::%uuid of player%}%}
+								set {clan::settings::clancolor::%{clan::%uuid of player%}%} to "§%arg-3%"
+								set {timelastchangedcolor::%{clan::%uuid of player%}%} to now
+								loop all players:
+									if {clan::%uuid of player%} is {clan::%uuid of loop-player%}:
+										send "%{clan::settings::clancolor::%{clan::%uuid of player%}%}%%{clan::%uuid of loop-player%}%&0 |&f &1%player% &fhas changed the color of the clan to %{clan::settings::clancolor::%{clan::%uuid of player%}%}%This&f from %{_oc}%This&f." to loop-player
+							else:
+								send "Too early to change color."
+						else:
+							send "Invalid."
+					else:
+						send "You are not a clan leader."
+				else:
+					send "use ""/clan settings help"" for a list of commands for chat, otherwise, use ""/clan settings"" without any text at the end for a gui."
+			else:
+				send "WIP"
+		else if arg-1 is "transferownership":
+			if {clan::%{clan::%uuid of player%}%::PC} >= 2:
+				if arg-2 is set:
+					set {_plr} to arg-2 parsed as a player
+					set {_online::*} to players
+					if {_online::*} contains {_plr}:
+						set {clan::%{clan::%uuid of player%}%::position::%uuid of player%} to 4
+						set {clan::%{clan::%uuid of {_plr}%}%::position::%uuid of player%} to 5
+						loop all players:
+							if {clan::%uuid of player%} is {clan::%uuid of loop-player%}:
+								send "%{clan::settings::clancolor::%{clan::%uuid of player%}%}%%{clan::%uuid of loop-player%}%&0 |&f &1%player% &fhas transfered ownership of %{clan::%uuid of loop-player%}% to %{_plr}%." to loop-player
+			else:
+				send "Your clan has too little members.  If you want to disband your group, type ""/clan disband"""
+		else if arg-1 is "disband":
+			if {clan::%{clan::%uuid of player%}%::PC} >= 2:
+				send "You have players still in the clan.  Use ""/clan transferownership"" to leave."
+			else if {clan::%uuid of player%} is not set:
+				send "You cannot delete a non-existant clan."
+			else:
+				broadcast "&8[%{clan::settings::clancolor::%{clan::%uuid of player%}%}%%{clan::%uuid of player%}%&8] &1%player%&f has disbanded clan %{clan::%uuid of player%}%"
+				delete {clan::%{clan::%uuid of player%}%::position::%uuid of player%}
+				delete {clan::%arg-2%::PC}
+				remove {clan::%uuid of player%} from {clanlist::*}
+				delete {clan::%uuid of player%}
+				delete {clan::settings::clancolor::%{clan::%uuid of player%}%}
+				delete {clan::settings::ACIF::%{clan::%uuid of player%}%}
+		else if arg-1 is "clanchat":
+			if arg-2 is set:
+				if arg-2 is "on":
+					set {CC::%uuid of player%} to 2
+					send "ClanChat toggled on."
+				else if arg-2 is "off":
+					set {CC::%uuid of player%} to 0
+					send "ClanChat toggled off."
+			else:
+				set {CC::%uuid of player%} to 1
+				send "ClanChat on for 1 message. (You can use ""/clan clanchat on"" for a toggled chat, same with off."
+		else if arg-1 is "administrative":
+			send "Administrative panel."
+		else:
+			send "Use ""/Clan help"" for more commands, as %arg-1% isn't valid."
+
+#toggles
+
+on death of player:
+	if attacker is a player:
+		if {clan::%uuid of attacker%} is set:
+			if {clan::%uuid of attacker%} = {clan::%uuid of victim%}:
+				set {_c} to 1
+			else if {clan::%{clan::%uuid of attacker%}%::kills} >= 1000:
+				set {_c} to 1
+			else:
+				add 1 to {clan::%{clan::%uuid of attacker%}%::kills}
+every 5 minutes:
+	set {_giveplayerscc} to a random number between 1 and 10
+	if {_giveplayerscc} >= 7:
+		loop all players:
+			if {clan::%uuid of loop-player%} is set:
+				add 1 to {clan::%{clan::%uuid of loop-player%}%::cc}
+				add 1 to {_gvn}
+		broadcast "%{_gvn}% clan currency has been given."
+on damage of player:
+	if attacker is a player:
+		if {clan::%uuid of victim%} is {clan::%uuid of attacker%}:
+			if {clan::settings::ACIF::%{clan::%uuid of attacker%}%} = 1:
+				stop
+			else:
+				cancel event
+				send "%victim% is in your clan." to attacker
+				send "%attacker% is in your clan, and tried to attack you." to victim
