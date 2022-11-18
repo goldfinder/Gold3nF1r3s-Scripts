@@ -1,0 +1,15 @@
+command makeplayerpresident <offline player>:
+	permission: cm.rank.admin
+	trigger:
+		if {played::%uuid of arg-1%} is set:
+			delete {president::*}
+			set {president::%uuid of player%} to "(P) %arg-1%"
+			broadcast "there has been a change in mayor.  use ""/currentmayor"" to see who is the new mayor."
+		else:
+			send "This player has not joined the server yet."
+command makebotpresident <text>:
+	permission: cm.rank.admin
+	trigger:
+		delete {president::*}
+		set {president::bot} to "(B) %arg-1%"
+		broadcast "there has been a change in mayor.  use ""/currentmayor"" to see who is the new mayor."
