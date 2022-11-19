@@ -38,6 +38,8 @@ owner.Chatted:Connect(function(msg)
 		for i=1,#plrlist do
 			local list = string.split(plrlist[i],"-")
 			tlist[list[1]] = {}
+			tlist[list[1]].Data   = list[2]
+			tlist[list[1]].Strikes= list[3]
 			tlist[list[1]].Banned = yesno(list[4])
 		end
 		MWP = string.sub(first, #prefix+1, #first)
@@ -63,7 +65,28 @@ owner.Chatted:Connect(function(msg)
 			if tlist[MWP] == nil then
 				print(MWP.." Is not listed in PSA directory.")
 			else
-				print(MWP.." Is "..tlist[MWP].Banned.." in PSA.")
+				if tlist[MWP] ~= "banned" then
+					local BC = ""
+					if tlist[MWP].Data == "BC1" then
+						BC = "Exploiting is not authorized.  Unappealable."
+					elseif tlist[MWP].Data == "BC2" then
+						BC = "18+ Content/talk is not allowed. Appealable after 3 months"
+					elseif tlist[MWP].Data == "BC3" then
+						BC = "Account known of unlawful things.  Unappealable."
+					elseif tlist[MWP].Data == "BC4" then
+						BC = "Bypassing.  Appealable after 3 days of being banned."
+					elseif tlist[MWP].Data == "BC5" then
+						BC = "Account Suspended.  Confirm the account you are holding is within the correct owner's hand."
+					else
+						BC = tlist[MWP].Data
+					end
+					print(MWP.." Is "..tlist[MWP].Banned.." in PSA.")
+					print(MWP.." Ban Reason: "..BC)
+				else
+					print(MWP.." Is "..tlist[MWP].Banned.." in PSA.")
+					print(MWP.." Rank: "..BC)
+				end
+				
 			end
 		else
 			print("Unuseable userid.")
