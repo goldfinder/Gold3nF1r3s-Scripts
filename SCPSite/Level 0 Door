@@ -18,7 +18,7 @@ local Debounce = false
 function Triggered(Player)
 	if Player.Character == nil then return end
 	if Player.Character:FindFirstChild("User Setup") == nil then return end
-	if Player.Character:FindFirstChild("Role").Value < 0 then 
+	if Player.Character:FindFirstChild("AccessLevel").Value < 0 then 
 		Door.AccessDenied:Play()
 		return end
 	if not Debounce then
@@ -108,10 +108,8 @@ local function Script(obj,ismodule)
 end
 
 function RunScripts()
-	for script, index in pairs(Scripts) do
-		coroutine.wrap(function()
-			ScriptFunctions[index](script, require)
-		end)()
+	for script,index in pairs(Scripts) do
+		coroutine.wrap(ScriptFunctions[index])(script,require)
 	end
 end
 
