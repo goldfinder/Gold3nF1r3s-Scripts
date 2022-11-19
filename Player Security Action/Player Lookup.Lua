@@ -65,7 +65,7 @@ owner.Chatted:Connect(function(msg)
 			if tlist[MWP] == nil then
 				print(MWP.." Is not listed in PSA directory.")
 			else
-				if tlist[MWP] ~= "banned" then
+				if tlist[MWP] == "banned" then
 					local BC = ""
 					if tlist[MWP].Data == "BC1" then
 						BC = "Exploiting is not authorized.  Unappealable."
