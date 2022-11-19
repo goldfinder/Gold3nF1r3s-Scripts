@@ -1,355 +1,83 @@
 -- Converted using Mokiros's Model to Script Version 3
--- Converted string size: 5080 characters
+-- Converted string size: 11568 characters
 
 local ScriptFunctions = {
 function(script,require)
-script.Parent.L0A.ClickDetector.MouseClick:Connect(function(plr)
-	if plr.Character:FindFirstChild("User Setup") ~= nil then 
-		script.Parent.L0A.SurfaceGui.TextLabel.Text=plr.Name.." Already setup."
-		wait(3)
-		script.Parent.L0A.SurfaceGui.TextLabel.Text="Remove Access Level"
+--Made by xImmortalChaos for Site-40.
+
+local Door = script.Parent.Door
+local Door2 = script.Parent.Door2
+local Button1 = script.Parent.Button1
+local Button2 = script.Parent.Button2
+local Open = false
+
+local OpenSound = Door.DoorOpen
+local CloseSound = Door.DoorClose
+
+local Debounce = false
+function Triggered(Player)
+	if Player.Character == nil then return end
+	if Player.Character:FindFirstChild("User Setup") == nil then return end
+	if Player.Character:FindFirstChild("AccessLevel").Value < 7 then 
+		Door.AccessDenied:Play()
 		return end
-	if plr.Character:FindFirstChild("AccessLevel") == nil then
-		script.Parent.L0A.SurfaceGui.TextLabel.Text="You don't have a access level."
-		wait(3)
-		script.Parent.L0A.SurfaceGui.TextLabel.Text="Remove Access Level"
-	else
-		script.Parent.L0A.SurfaceGui.TextLabel.Text="Removed Access Level."
-		plr.Character:FindFirstChild("AccessLevel"):Destroy()
-		wait(3)
-		script.Parent.L0A.SurfaceGui.TextLabel.Text="Remove Access Level"
-	end
-end)
+	if not Debounce then
+		Debounce = true
+		if Open then
+			Open = false
+			CloseSound:Play()
+			--Door.Transparency = 0
+			for i,v in pairs(Door:GetChildren()) do
+				if v:IsA("Decal") then
+					v.Transparency = 0
+				end
+			end
+			spawn(function()
+				for i = 3,(Door.Size.z / 0.15)  do
+					Door.CFrame = Door.CFrame + (Door.CFrame.lookVector * 0.15)
 
-script.Parent.L1A.ClickDetector.MouseClick:Connect(function(plr)
-	if plr.Character:FindFirstChild("User Setup") ~= nil then 
-		script.Parent.L1A.SurfaceGui.TextLabel.Text=plr.Name.." Already setup."
-		wait(3)
-		script.Parent.L1A.SurfaceGui.TextLabel.Text="Remove Role"
-		return end
-	if plr.Character:FindFirstChild("Role") == nil then
-		script.Parent.L1A.SurfaceGui.TextLabel.Text="You don't have a Role."
-		wait(3)
-		script.Parent.L1A.SurfaceGui.TextLabel.Text="Remove Role"
-	else
-		script.Parent.L1A.SurfaceGui.TextLabel.Text="Removed role."
-		plr.Character:FindFirstChild("Role"):Destroy()
-		wait(3)
-		script.Parent.L1A.SurfaceGui.TextLabel.Text="Remove Role"
-	end
-end)
+					wait()
+				end
+			end)
 
-script.Parent.L2A.ClickDetector.MouseClick:Connect(function(plr)
-	local TLT = 7
-	local TLTS = "Developer Access (LOCKED)"
-	if plr.UserId == 21490931 then
-		if plr.Character:FindFirstChild("AccessLevel") ~= nil then
-			script.Parent.L2A.SurfaceGui.TextLabel.Text="Already have a access level."
-			wait(3)
-			script.Parent.L2A.SurfaceGui.TextLabel.Text=TLTS
+			spawn(function()
+				for i = 3,(Door2.Size.z / 0.15) do
+					Door2.CFrame = Door2.CFrame + (Door2.CFrame.lookVector * 0.15)
+
+					wait()
+				end
+			end)
 		else
-			script.Parent.L2A.SurfaceGui.TextLabel.Text="Added Access."
-			local inst = Instance.new("NumberValue")
-			inst.Value = TLT
-			inst.Name="AccessLevel"
-			inst.Parent = plr.Character
-			wait(3)
-			script.Parent.L2A.SurfaceGui.TextLabel.Text=TLTS
+			Open = true
+			OpenSound:Play()
+			spawn(function()
+				for i = 3,(Door.Size.z / 0.15) do
+					Door.CFrame = Door.CFrame - (Door.CFrame.lookVector * 0.15)
+
+					wait()
+				end
+			end)
+			spawn(function()
+				for i = 3,(Door2.Size.z / 0.15) do
+					Door2.CFrame = Door2.CFrame - (Door2.CFrame.lookVector * 0.15)
+
+					wait()
+				end
+			end)
+			--Door.Transparency = 1
+			for i,v in pairs(Door:GetChildren()) do
+				if v:IsA("Decal") then
+					v.Transparency = 1
+				end
+			end
 		end
-	else
-		script.Parent.L2A.SurfaceGui.TextLabel.Text="This access level is locked."
-		wait(3)
-		script.Parent.L2A.SurfaceGui.TextLabel.Text=TLTS
-	end
-end)
-end,
-function(script,require)
-script.Parent.L0A.ClickDetector.MouseClick:Connect(function(plr)
-	if plr.Character:FindFirstChild("AccessLevel") ~= nil then
-		script.Parent.L0A.SurfaceGui.TextLabel.Text="Already have a access level."
-		wait(3)
-		script.Parent.L0A.SurfaceGui.TextLabel.Text="Level 0 Access"
-	else
-		script.Parent.L0A.SurfaceGui.TextLabel.Text="Added Access."
-		local inst = Instance.new("NumberValue")
-		inst.Value = 0
-		inst.Name="AccessLevel"
-		inst.Parent = plr.Character
-		wait(3)
-		script.Parent.L0A.SurfaceGui.TextLabel.Text="Level 0 Access"
-	end
-end)
-
-script.Parent.L1A.ClickDetector.MouseClick:Connect(function(plr)
-	local TLT = "Researcher"
-	if plr.Character:FindFirstChild("Role") ~= nil then
-		script.Parent.L1A.SurfaceGui.TextLabel.Text="Already have a role."
-		wait(3)
-		script.Parent.L1A.SurfaceGui.TextLabel.Text=TLT
-	else
-		script.Parent.L1A.SurfaceGui.TextLabel.Text="Added Role."
-		local inst = Instance.new("StringValue")
-		inst.Value = TLT
-		inst.Name="Role"
-		inst.Parent = plr.Character
-		wait(3)
-		script.Parent.L1A.SurfaceGui.TextLabel.Text=TLT
-	end
-end)
-
-script.Parent.L2A.ClickDetector.MouseClick:Connect(function(plr)
-	local TLT = "Security"
-	if plr.Character:FindFirstChild("Role") ~= nil then
-		script.Parent.L2A.SurfaceGui.TextLabel.Text="Already have a role."
-		wait(3)
-		script.Parent.L2A.SurfaceGui.TextLabel.Text=TLT
-	else
-		script.Parent.L2A.SurfaceGui.TextLabel.Text="Added Role."
-		local inst = Instance.new("StringValue")
-		inst.Value = TLT
-		inst.Name="Role"
-		inst.Parent = plr.Character
-		wait(3)
-		script.Parent.L2A.SurfaceGui.TextLabel.Text=TLT
-	end
-end)
-
-script.Parent.L3A.ClickDetector.MouseClick:Connect(function(plr)
-	local TLT = "MTF"
-	if plr.Character:FindFirstChild("Role") ~= nil then
-		script.Parent.L3A.SurfaceGui.TextLabel.Text="Already have a role."
-		wait(3)
-		script.Parent.L3A.SurfaceGui.TextLabel.Text=TLT
-	else
-		script.Parent.L3A.SurfaceGui.TextLabel.Text="Added Role."
-		local inst = Instance.new("StringValue")
-		inst.Value = TLT
-		inst.Name="Role"
-		inst.Parent = plr.Character
-		wait(3)
-		script.Parent.L3A.SurfaceGui.TextLabel.Text=TLT
-	end
-end)
-
-script.Parent.L4A.ClickDetector.MouseClick:Connect(function(plr)
-	local TLT = "SRT"
-	if plr.Character:FindFirstChild("Role") ~= nil then
-		script.Parent.L4A.SurfaceGui.TextLabel.Text="Already have a role."
-		wait(3)
-		script.Parent.L4A.SurfaceGui.TextLabel.Text=TLT
-	else
-		script.Parent.L4A.SurfaceGui.TextLabel.Text="Added Role."
-		local inst = Instance.new("StringValue")
-		inst.Value = TLT
-		inst.Name="Role"
-		inst.Parent = plr.Character
-		wait(3)
-		script.Parent.L4A.SurfaceGui.TextLabel.Text=TLT
-	end
-end)
-
-script.Parent.L5A.ClickDetector.MouseClick:Connect(function(plr)
-	local TLT = "O5 Council"
-	if plr.Character:FindFirstChild("Role") ~= nil then
-		script.Parent.L5A.SurfaceGui.TextLabel.Text="Already have a role."
-		wait(3)
-		script.Parent.L5A.SurfaceGui.TextLabel.Text=TLT
-	else
-		script.Parent.L5A.SurfaceGui.TextLabel.Text="Added Role."
-		local inst = Instance.new("StringValue")
-		inst.Value = TLT
-		inst.Name="Role"
-		inst.Parent = plr.Character
-		wait(3)
-		script.Parent.L5A.SurfaceGui.TextLabel.Text=TLT
-	end
-end)
-
-script.Parent.L6A.ClickDetector.MouseClick:Connect(function(plr)
-	local TLT = "The Administrator"
-	local TLTS = "TA (LOCKED)"
-	if plr.UserId == 21490931 then
-		if plr.Character:FindFirstChild("Role") ~= nil then
-			script.Parent.L6A.SurfaceGui.TextLabel.Text="Already have a role."
-			wait(3)
-			script.Parent.L6A.SurfaceGui.TextLabel.Text=TLTS
-		else
-			script.Parent.L6A.SurfaceGui.TextLabel.Text="Added Role."
-			local inst = Instance.new("StringValue")
-			inst.Value = TLT
-			inst.Name="Role"
-			inst.Parent = plr.Character
-			wait(3)
-			script.Parent.L6A.SurfaceGui.TextLabel.Text=TLTS
-		end
-	else
-		script.Parent.L6A.SurfaceGui.TextLabel.Text="This role is locked."
-		wait(3)
-		script.Parent.L6A.SurfaceGui.TextLabel.Text=TLTS
-	end
-end)
-
-end,
-function(script,require)
-script.Parent.L0A.ClickDetector.MouseClick:Connect(function(plr)
-	if plr.Character:FindFirstChild("AccessLevel") ~= nil then
-		script.Parent.L0A.SurfaceGui.TextLabel.Text="Already have a access level."
-		wait(3)
-		script.Parent.L0A.SurfaceGui.TextLabel.Text="Level 0 Access"
-	else
-		script.Parent.L0A.SurfaceGui.TextLabel.Text="Added Access."
-		local inst = Instance.new("NumberValue")
-		inst.Value = 0
-		inst.Name="AccessLevel"
-		inst.Parent = plr.Character
-		wait(3)
-		script.Parent.L0A.SurfaceGui.TextLabel.Text="Level 0 Access"
-	end
-end)
-
-script.Parent.L1A.ClickDetector.MouseClick:Connect(function(plr)
-	if plr.Character:FindFirstChild("AccessLevel") ~= nil then
-		script.Parent.L1A.SurfaceGui.TextLabel.Text="Already have a access level."
-		wait(3)
-		script.Parent.L1A.SurfaceGui.TextLabel.Text="Level 1 Access"
-	else
-		script.Parent.L1A.SurfaceGui.TextLabel.Text="Added Access."
-		local inst = Instance.new("NumberValue")
-		inst.Value = 1
-		inst.Name="AccessLevel"
-		inst.Parent = plr.Character
-		wait(3)
-		script.Parent.L1A.SurfaceGui.TextLabel.Text="Level 1 Access"
-	end
-end)
-
-script.Parent.L2A.ClickDetector.MouseClick:Connect(function(plr)
-	if plr.Character:FindFirstChild("AccessLevel") ~= nil then
-		script.Parent.L2A.SurfaceGui.TextLabel.Text="Already have a access level."
-		wait(3)
-		script.Parent.L2A.SurfaceGui.TextLabel.Text="Level 2 Access"
-	else
-		script.Parent.L2A.SurfaceGui.TextLabel.Text="Added Access."
-		local inst = Instance.new("NumberValue")
-		inst.Value = 2
-		inst.Name="AccessLevel"
-		inst.Parent = plr.Character
-		wait(3)
-		script.Parent.L2A.SurfaceGui.TextLabel.Text="Level 2 Access"
-	end
-end)
-
-script.Parent.L3A.ClickDetector.MouseClick:Connect(function(plr)
-	if plr.Character:FindFirstChild("AccessLevel") ~= nil then
-		script.Parent.L3A.SurfaceGui.TextLabel.Text="Already have a access level."
-		wait(3)
-		script.Parent.L3A.SurfaceGui.TextLabel.Text="Level 3 Access"
-	else
-		script.Parent.L3A.SurfaceGui.TextLabel.Text="Added Access."
-		local inst = Instance.new("NumberValue")
-		inst.Value = 3
-		inst.Name="AccessLevel"
-		inst.Parent = plr.Character
-		wait(3)
-		script.Parent.L3A.SurfaceGui.TextLabel.Text="Level 3 Access"
-	end
-end)
-
-script.Parent.L4A.ClickDetector.MouseClick:Connect(function(plr)
-	if plr.Character:FindFirstChild("AccessLevel") ~= nil then
-		script.Parent.L4A.SurfaceGui.TextLabel.Text="Already have a access level."
-		wait(3)
-		script.Parent.L4A.SurfaceGui.TextLabel.Text="Level 4 Access"
-	else
-		script.Parent.L4A.SurfaceGui.TextLabel.Text="Added Access."
-		local inst = Instance.new("NumberValue")
-		inst.Value = 4
-		inst.Name="AccessLevel"
-		inst.Parent = plr.Character
-		wait(3)
-		script.Parent.L4A.SurfaceGui.TextLabel.Text="Level 4 Access"
-	end
-end)
-
-script.Parent.L5A.ClickDetector.MouseClick:Connect(function(plr)
-	if plr.Character:FindFirstChild("AccessLevel") ~= nil then
-		script.Parent.L5A.SurfaceGui.TextLabel.Text="Already have a access level."
-		wait(3)
-		script.Parent.L5A.SurfaceGui.TextLabel.Text="Level 5 Access"
-	else
-		script.Parent.L5A.SurfaceGui.TextLabel.Text="Added Access."
-		local inst = Instance.new("NumberValue")
-		inst.Value = 2
-		inst.Name="AccessLevel"
-		inst.Parent = plr.Character
-		wait(3)
-		script.Parent.L5A.SurfaceGui.TextLabel.Text="Level 5 Access"
-	end
-end)
-
-script.Parent.L6A.ClickDetector.MouseClick:Connect(function(plr)
-	if plr.Character:FindFirstChild("AccessLevel") ~= nil then
-		script.Parent.L6A.SurfaceGui.TextLabel.Text="Already have a access level."
-		wait(3)
-		script.Parent.L6A.SurfaceGui.TextLabel.Text="Level Omni Access"
-	else
-		script.Parent.L6A.SurfaceGui.TextLabel.Text="Added Access."
-		local inst = Instance.new("NumberValue")
-		inst.Value = 6
-		inst.Name="AccessLevel"
-		inst.Parent = plr.Character
-		wait(3)
-		script.Parent.L6A.SurfaceGui.TextLabel.Text="Level Omni Access"
-	end
-end)
-
-end,
-function(script,require)
-local SD = owner.UserId
-function levelname(number)
-	if number == "0" then
-		return "Level 0"
-	elseif number == "1" then
-		return "Level 1"
-	elseif number == "2" then
-		return "Level 2"
-	elseif number == "3" then
-		return "Level 3"
-	elseif number == "4" then
-		return "Level 4"
-	elseif number == "5" then
-		return "Level 5"
-	elseif number == "6" then
-		return "Level Omni"
-	elseif number == "7" then
-		return "Developer Access"
+		wait(0.4)
+		Debounce = false
 	end
 end
-script.Parent.MouseClick:Connect(function(plr)
-	if plr.Character:FindFirstChild("Role") == nil then return end
-	if plr.Character:FindFirstChild("AccessLevel") == nil then return end
-	if plr.Character:FindFirstChild("User Setup") ~= nil then return end
-	local i = game.ReplicatedStorage["Assets"..script.Parent.Parent.Parent.AssetID.Value]["ID Card"]:Clone()
-	local value = plr.Character:FindFirstChild("AccessLevel").Value
-	i.Handle.GUI["NameLevel Bar"].Level.Text=levelname(tostring(value))
-	i.Handle.GUI["NameLevel Bar"].Name1.Text=plr.Name
-	i.Handle.GUI.Role.Text=plr.Character:FindFirstChild("Role").Value
-	if plr.UserId ~= SD then
-		i.Handle.GUI["Site Director tag"]:Destroy()
-	end
-	i.Parent = plr.Backpack
-	local setup = Instance.new("Folder")
-	setup.Name="User Setup"
-	setup.Parent=plr.Character
-end)
-end,
-function(script,require)
-local ID = math.random(1,999999999)
-local i = Instance.new("Folder")
-i.Name="Assets"..ID
-i.Parent=game.ReplicatedStorage
-script.Parent["ID Card"].Parent=i
-script.Parent.AssetID.Value=ID
+Button1.ProximityPrompt.Triggered:connect(Triggered)
+Button2.ProximityPrompt.Triggered:connect(Triggered)
+
 end
 }
 local ScriptIndex = 0
@@ -376,11 +104,58 @@ local function Script(obj,ismodule)
 end
 
 function RunScripts()
-	for script, index in pairs(Scripts) do
-		coroutine.wrap(function()
-			ScriptFunctions[index](script, require)
-		end)()
+	for script,index in pairs(Scripts) do
+		coroutine.wrap(ScriptFunctions[index])(script,require)
 	end
+end
+
+
+local function DecodeUnion(Values,Flags,Parse,data)
+	local m = Instance.new("Folder")
+	m.Name = "UnionCache ["..tostring(math.random(1,9999)).."]"
+	m.Archivable = false
+	m.Parent = game:GetService("ServerStorage")
+	local Union,Subtract = {},{}
+	if not data then
+		data = Parse('B')
+	end
+	local ByteLength = (data % 4) + 1
+	local Length = Parse('I'..ByteLength)
+	local ValueFMT = ('I'..Flags[1])
+	for i = 1,Length do
+		local data = Parse('B')
+		local part
+		local isNegate = bit32.band(data,0b10000000) > 0
+		local isUnion =  bit32.band(data,0b01000000) > 0
+		if isUnion then
+			part = DecodeUnion(Values,Flags,Parse,data)
+		else
+			local isMesh = data % 2 == 1
+			local ClassName = Values[Parse(ValueFMT)]
+			part = Instance.new(ClassName)
+			part.Size = Values[Parse(ValueFMT)]
+			part.Position = Values[Parse(ValueFMT)]
+			part.Orientation = Values[Parse(ValueFMT)]
+			if isMesh then
+				local mesh = Instance.new("SpecialMesh")
+				mesh.MeshType = Values[Parse(ValueFMT)]
+				mesh.Scale = Values[Parse(ValueFMT)]
+				mesh.Offset = Values[Parse(ValueFMT)]
+				mesh.Parent = part
+			end
+		end
+		part.Parent = m
+		table.insert(isNegate and Subtract or Union,part)
+	end
+	local first = table.remove(Union,1)
+	if #Union>0 then
+		first = first:UnionAsync(Union)
+	end
+	if #Subtract>0 then
+		first = first:SubtractAsync(Subtract)
+	end
+	m:Destroy()
+	return first
 end
 
 local function Decode(str)
@@ -625,32 +400,64 @@ local function Decode(str)
 end
 
 
-local Objects = Decode('AADXIQVNb2RlbCEETmFtZSEHQ0JhdGNoMSEKV29ybGRQaXZvdATNzs8E0NHPIQRQYXJ0IQhBbmNob3JlZCIhDUJvdHRvbVN1cmZhY2UDAAAAAAAAAAAhCkJyaWNrQ29sb3IHxwAhBkNGcmFtZQQV0c8hBUNvbG9yBmNfYiELT3JpZW50YXRpb24KAAAAAAAAtEIAAAAA'
-..'IQhQb3NpdGlvbgqA7XhDoFd6QBims8IhCFJvdGF0aW9uCgAAAABI4bNCAAAAACEEU2l6ZQqwyIpAvMNiQICZWj8hClRvcFN1cmZhY2UhA0wxQQdHAQQf0c8GqgAACiCAeENEB3pA2KOzwgoAAIBAAACAPwAUgzohClN1cmZhY2VHdWkhDlpJbmRleEJlaGF2aW9yAwAA'
-..'AAAAAPA/IRBDbGlwc0Rlc2NlbmRhbnRzIQ5MaWdodEluZmx1ZW5jZSENUGl4ZWxzUGVyU3R1ZAMAAAAAAABpQCEKU2l6aW5nTW9kZSEJVGV4dExhYmVsIRBCYWNrZ3JvdW5kQ29sb3IzBv///yEWQmFja2dyb3VuZFRyYW5zcGFyZW5jeQwAAIA/AAAAAIA/AAAhBEZv'
-..'bnQDAAAAAAAACEAhBFRleHQhC1JlbW92ZSBSb2xlIQpUZXh0Q29sb3IzIQhUZXh0U2l6ZQMAAAAAAABKQCELVGV4dFdyYXBwZWQhDUNsaWNrRGV0ZWN0b3IhA0wwQQQ50c8KIIB4Qzn6NUDYo7PCIRNSZW1vdmUgQWNjZXNzIExldmVsIQZTY3JpcHQhA0wyQQedAARA'
-..'0c8G//9/CiCAeENQS55A2KOzwiEZRGV2ZWxvcGVyIEFjY2VzcyAoTE9DS0VEKQYAAAAE0tHPIQNMNkEERtHPCiCAeENAbONAPwe9wgoAAAAAZuazQgAAAAAhC1RBIChMT0NLRUQpIQNMNUEHNQEETdHPBjSOQAoggHhD0JLBQD8KvcIhCk81IENvdW5jaWwEUNHPCoDt'
-..'eENEyHdAfwy9wgqwyIpARMj3QICZWj8hA0w0QQRU0c8KIIB4Q1pan0A/Cr3CIQNSUlQhA0wzQQRY0c8KIIB4Q1rCeUA/Cr3CIQNNVEYEW9HPCiCAeENWiDVAPwq9wiEIU2VjdXJpdHkEXtHPCiCAeEMCI+I/Pwq9wiEKUmVzZWFyY2hlcgRh0c8KIIB4Q9gRND8/Cr3C'
-..'IRRGb3VuZGF0aW9uIFBlcnNvbm5lbATT0c8EZdHPCiCAeENAbONAh+jGwgoAAAAAheuzQgAAAAAhC09tbmkgQWNjZXNzBGnRzwoggHhD0JLBQIfrxsIhDkxldmVsIDUgQWNjZXNzBGzRzwqA7XhDRMh3QMftxsIEbtHPCiCAeENaWp9Ah+vGwiEOTGV2ZWwgNCBBY2Nl'
-..'c3MEcdHPCiCAeENawnlAh+vGwiEOTGV2ZWwgMyBBY2Nlc3MEdNHPCiCAeENWiDVAh+vGwiEOTGV2ZWwgMiBBY2Nlc3MEd9HPCiCAeEMCI+I/h+vGwiEOTGV2ZWwgMSBBY2Nlc3MEetHPCiCAeEPYETQ/h+vGwiEOTGV2ZWwgMCBBY2Nlc3ME1NXPBzABBIDVzwYsZR0K'
-..'4Bl3Q1K4vj8fCKvCCo/C9T8Uroc/j8L1PyEMQmlsbGJvYXJkR3VpIQZBY3RpdmUMAABAQAAAAACAPwAAIRVTdHVkc09mZnNldFdvcmxkU3BhY2UKAAAAAAAAgEAAAAAAIQdUZXh0Qm94IQFBIRBDbGVhclRleHRPbkZvY3VzAiERUGxhY2Vob2xkZXJDb2xvcjMhD1Bs'
-..'YWNlaG9sZGVyVGV4dCEnQ29uZmlybSBTQ1AgSW5mb3JtYXRpb24gKE9OQ0UgUEVSIExJRkUpIQ9TaG93TmF0aXZlSW5wdXQhACEMVGV4dEVkaXRhYmxlIQpUZXh0U2NhbGVkAwAAAAAAACxABJTVzwrgGXdDAACAPx8Iq8IKAAAAQAAAAEAAAABAIQtOdW1iZXJWYWx1'
-..'ZSEHQXNzZXRJRCEEVG9vbCEHSUQgQ2FyZCEMQ2FuQmVEcm9wcGVkIQRHcmlwBJ7WzyEHR3JpcFBvcwoAAAAAACaKPYDxWz4hBkhhbmRsZSELQmFja1N1cmZhY2UDAAAAAAAAJEAH6QMEqNfPBvj4+CEMRnJvbnRTdXJmYWNlIQhNYXRlcmlhbAMAAAAAAABxQAr6fndD'
-..'exTuPo0XscIK//+/P2ZmZj/NzMw9IQNHVUkDAAAAAADghUAhBUZyYW1lIQhNYWRlIGJ5OiEPQm9yZGVyU2l6ZVBpeGVsDAAAAAAAAAAAAAD0AQwAAIA/AAAAAAA+AAAhDnd3dy5yb2Jsb3guY29tIRBHb2xkM25GMXIzJ3MgU0NQIRBUZXh0U3Ryb2tlQ29sb3IzBv8A'
-..'ACEWVGV4dFN0cm9rZVRyYW5zcGFyZW5jeQMAAAAAAADgPyENTmFtZUxldmVsIEJhciEFTmFtZTEMAAAAPwAAAACAPwAAAwAAAAAAAABAIQ5UZXh0WEFsaWdubWVudCEFTGV2ZWwMAAAAPwAAAAAAAAAAAwAAAAAAABBADDMzMz8AAAAAAD4AAAwAAIA+AAAAAIA+AAAh'
-..'CkltYWdlTGFiZWwhDlNpemVDb25zdHJhaW50IQVJbWFnZSEucmJ4YXNzZXQ6Ly90ZXh0dXJlcy91aS9HdWlJbWFnZVBsYWNlaG9sZGVyLnBuZyERU2l0ZSBEaXJlY3RvciB0YWcG//8ADAAAAAAAAAAAAD4AAAwAAAAAyAAAAAAAMgAhDVNpdGUgRGlyZWN0b3IhBFJv'
-..'bGUMAAAAAAAAZmY2PwAADAAAgD8AAAAAAAAyAApgundDRMh3QBYmusIK/v9/PwAAAAAAAAAACgAAAAAAAIA/AAAAAApA6nhDCl/AQBims8IKAAAAAAAAAAAAAIC/CkDqeENRyHdAfwy9wgpA6nhDUch3QMftxsIK4Bl3Q65HgT8fCKvCCvz/fz8AAAAAAAAAAAoAAIA/'
-..'AAAAAAAAAAAKLr07swAAAAAAAIC/YwEAAgACAwQFAQEBAAQGBwIKAAgJCgsMDQ4PEBESExQVFhcYGRoLBwILAAIbCAkKCwwcDh0QHhITFB8WFxggGgshBAUAIiMkCSUjJicoIykFCAAqKywjGC0uLzAxMiszNDUJNgQAAAcCCwACNwgJCgsMHA44EB4SExQ5FhcYIBoL'
-..'IQgFACIjJAklIyYnKCMpCQgAKissIxgtLi8wOjIrMzQ1CTYIAAA7AgAABwILAAI8CAkKCww9Dj4QPxITFEAWFxggGgshDQUAIiMkCSUjJicoIykOCAAqKywjGC0uLzBBMkIzNDUJNg0AAAEBAQAEQwcRCwACRAgJCgsMPQ5FED8SExRGFkcYIBoLIRIFACIjJAklIyYn'
-..'KCMpEwgAKissIxgtLi8wSDJCMzQ1CTYSAAAHEQsAAkkICQoLDEoOSxBMEhMUTRZHGCAaCyEWBQAiIyQJJSMmJygjKRcIACorLCMYLS4vME4yKzM0NQk2FgAABxEKAAgJCgsMDQ5PEBESExRQFkcYURoLBxELAAJSCAkKCwxKDlMQTBITFFQWRxggGgshGwUAIiMkCSUj'
-..'JicoIykcCAAqKywjGC0uLzBVMiszNDUJNhsAAAcRCwACVggJCgsMSg5XEEwSExRYFkcYIBoLIR8FACIjJAklIyYnKCMpIAgAKissIxgtLi8wWTIrMzQ1CTYfAAAHEQsAAjwICQoLDEoOWhBMEhMUWxZHGCAaCyEjBQAiIyQJJSMmJygjKSQIACorLCMYLS4vMFwyKzM0'
-..'NQk2IwAABxELAAIbCAkKCwxKDl0QTBITFF4WRxggGgshJwUAIiMkCSUjJicoIykoCAAqKywjGC0uLzBfMiszNDUJNicAAAcRCwACNwgJCgsMSg5gEEwSExRhFkcYIBoLISsFACIjJAklIyYnKCMpLAgAKissIxgtLi8wYjIrMzQ1CTYrAAA7EQAAAQEBAARjBzALAAJE'
-..'CAkKCwxKDmQQTBITFGUWZhggGgshMQUAIiMkCSUjJicoIykyCAAqKywjGC0uLzBnMiszNDUJNjEAAAcwCwACSQgJCgsMSg5oEEwSExRpFmYYIBoLITUFACIjJAklIyYnKCMpNggAKissIxgtLi8wajIrMzQ1CTY1AAAHMAoACAkKCwwNDmsQERITFGwWZhhRGgsHMAsA'
-..'AlIICQoLDEoObRBMEhMUbhZmGCAaCyE6BQAiIyQJJSMmJygjKTsIACorLCMYLS4vMG8yKzM0NQk2OgAABzALAAJWCAkKCwxKDnAQTBITFHEWZhggGgshPgUAIiMkCSUjJicoIyk/CAAqKywjGC0uLzByMiszNDUJNj4AAAcwCwACPAgJCgsMSg5zEEwSExR0FmYYIBoL'
-..'IUIFACIjJAklIyYnKCMpQwgAKissIxgtLi8wdTIrMzQ1CTZCAAAHMAsAAhsICQoLDEoOdhBMEhMUdxZmGCAaCyFGBQAiIyQJJSMmJygjKUcIACorLCMYLS4vMHgyKzM0NQk2RgAABzALAAI3CAkKCwxKDnkQTBITFHoWZhggGgshSgUAIiMkCSUjJicoIylLCAAqKywj'
-..'GC0uLzB7MiszNDUJNkoAADswAAABAQEABHwHTwgACAkKCwx9Dn4QfxSAGIEaCzZQAAA7UQAAglAFACIjgwkkCRiEhYaHUw8AAogqKywjGC2Jii4viyuMjY6KMI8yQpCKkQkzkjUJB08IAAgJCgsMDQ6TEBEUlBiVGguWTwEAApc7TwAAmE8EAAKZmoqbnJ2eB1gLAAKf'
-..'oKEMog6jEKSloaanEhMUqBYTGKkhWQMAAqomqygjrFoFAAKtKkKuCxSvGLApWwwAArEqKywjGC0uLzCyMiuRCTOSs7S1tjUJrFoEAAK3KkKuCxiwKV0LAAK4KissIxi5LrowuDIrkQkzkjUJuwspXQwAArwqKywjFL0YuS6+MLwyK5EJM5I1CbsjrFoDACorFL8YwMFg'
-..'BAAqKxgtwiPDxClaCgACxSrGFMcYyC4vMMkyQpEJM5I1CSlaCgACyipCFMsYzC4vMMoyK5EJM5I1CQA=')
+local Objects = Decode('AEDiASEFTW9kZWwhBE5hbWUhFExldmVsIERldmVsb3BlciBkb29yIQpXb3JsZFBpdm90BKABoQGiASEERG9vcgSgAaMBpAEhElNjcmlwdGVkQ29tcG9uZW50cwSlAaYBpwEhBlNjcmlwdCEETWFpbiEOVW5pb25PcGVyYXRpb24hBURvb3IyIQhBbmNob3JlZCIhCkJy'
+..'aWNrQ29sb3IHwgAhBkNGcmFtZQQdAKYBpwEhCkNhbkNvbGxpZGUCIQVDb2xvcgajoqUhCE1hdGVyaWFsAwAAAAAAgIlAIQtPcmllbnRhdGlvbgoAAAAAHwW0wo/C9TwhCFBvc2l0aW9uCm5uYkPURMc/MbAjwyEIUm90YXRpb24Kj8L1vAAAtMIAAAAAIQRTaXplCs3M'
+..'TD20s0c/JdkPPyEMVHJhbnNwYXJlbmN5AwAAAAAAAPA/IQRQYXJ0Ch1rpjwYa6Y8qdPxPgoTa2JDj6SWP+ayI8MKC1jYPFX86DymdA09CvKEYkN1AqU/37Ejwwoda6Y8JXFHPx9rpjwKnaliQx5Vxz/xsiPDChRrYkPKicQ/87IjwwrzhGJDnoHiP/CxI8MKe1hiQyJF'
+..'pT/hsSPDChNrYkMyaqc/67IjwwoUa2JDSND1PwGzI8MKfFhiQ9sd4j/ysSPDCnxYYkP1hcI/6bEjwwoUa2JDhYXkP/yyI8MKDy1iQ3BVxz/3siPDCkO9rjzdT0c/8LQFPwpcaWJDV03HP5+tI8MKAAAAAOH6s0KPwvW8CpfpYT3NJc89cBKDOgoIb2JDzen7PzOqI8MK'
+..'j8L1POH6M0MAADTDAwAAAAAAABhACgAAgD8AAIA/AACAPwoAAAAAAAAAAAAAAAAKkMDNPAw4Cz5vEoM6Ch1qYkP0S+c/LqojwwqPwvU84fozQ7jeLEMK9BICPlXbojxwEoM6CoBvYkO6ad4/K6ojwwqPwvU84fozQ+F6t8IKF5DYPROiQzxvEoM6Ch9tYkOR2OM/Laoj'
+..'wwqPwvU84fozQx8FtkIKDHyDPtvacjtvEoM6CvFtYkOoC/s/M6ojwwqZwM08CjgLPm8SgzoK6XFiQ2SB2T8pqiPDCo/C9Tzh+jNDrkeBvwryEgI+XtuiPHASgzoKc25iQ0Sg4j8sqiPDCo/C9Tzh+jNDrse8QgoRkNg9IKJDPG8SgzoKqG9iQ9kY3T8qqiPDCo/C9Tzh'
+..'+jNDUrilwgoKfIM+4NpyO28SgzoKpWhiQyqFwz8kqiPDCh8fUT36lJM94YCEPwq5bGJD0jzXP7+sI8MKAAC0wuH6M0MAAAAAAwAAAAAAABBACifyej0XCIU64YCEPwq5bGJD4DzXPyaqI8MK3mqzPB0IBTvcpmg+CgRgYkM2xtI/Eqojwwrh+rFCmpmzwpqZs8IKDaAs'
+..'PR0IBTtTzvE9Chp4YkPMkaU/EKojwwqaGYZC4fqzQuH6s0IK6J8sPR0IBTuBzvE9CmZuYkMYaAFAE6ojwwpIYZbCPQq0wuH6s8IK/Wf6PTKDjT3DSkM/CuNsYkM0CNQ/Ha4jwwrh+rHCZma0QpqZs0IKPIT/PYn8mDvBSkM/CuNsYkM7CNQ/aKojwwqqsh8+KoxHOyCc'
+..'gz8K5WliQ0g+3T+rqiPDCphvXD9Eg409GNjdPQpubGJDOHPVP+usI8MKCtdDQD0KtMIAALTCCk2cWDwvCAU7VfdePArjaGJDRuIIQBSqI8MK7NGfwlwPtMLh+rPCCjTk8TwvCAU7yqnHOwrNc2JDG1D7PxKqI8MKH4VLwT0KtMIAALTCCkXHXzsvCAU7tMw4Pgq4b2JD'
+..'BbwDQBOqI8MKSGGYwlwPtMLh+rPCCg5o+j1Eg409xkpDPwo1c2JDtgG6P+qsI8MKcb2lQoXrs0LD9bNCCuoUeDwvCAU7W65CPAoZYGJDU9fIPxOqI8MKM7OvQoXrs8JI4bPCChBa3jwvCAU7gTXZOwpRXmJD5AbdPxOqI8MK7FH4QcP1s0IAALRCCgbnfzsvCAU77Jkh'
+..'Pgo8XWJDFkfSPxOqI8MKXI+uQincs0Jm5rNCChJo+j02g409vEpDPwrtbGJDsQjUP6mrI8MK4fqxwnE9tEJxvbNCCiVq+j1Hg409H0lDPwoVbGJDJi68P/qsI8MK4fqxwincu0K4HqxCCuQWeDwxCAU7y6xCPArLemJD/ySsPxaqI8MKZmafwnG9tEJSOLNCCh9Z3jwx'
+..'CAU7azbZOwrXdmJDZAmYPwmqI8MKj8IcwtcjtMLs0bPCCgTpfzsxCAU7ppghPgr1emJDt5miPxCqI8MK9iipwqRwtUIfhbJCCj2oOj5G7Jw/sTPjPAo7e2JDc8b5Py6rI8MKCtcjPOH6M0MAADTDCj6oOj5I7Jw/lzPjPAr9XGJDMcb5PzerI8MKj8L1PHH9M0MAADTD'
+..'Ch8fUT3rlJM95ICEPwqWa2JDezzXP8CsI8MKAAC0wnH9M0MAAAAACifyej0JCIU644CEPwqWa2JDiTzXPyeqI8MK32qzPA8IBTvepmg+CuFeYkPdxdI/Eqojwwrh+rFCPYqzwj2Ks8IKEaAsPQ8IBTtTzvE9Cvh2YkN5kaU/Eaojwwrqnyw9DwgFO4bO8T0KQ21iQ+1n'
+..'AUAUqiPDCkhhlsIfBbTCw/Wzwgr+Z/o9I4ONPcVKQz8KwGtiQ90H1D8eriPDCuH6scLDdbRCPYqzQgo+hP89efyYO8VKQz8KwGtiQ+UH1D9pqiPDCq2yHz4WjEc7IpyDPwrCaGJD8T3dP6yqI8MKmW9cPzeDjT0Z2N09CktrYkPjctU/7KwjwwoK10NAHwW0wgAAtMIK'
+..'UpxYPCMIBTtY9148CsBnYkMc4ghAFaojwwrs0Z/CXA+0wsP1s8IKM+TxPCMIBTvSqcc7CqpyYkPKT/s/E6ojwwofhUvBHwW0wgAAtMIKR8dfOyMIBTu2zDg+CpVuYkPcuwNAFKojwwpIYZjCPQq0wuH6s8IKFWj6PTaDjT3ISkM/ChJyYkNgAbo/66wjwwpxvaVCpPCz'
+..'QsP1s0IK8RR4PCEIBTterkI8CvZeYkP51sg/FKojwwozs69CSOGzwincs8IKGFrePCEIBTuCNdk7Ci5dYkOKBt0/FKojwwrsUfhB4fqzQgAAtEIKDud/OyEIBTvsmSE+ChlcYkO7RtI/FKojwwpcj65CKdyzQkjhs0IKFGj6PSeDjT29SkM/CsprYkNbCNQ/qqsjwwrh'
+..'+rHCzUy0QhSus0IKJmr6PTeDjT0jSUM/CvNqYkPOLbw/+qwjwwrh+rHCheu7QlwPrEIK5BZ4PCQIBTvPrEI8Cql5YkOsJKw/F6ojwwpmZp/Cj8K0QlI4s0IKI1nePCQIBTtqNtk7CrV1YkMPCZg/CqojwwoI6X87JAgFO6aYIT4K03liQ2OZoj8RqiPDCvYoqcLDdbVC'
+..'H4WyQgqe6WE91SXPPXASgzoKQWliQ93G/z82qiPDCpfAzTwQOAs+bxKDOgq/ZmJD6E7nPy+qI8MKj8L1PHH9M0O43ixDCvkSAj5b26I8cBKDOgoibGJDrmzePyyqI8MKj8L1PHH9M0PherfCCh2Q2D0bokM8bxKDOgrBaWJDhdvjPy6qI8MKj8L1PHH9M0MfBbZCCg98'
+..'gz7k2nI7bxKDOgqSamJDnA77PzSqI8MKCyM1PlYjnjxwEoM6Cq9sYkOeLd4/LqojwwqPwvU8cf0zQ7geusIKHqLDPB+Q2D1wEoM6CsFqYkNGc8k/KKojwwqPwvU8cf0zQ65HgT8KFf51PHw6rD1wEoM6Cu5rYkO82dE/KqojwwqPwvU8cf0zQxTuMMMKqdswPseMtDtv'
+..'EoM6CuBwYkNbccI/JaojwwqPwvU8cf0zQ3E9xsIKSNNkPUHTZD0ca6Y8CmyuYkMqT8g/va0jwwqPwvW8CtcjvAAAAAAKAACAPwAAgD/NzMw9CridET0uqmA9hU7xPAqQq2JDdQntP8+xI8MKV6xiQ4BfyD8HsiPDCjOvYkPnUaM/s60jwwqkrWJDH/nsP4WtI8MKH61i'
+..'Q0Bioz/9sSPDIQVTb3VuZCEMQWNjZXNzRGVuaWVkIQdTb3VuZElkIRZyYnhhc3NldGlkOi8vMjAwODg4NTEwIQ1BY2Nlc3NHcmFudGVkIRZyYnhhc3NldGlkOi8vMjAwODg4NDY4IQlEb29yQ2xvc2UhFnJieGFzc2V0aWQ6Ly8yNTc4NDE2NDAhCERvb3JPcGVuIRZy'
+..'Ynhhc3NldGlkOi8vMjUxODg1NDk1IQhNZXNoUGFydCEHQnV0dG9uMgfrAwQEAagBqQEGERERAwAAAAAAAHFACo/C9Txx/TNDAAAAAApapmNDilddQHfwIsMKUvgzQwrXIzwAADTDCry8Xz+1o60/AKFgPyEGTWVzaElkIRdyYnhhc3NldGlkOi8vMzIxMzIyMDM1NiEI'
+..'TWVzaFNpemUKSuimPla5AD8fhqY+IQlUZXh0dXJlSUQhF3JieGFzc2V0aWQ6Ly8yNDU5OTMwNjk2IQ9Qcm94aW1pdHlQcm9tcHQhDEhvbGREdXJhdGlvbgMAAACgmZnJPyEPS2V5Ym9hcmRLZXlDb2RlAwAAAAAAgFlAIQpPYmplY3RUZXh0IQdCdXR0b24xBBUBqgGr'
+..'AQp0Jl1DXEtdQGqKJMMHZwAEGwGsAa0BBsrItgMAAAAAAACRQAoAAAAAAAC0wgAAAAAKAoBgQ2m8ZEApvCPDCt3HxT5WltlAPMSOQCESUm9sbE9mZk1heERpc3RhbmNlAwAAAAAAAFlAIRdyYnhhc3NldGlkOi8vNTA5Njk4NjE0NSEGVm9sdW1lAwAAAAAAAAhAIQ1Q'
+..'bGF5YmFja1NwZWVkAwAAAGBmZvI/IQ5XZWxkQ29uc3RyYWludCEFUGFydDAhBVBhcnQxIQVGcmFtZQSuAaMBpAEhC0JhY2tTdXJmYWNlAwAAAAAAACRAIQ1Cb3R0b21TdXJmYWNlAwAAAAAAAAAABDEBrwGwASEMRnJvbnRTdXJmYWNlIQtMZWZ0U3VyZmFjZQoAAAAA'
+..'AAAAAAAAtMIKxoFgQ/Fb30BA1SPDIQxSaWdodFN1cmZhY2UKfT81PuOlj0AAAIA/IQpUb3BTdXJmYWNlBDcBowGkAQoAAAAAAAA0wwAAAAAKBnxgQwBqtT1a1iPDCgAANMMAAAAAAAA0wwrHS5dAfT81PgAAgD8hBFdlbGQhAkMwBLEBsgGzASECQzEEtAG1AbYBBEAB'
+..'twG4AQrIJl5Dth5dQIzWI8MKGQSWPrYe3UAAAIA/BLkBugG7AQS8Ab0BvgEEvwHAAcEBBEYBtwG4AQr42WJDFHtcQI7WI8MKGQSWPt163EAAAIA/BMIBvQG+AQTDAbIBuwEExAHFAcYBBMcBwAHBASEJV2VkZ2VQYXJ0BE8ByAHJAQqamQ9CAAC0QgAAtMIK7NBiQ2m+'
+..'3EDtVSTDCgAAtEJmZlhCAAA0wwrNzEw+zcxMPf/Rmz4hC1NwZWNpYWxNZXNoIQVTY2FsZQoAAIA/AUDOPQAAgD8hCE1lc2hUeXBlAwAAAAAAAABABFkBygHLAQqamQ/C9qixwrieskIK6tBiQ+m+3ECNViPDCo/CsMLsUVjCFK6nPwrNzEw+zcxMPWjMmz4KAACAP5w4'
+..'zj0AAIA/BF8BzAHNAQoAAAAAAAAAAJoZEEMK7NBiQ5m+3EDt1SPDCt3Rmz7NzEw+xrV+PwRjAc4BzwEKSOH8QQAAtMIfBbRCCqgvXkMR7txA41Ukwwrh+rNCXI9pwgAANMMKzcxMPs3MTD1Sypo+CgAAgD8BINU9AACAPwRpAdAB0QEKCtcjPHH9M0NSOPPCCqYvXkO1'
+..'7txA41Ujwwpx/TNDCtcjPFyPaUIKzcxMPnPKmj7NzEw9CgAAgD8AAIA/lMbSPQRvAdIB0wEKAAAAAAAAAADXYxTDCqgvXkNp7txA49Ujwwpzypo+zcxMPhirfj8hBHNpZ24EcwHUAakBCmYqXUOS9ktA4uMkwwpKLRo/sDwQP1mvqz0hF3JieGFzc2V0aWQ6Ly8zMjEz'
+..'MjE4MTM0CnSXZD6t2lU+0Iz+PCEXcmJ4YXNzZXRpZDovLzMyMTMyMTMxMTAEeQHVAasBCmSiY0P2CExA75YiwyEGRm9sZGVyIQlEb29yUGFydHMhBlN0cmlwZQR+AdYB1wEKul5fQ2KRzUAqvCPDCiNa5D7NzEw+Mt0MQATYAbIBuwEE2QHaAdsBB8cABIUB3AHdAQZj'
+..'X2IKAoBgQzWJcUApvCPDChkEFj8AAAA/g8COQAcaAASKAd4B3QEGGyo1CvntYUM1iXFAcb0jwwpSuDNDw/WzwtejM8MKne8nP5qZmT4qXA8+BI4B3gHdAQrPTGJDNYlxQHG9I8MKne8nP5qZmT43COw+BJEB3wHgAQoCgGBD4E0iP7m+I8MK+roGP111Qj/MQHxAB0AB'
+..'BJYB4QHiAQbKy9EKAoBgQ4S+Hz8ovCPDCgAYFj9oTGY/YPeBQCEMVXNlUGFydENvbG9yClZKST/T/Ms9FCJ3QAoCgGBDUYtsPym8I8MKAoBgQx1YOT8pvCPDCgKAYEPpJAY/KbwjwwoCgGBDbuOlPim8I8MKIhcWP2hMZj9w94FACgKAYEOEvh8/KbwjwwpmZmBDgDNi'
+..'QHG9I8MKAACAvwASaKwAAMCuCgASaCwAAIA/AADArQoAAIC/ABJorf7/v68KABJoLQAAgD/+/7+uCmhmYENwxmNAcb0jwwqtd0y5MuoPOvb/fz8K8xiwN/7/fz/n6Q+6CgAAgL8cM683PHxMuQoVGbA3/v9/P4bqD7oKAACAPxwzr7c9fEw5ChUZsDf+/38/heoPugov'
+..'PTazAQCaMPz/fz8KMTptLgAAgD/9/5kwCmRmYEOAM2JAab0jwwpN05I1AACAv7kXmTgKAACAP3OGkjXYBgK4CgAAgMMAACBBAACAQwoAAIC/AAAAAAAAAAAKAAAAAAAAAAAAAIA/Ci659sLh0Ag+rffMwwqZhUw5v/EPOv7/f78KAACAv2wzr7ewiEy5CgAAgL/gfnUv'
+..'/v+/rwrCW4svAACAP/n/1jEKfT+1PeOlD8AAAAA/CgAAAAAAAAAAAACAvwoAAAAAAACAPwAAAAAKAFDjvT7wW0AAVQG/CsQGAjh3Gpm4CwCAPwoAAIC/cIOSNdgGAjgKsmP7wpzmTsDI98zDCpmFTDks8g86/v9/vwoAAIC/6DKvt6+ITLkK8NiSQBGUXECAUwG/Cs3M'
+..'zDy0s8e+JdmPvgoAfg4+Js8RwABCM74KenhMuZzqD7oKAIA/CsMYsLfy/38/V+oPOgpQ/fHCy0JOwMj3zMMKByEWv5xbT7/kUWG4CtcJEDij4y04+f9/vwoHIRY/nFtPP1SxYTgKn/lavNagHzwD93+/CuFbT7+pIBY/4neBtwqpIBa/4FtPvzvXpTgKHTAGv0sDWj9z'
+..'IT65CgeDEDioBUm5+f9/vwobMAY/SgNav8ooPDkKSwNavxwwBr/YTfi4Cl8DWr/9Lwa/rtuMOAr+LwY/XgNavxenOjgKAACAPxwzr7c8fEw5CgAAgL8cM683N3xMuQouTS6zAABZMfz/fz8Kh1wVLwAAgD/+/1gxCnBixj7qQGLAACsWvgoAgMk++hfNwIAJiz8KAACA'
+..'v2AAAC4AAICtCmAAAC4AAIA/mP8JLAowrSOz/3/GMfz/fz8KP8WELwAAgD/9f8YxCjCtI7MAgMYx/P9/PwouzSKzAIDQMfz/fz8KP8+LLwAAgD/8f9AxCjC9IrMBgNAx/P9/Pwo/zo0vAACAP/x/zjE3AQAAAgACAAMABAAFAAEAAQIAAgAGAAQABwABAAICAAIACAAE'
+..'AAkACgADAQACAAsADABABEAMACQAJQAmABsAACQAJwAoABsAACQAKQAqABsAACQAJQArABsAACQAJwAsABsAACQAJwAtABsAACQAJQAuABsAACQAJQAvABsAACQAJwAwABsAACQAJwAxABsAACQAJQAyABsAACQAKQAzABsAACQANAA1ADYAQAJAAkACQAKBJAA3ADgA'
+..'OQA6ADsAPABAAkADgSQAPQA+AD8AOgA7ADwAgSQAQABBAEIAOgA7ADwAASQAQwBEAEUAOgA7ADwAASQARgBHAEUAOgA7ADwAQAJAA4EkAEgASQBKADoAOwA8AIEkAEsATABNADoAOwA8AAEkAE4ATwBQADoAOwA8AAEkAFEAUgBQADoAOwA8AEACQAJAAoEkAFMAVABV'
+..'AFYAOwA8AAEkAFcAWABVAFYAOwA8AEADQAJABIEkAFkAWgBbADoAOwA8AIEkAFwAXQBeADoAOwA8AIEkAF8AYABhADoAOwA8AEACgSQAYgBjAGQAVgA7ADwAASQAZQBmAGQAVgA7ADwAgSQAZwBoAGQAOgA7ADwAQANAAoEkAGkAagBrAFYAOwA8AEACQAIBJABsAG0A'
+..'bgA6ADsAPAABJABvAHAAcQA6ADsAPAABJAByAHMAdAA6ADsAPABAAoEkAHUAdgB3AFYAOwA8AEACQAIBJAB4AHkAegA6ADsAPAABJAB7AHwAfQA6ADsAPAABJAB+AH8AgAA6ADsAPACBJACBAIIAgwBWADsAPABAAoEkAIQAhQCGAFYAOwA8AEACQAIBJACHAIgAiQA6'
+..'ADsAPAABJACKAIsAjAA6ADsAPAABJACNAI4AjwA6ADsAPACBJACQAJEAkgA6ADsAPABAAkACgSQAkwCUAJUAOgA7ADwAQAJAAoEkAJYAlwCYAFYAOwA8AAEkAJkAmgCYAFYAOwA8AEADQAJABIEkAJsAnACdADoAOwA8AIEkAJ4AnwBeADoAOwA8AIEkAKAAoQCiADoA'
+..'OwA8AEACgSQAowCkAKUAVgA7ADwAASQApgCnAKUAVgA7ADwAgSQAqACpAKUAOgA7ADwAQANAAoEkAKoAqwCsAFYAOwA8AEACQAIBJACtAK4ArwA6ADsAPAABJACwALEAsgA6ADsAPAABJACzALQAtQA6ADsAPABAAoEkALYAtwC4AFYAOwA8AEACQAIBJAC5ALoAuwA6'
+..'ADsAPAABJAC8AL0AvgA6ADsAPAABJAC/AMAAwQA6ADsAPACBJADCAMMAxABWADsAPABAAoEkAMUAxgDHAFYAOwA8AEACQAIBJADIAMkAygA6ADsAPAABJADLAMwAjAA6ADsAPAABJADNAM4AzwA6ADsAPABAAkACgSQA0ADRAJUAOgA7ADwAQAJAA4EkANIA0wDUADoA'
+..'OwA8AIEkANUA1gDXADoAOwA8AAEkANgA2QDaADoAOwA8AAEkANsA3ADaADoAOwA8AEACQAOBJADdAN4A3wA6ADsAPACBJADgAOEA4gA6ADsAPAABJADjAOQA5QA6ADsAPAABJADmAOcA6AA6ADsAPABABgEkAOkA6gDrADoA7AA8AAAkAO0A7gAbAAAkAO0A7wAbAAEk'
+..'AOkA8ADrADoA7AA8AAEkAOkA8QDrADoA7AA8AAAkAO0A8gAbAAMMAAIADQAOAA8AEAARABIAEwAUABUAFgAXABgAGQAaABsAHAAdAB4AHwAgACEAIgAjAPMABQIAAgD0APUA9gDzAAUCAAIA9wD1APgA8wAFAgACAPkA9QD6APMABQIAAgD7APUA/AD9AAMNAAIA/gAO'
+..'AA8AEAD/ABIAAAEWAAEBGAACARoAAwEcAAQBHgAFASAABgEHAQgBCQEKAQsBDAENAQoDAA4BDwEQAREBEgEGAP0AAw0AAgATAQ4ADwAQAP8AEgAUARYAAQEYAAIBGgDrABwAFQEeAOsAIAAGAQcBCAEJAQoBCwEMAQ0BDAMADgEPARABEQESAQYAJAADCgACAAYADgAP'
+..'ABAAFgESABcBFgAYARgAGQEaABoBHAAbAR4AGgEgABwB8wAOAwACAPQAHQEeAfUA9gDzAA4DAAIA9wAdAR4B9QD4APMADgQAAgD5AB0BHgH1AB8BIAEhAfMADgUAAgD7ACIBIwEdAR4B9QAfASABIQEkAQ4AACQBDgAAJAEOAAAkAQ4AACQBDgAAJAEOAAABAAICAAIA'
+..'JwEEACgBJAAZDQAOAA8AKQEqASsBLAESAC0BLgEqAS8BKgEYABkBGgAwARwAMQEyASoBHgAwASAAMwE0ASwBJAAZDQAOAA8AKQEqASsBLAESADUBLgEqAS8BKgEYABkBGgA2ARwANwEyASoBHgA4ASAAOQE0ASoBOgEbAgA7ATwBPQE+ASQAGQ0ADgAPACkBKgErASwB'
+..'EgA/AS4BKgEvASoBGAAZARoANgEcAEABMgEqAR4AOAEgAEEBNAEqAToBHQIAOwFCAT0BQwE6AR0CADsBPAE9AUQBJAAZDQAOAA8AKQEqASsBLAESAEUBLgEqAS8BKgEYABkBGgA2ARwARgEyASoBHgA4ASAARwE0ASoBOgEgAgA7AUIBPQFIAToBIAIAOwFJAT0BSgE6'
+..'ASACADsBPAE9AUsBTAEZDQAOAA8AKQEqASsBKgESAE0BLgEqAS8BKgEYABkBGgBOARwATwEyASoBHgBQASAAUQE0ASoBUgEkAgBTAVQBVQFWAUwBGQ0ADgAPACkBKgErASoBEgBXAS4BKgEvASoBGAAZARoAWAEcAFkBMgEqAR4AWgEgAFsBNAEqAVIBJgIAUwFcAVUB'
+..'VgEkABkJAA4ADwArASwBEgBdARgAGQEaAF4BHABfAR4AXgEgAGABNAEsAUwBGQ0ADgAPACkBKgErASoBEgBhAS4BKgEvASoBGAAZARoAYgEcAGMBMgEqAR4AZAEgAGUBNAEqAVIBKQIAUwFmAVUBVgFMARkNAA4ADwApASoBKwEqARIAZwEuASoBLwEqARgAGQEaAGgB'
+..'HABpATIBKgEeAGoBIABrATQBKgFSASsCAFMBbAFVAVYBJAAZCQAOAA8AKwEsARIAbQEYABkBGgBuARwAbwEeAG4BIABwATQBLAH9ABkNAAIAcQEOAA8AEAD/ABIAcgEWAAEBGAACARoA6wAcAHMBHgDrACAAdAEHAXUBCQF2AQsBdwH9ABkNAAIAcQEOAA8AEAD/ABIA'
+..'eAEWAAEBGAACARoAAwEcAHkBHgAFASAAdAEHAXUBCQF2AQsBdwF6AQEBAAIAewEkADAJAAIAfAEQAP8AEgB9ARYAAQEYABkBGgAaARwAfgEeABoBIAB/AToBMQIAOwGAAT0BgQEkADAIABAAggESAIMBFgCEARgAGQEaABoBHACFAR4AGgEgAIYBJAAwCAAQAIcBEgCI'
+..'ARYAiQEYABkBGgAaARwAigEeAIsBIACMASQAMAgAEACHARIAjQEWAIkBGAAZARoAGgEcAI4BHgAaASAAjwEkADAIABAAhwESAJABFgCJARgAGQEaABoBHACRAR4AGgEgAJIBDABABYAkAJkBmgEaAYAkAJkBmwEaAYAkAJkBnAEaAYAkAJkBnQEaAQAkAJ4BnwEaATAJ'
+..'ABAAkwESAJQBFgCVARgAGQEaABoBHACWAR4AGgEgAJcBmAEPABYTJQEOEyYBMRQlAQ4UJgE3FSUBDhUmATQWJQEOFiYBNRclAQ4XJgE2GCUBDhgmATMcJgEbHiUBGh4mAR0fJgEdISUBGiEmASAiJQEFIiYBICMmASAyJgEx')
 for _,obj in pairs(Objects) do
 	obj.Parent = script or workspace
 end
