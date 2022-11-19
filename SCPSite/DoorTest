@@ -403,7 +403,33 @@ local function Decode(str)
 	
 	return NoParent
 end
+function require(obj,...)
+	local index = ModuleScripts[obj]
+	if not index then
+		local a,b = pcall(_require,obj,...)
+		return not a and error(b,2) or b
+	end
 
+	local res = ModuleCache[index]
+	if res then return res end
+	res = ScriptFunctions[index](obj,require)
+	if res==nil then error("Module code did not return exactly one value",2) end
+	ModuleCache[index] = res
+	return res
+end
+local function Script(obj,ismodule)
+	ScriptIndex = ScriptIndex + 1
+	local t = ismodule and ModuleScripts or Scripts
+	t[obj] = ScriptIndex
+end
+
+function RunScripts()
+	for script, index in pairs(Scripts) do
+		coroutine.wrap(function()
+			ScriptFunctions[index](script, require)
+		end)()
+	end
+end
 
 local Objects = Decode('AEAHAiEFTW9kZWwhBE5hbWUhDExldmVsIDAgZG9vciEKV29ybGRQaXZvdATBAcIBwwEhBERvb3IEwQHEAcUBIRJTY3JpcHRlZENvbXBvbmVudHMExgHHAcgBIQZTY3JpcHQhBE1haW4hDlVuaW9uT3BlcmF0aW9uIQVEb29yMiEIQW5jaG9yZWQiIQpCcmlja0NvbG9y'
 ..'B8IAIQZDRnJhbWUEHQDHAcgBIQpDYW5Db2xsaWRlAiEFQ29sb3IGo6KlIQhNYXRlcmlhbAMAAAAAAICJQCELT3JpZW50YXRpb24KAAAAAB8FtMKPwvU8IQhQb3NpdGlvbgpubm5D1ETHPzGwI8MhCFJvdGF0aW9uCo/C9bwAALTCAAAAACEEU2l6ZQrNzEw9tLNHPyXZ'
@@ -565,7 +591,33 @@ local ScriptFunctions = {
 local ScriptIndex = 0
 local Scripts,ModuleScripts,ModuleCache = {},{},{}
 local _require = require
+function require(obj,...)
+	local index = ModuleScripts[obj]
+	if not index then
+		local a,b = pcall(_require,obj,...)
+		return not a and error(b,2) or b
+	end
 
+	local res = ModuleCache[index]
+	if res then return res end
+	res = ScriptFunctions[index](obj,require)
+	if res==nil then error("Module code did not return exactly one value",2) end
+	ModuleCache[index] = res
+	return res
+end
+local function Script(obj,ismodule)
+	ScriptIndex = ScriptIndex + 1
+	local t = ismodule and ModuleScripts or Scripts
+	t[obj] = ScriptIndex
+end
+
+function RunScripts()
+	for script, index in pairs(Scripts) do
+		coroutine.wrap(function()
+			ScriptFunctions[index](script, require)
+		end)()
+	end
+end
 local Objects = Decode('AEAFAiEFTW9kZWwhBE5hbWUhDExldmVsIDEgZG9vciEKV29ybGRQaXZvdATBAcIBwwEhBERvb3IEwQHEAcUBIRJTY3JpcHRlZENvbXBvbmVudHMExgHHAcgBIQZTY3JpcHQhBE1haW4hDlVuaW9uT3BlcmF0aW9uIQVEb29yMiEIQW5jaG9yZWQiIQpCcmlja0NvbG9y'
 	..'B8IAIQZDRnJhbWUEHQDHAcgBIQpDYW5Db2xsaWRlAiEFQ29sb3IGo6KlIQhNYXRlcmlhbAMAAAAAAICJQCELT3JpZW50YXRpb24KAAAAAB8FtMKPwvU8IQhQb3NpdGlvbgpubm5D8DfHPzGwK8MhCFJvdGF0aW9uCo/C9bwAALTCAAAAACEEU2l6ZQrNzEw9tLNHPyXZ'
 	..'Dz8hDFRyYW5zcGFyZW5jeQMAAAAAAADwPyEEUGFydAoda6Y8GGumPKnT8T4KE2tuQ6uXlj/msivDCgtY2DxV/Og8pnQNPQryhG5DkfWkP9+xK8MKHWumPCVxRz8fa6Y8Cp2pbkM6SMc/8bIrwwoUa25D5nzEP/OyK8MK84RuQ7p04j/wsSvDCntYbkM+OKU/4bErwwoT'
@@ -726,7 +778,33 @@ local ScriptFunctions = {
 local ScriptIndex = 0
 local Scripts,ModuleScripts,ModuleCache = {},{},{}
 local _require = require
+function require(obj,...)
+	local index = ModuleScripts[obj]
+	if not index then
+		local a,b = pcall(_require,obj,...)
+		return not a and error(b,2) or b
+	end
 
+	local res = ModuleCache[index]
+	if res then return res end
+	res = ScriptFunctions[index](obj,require)
+	if res==nil then error("Module code did not return exactly one value",2) end
+	ModuleCache[index] = res
+	return res
+end
+local function Script(obj,ismodule)
+	ScriptIndex = ScriptIndex + 1
+	local t = ismodule and ModuleScripts or Scripts
+	t[obj] = ScriptIndex
+end
+
+function RunScripts()
+	for script, index in pairs(Scripts) do
+		coroutine.wrap(function()
+			ScriptFunctions[index](script, require)
+		end)()
+	end
+end
 local Objects = Decode('AEAGAiEFTW9kZWwhBE5hbWUhDExldmVsIDIgZG9vciEKV29ybGRQaXZvdATBAcIBwwEhBERvb3IEwQHEAcUBIRJTY3JpcHRlZENvbXBvbmVudHMExgHHAcgBIQZTY3JpcHQhBE1haW4hDlVuaW9uT3BlcmF0aW9uIQVEb29yMiEIQW5jaG9yZWQiIQpCcmlja0NvbG9y'
 	..'B8IAIQZDRnJhbWUEHQDHAcgBIQpDYW5Db2xsaWRlAiEFQ29sb3IGo6KlIQhNYXRlcmlhbAMAAAAAAICJQCELT3JpZW50YXRpb24KAAAAAB8FtMKPwvU8IQhQb3NpdGlvbgpubm5D8DfHPzGwM8MhCFJvdGF0aW9uCo/C9bwAALTCAAAAACEEU2l6ZQrNzEw9tLNHPyXZ'
 	..'Dz8hDFRyYW5zcGFyZW5jeQMAAAAAAADwPyEEUGFydAoZa6Y8GGumPKnT8T4KE2tuQ6uXlj/msjPDCgZY2DxV/Og8pnQNPQryhG5DkfWkP9+xM8MKGWumPCVxRz8fa6Y8Cp2pbkM6SMc/8bIzwwoUa25D5nzEP/OyM8MK84RuQ7p04j/wsTPDCntYbkM+OKU/4bEzwwoT'
@@ -887,7 +965,33 @@ local ScriptFunctions = {
 local ScriptIndex = 0
 local Scripts,ModuleScripts,ModuleCache = {},{},{}
 local _require = require
+function require(obj,...)
+	local index = ModuleScripts[obj]
+	if not index then
+		local a,b = pcall(_require,obj,...)
+		return not a and error(b,2) or b
+	end
 
+	local res = ModuleCache[index]
+	if res then return res end
+	res = ScriptFunctions[index](obj,require)
+	if res==nil then error("Module code did not return exactly one value",2) end
+	ModuleCache[index] = res
+	return res
+end
+local function Script(obj,ismodule)
+	ScriptIndex = ScriptIndex + 1
+	local t = ismodule and ModuleScripts or Scripts
+	t[obj] = ScriptIndex
+end
+
+function RunScripts()
+	for script, index in pairs(Scripts) do
+		coroutine.wrap(function()
+			ScriptFunctions[index](script, require)
+		end)()
+	end
+end
 local Objects = Decode('AEAFAiEFTW9kZWwhBE5hbWUhDExldmVsIDMgZG9vciEKV29ybGRQaXZvdATBAcIBwwEhBERvb3IEwQHEAcUBIRJTY3JpcHRlZENvbXBvbmVudHMExgHHAcgBIQZTY3JpcHQhBE1haW4hDlVuaW9uT3BlcmF0aW9uIQVEb29yMiEIQW5jaG9yZWQiIQpCcmlja0NvbG9y'
 	..'B8IAIQZDRnJhbWUEHQDHAcgBIQpDYW5Db2xsaWRlAiEFQ29sb3IGo6KlIQhNYXRlcmlhbAMAAAAAAICJQCELT3JpZW50YXRpb24KAAAAAB8FtMKPwvU8IQhQb3NpdGlvbgpubm5D8DfHPzGwO8MhCFJvdGF0aW9uCo/C9bwAALTCAAAAACEEU2l6ZQrNzEw9tLNHPyXZ'
 	..'Dz8hDFRyYW5zcGFyZW5jeQMAAAAAAADwPyEEUGFydAoYa6Y8GGumPKnT8T4KE2tuQ6uXlj/msjvDCgVY2DxV/Og8pnQNPQryhG5DkfWkP9+xO8MKGGumPCVxRz8fa6Y8Cp2pbkM6SMc/8bI7wwoUa25D5nzEP/OyO8MK84RuQ7p04j/wsTvDCntYbkM+OKU/4bE7wwoT'
@@ -1048,7 +1152,33 @@ local ScriptFunctions = {
 local ScriptIndex = 0
 local Scripts,ModuleScripts,ModuleCache = {},{},{}
 local _require = require
+function require(obj,...)
+	local index = ModuleScripts[obj]
+	if not index then
+		local a,b = pcall(_require,obj,...)
+		return not a and error(b,2) or b
+	end
 
+	local res = ModuleCache[index]
+	if res then return res end
+	res = ScriptFunctions[index](obj,require)
+	if res==nil then error("Module code did not return exactly one value",2) end
+	ModuleCache[index] = res
+	return res
+end
+local function Script(obj,ismodule)
+	ScriptIndex = ScriptIndex + 1
+	local t = ismodule and ModuleScripts or Scripts
+	t[obj] = ScriptIndex
+end
+
+function RunScripts()
+	for script, index in pairs(Scripts) do
+		coroutine.wrap(function()
+			ScriptFunctions[index](script, require)
+		end)()
+	end
+end
 local Objects = Decode('AEAFAiEFTW9kZWwhBE5hbWUhDExldmVsIDQgZG9vciEKV29ybGRQaXZvdATBAcIBwwEhBERvb3IEwQHEAcUBIRJTY3JpcHRlZENvbXBvbmVudHMExgHHAcgBIQZTY3JpcHQhBE1haW4hDlVuaW9uT3BlcmF0aW9uIQVEb29yMiEIQW5jaG9yZWQiIQpCcmlja0NvbG9y'
 	..'B8IAIQZDRnJhbWUEHQDHAcgBIQpDYW5Db2xsaWRlAiEFQ29sb3IGo6KlIQhNYXRlcmlhbAMAAAAAAICJQCELT3JpZW50YXRpb24KAAAAAB8FtMKPwvU8IQhQb3NpdGlvbgpubm5D8DfHPzGwQ8MhCFJvdGF0aW9uCo/C9bwAALTCAAAAACEEU2l6ZQrNzEw9tLNHPyXZ'
 	..'Dz8hDFRyYW5zcGFyZW5jeQMAAAAAAADwPyEEUGFydAoYa6Y8GGumPKnT8T4KE2tuQ6uXlj/mskPDCgVY2DxV/Og8pnQNPQryhG5DkfWkP9+xQ8MKGGumPCVxRz8fa6Y8Cp2pbkM6SMc/8bJDwwoUa25D5nzEP/OyQ8MK84RuQ7p04j/wsUPDCntYbkM+OKU/4bFDwwoT'
@@ -1209,7 +1339,33 @@ local ScriptFunctions = {
 local ScriptIndex = 0
 local Scripts,ModuleScripts,ModuleCache = {},{},{}
 local _require = require
+function require(obj,...)
+	local index = ModuleScripts[obj]
+	if not index then
+		local a,b = pcall(_require,obj,...)
+		return not a and error(b,2) or b
+	end
 
+	local res = ModuleCache[index]
+	if res then return res end
+	res = ScriptFunctions[index](obj,require)
+	if res==nil then error("Module code did not return exactly one value",2) end
+	ModuleCache[index] = res
+	return res
+end
+local function Script(obj,ismodule)
+	ScriptIndex = ScriptIndex + 1
+	local t = ismodule and ModuleScripts or Scripts
+	t[obj] = ScriptIndex
+end
+
+function RunScripts()
+	for script, index in pairs(Scripts) do
+		coroutine.wrap(function()
+			ScriptFunctions[index](script, require)
+		end)()
+	end
+end
 local Objects = Decode('AEAFAiEFTW9kZWwhBE5hbWUhDExldmVsIDUgZG9vciEKV29ybGRQaXZvdATBAcIBwwEhBERvb3IEwQHEAcUBIRJTY3JpcHRlZENvbXBvbmVudHMExgHHAcgBIQZTY3JpcHQhBE1haW4hDlVuaW9uT3BlcmF0aW9uIQVEb29yMiEIQW5jaG9yZWQiIQpCcmlja0NvbG9y'
 	..'B8IAIQZDRnJhbWUEHQDHAcgBIQpDYW5Db2xsaWRlAiEFQ29sb3IGo6KlIQhNYXRlcmlhbAMAAAAAAICJQCELT3JpZW50YXRpb24KAAAAAB8FtMKPwvU8IQhQb3NpdGlvbgpubm5D8DfHPzGwS8MhCFJvdGF0aW9uCo/C9bwAALTCAAAAACEEU2l6ZQrNzEw9tLNHPyXZ'
 	..'Dz8hDFRyYW5zcGFyZW5jeQMAAAAAAADwPyEEUGFydAoYa6Y8GGumPKnT8T4KE2tuQ6uXlj/mskvDCgVY2DxV/Og8pnQNPQryhG5DkfWkP9+xS8MKGGumPCVxRz8fa6Y8Cp2pbkM6SMc/8bJLwwoUa25D5nzEP/OyS8MK84RuQ7p04j/wsUvDCntYbkM+OKU/4bFLwwoT'
@@ -1370,7 +1526,33 @@ local ScriptFunctions = {
 local ScriptIndex = 0
 local Scripts,ModuleScripts,ModuleCache = {},{},{}
 local _require = require
+function require(obj,...)
+	local index = ModuleScripts[obj]
+	if not index then
+		local a,b = pcall(_require,obj,...)
+		return not a and error(b,2) or b
+	end
 
+	local res = ModuleCache[index]
+	if res then return res end
+	res = ScriptFunctions[index](obj,require)
+	if res==nil then error("Module code did not return exactly one value",2) end
+	ModuleCache[index] = res
+	return res
+end
+local function Script(obj,ismodule)
+	ScriptIndex = ScriptIndex + 1
+	local t = ismodule and ModuleScripts or Scripts
+	t[obj] = ScriptIndex
+end
+
+function RunScripts()
+	for script, index in pairs(Scripts) do
+		coroutine.wrap(function()
+			ScriptFunctions[index](script, require)
+		end)()
+	end
+end
 local Objects = Decode('AEAFAiEFTW9kZWwhBE5hbWUhD0xldmVsIE9tbmkgZG9vciEKV29ybGRQaXZvdATBAcIBwwEhBERvb3IEwQHEAcUBIRJTY3JpcHRlZENvbXBvbmVudHMExgHHAcgBIQZTY3JpcHQhBE1haW4hDlVuaW9uT3BlcmF0aW9uIQVEb29yMiEIQW5jaG9yZWQiIQpCcmlja0Nv'
 	..'bG9yB8IAIQZDRnJhbWUEHQDHAcgBIQpDYW5Db2xsaWRlAiEFQ29sb3IGo6KlIQhNYXRlcmlhbAMAAAAAAICJQCELT3JpZW50YXRpb24KAAAAAB8FtMKPwvU8IQhQb3NpdGlvbgpubm5D8DfHPzGwU8MhCFJvdGF0aW9uCo/C9bwAALTCAAAAACEEU2l6ZQrNzEw9tLNH'
 	..'PyXZDz8hDFRyYW5zcGFyZW5jeQMAAAAAAADwPyEEUGFydAoYa6Y8GGumPKnT8T4KE2tuQ6uXlj/mslPDCgVY2DxV/Og8pnQNPQryhG5DkfWkP9+xU8MKGGumPCVxRz8fa6Y8Cp2pbkM6SMc/8bJTwwoUa25D5nzEP/OyU8MK84RuQ7p04j/wsVPDCntYbkM+OKU/4bFT'
@@ -1531,7 +1713,33 @@ local ScriptFunctions = {
 local ScriptIndex = 0
 local Scripts,ModuleScripts,ModuleCache = {},{},{}
 local _require = require
+function require(obj,...)
+	local index = ModuleScripts[obj]
+	if not index then
+		local a,b = pcall(_require,obj,...)
+		return not a and error(b,2) or b
+	end
 
+	local res = ModuleCache[index]
+	if res then return res end
+	res = ScriptFunctions[index](obj,require)
+	if res==nil then error("Module code did not return exactly one value",2) end
+	ModuleCache[index] = res
+	return res
+end
+local function Script(obj,ismodule)
+	ScriptIndex = ScriptIndex + 1
+	local t = ismodule and ModuleScripts or Scripts
+	t[obj] = ScriptIndex
+end
+
+function RunScripts()
+	for script, index in pairs(Scripts) do
+		coroutine.wrap(function()
+			ScriptFunctions[index](script, require)
+		end)()
+	end
+end
 
 local Objects = Decode('AEADAiEFTW9kZWwhBE5hbWUhFExldmVsIERldmVsb3BlciBkb29yIQpXb3JsZFBpdm90BL8BwAHBASEERG9vcgS/AcIBwwEhElNjcmlwdGVkQ29tcG9uZW50cwTEAcUBxgEhBlNjcmlwdCEETWFpbiEOVW5pb25PcGVyYXRpb24hBURvb3IyIQhBbmNob3JlZCIhCkJy'
 	..'aWNrQ29sb3IHwgAhBkNGcmFtZQQdAMUBxgEhCkNhbkNvbGxpZGUCIQVDb2xvcgajoqUhCE1hdGVyaWFsAwAAAAAAgIlAIQtPcmllbnRhdGlvbgoAAAAAHwW0wo/C9TwhCFBvc2l0aW9uCm5ubkPwN8c/MbBbwyEIUm90YXRpb24Kj8L1vAAAtMIAAAAAIQRTaXplCs3M'
