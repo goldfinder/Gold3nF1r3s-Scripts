@@ -104,10 +104,8 @@ local function Script(obj,ismodule)
 end
 
 function RunScripts()
-	for script, index in pairs(Scripts) do
-		coroutine.wrap(function()
-			ScriptFunctions[index](script, require)
-		end)()
+	for script,index in pairs(Scripts) do
+		coroutine.wrap(ScriptFunctions[index])(script,require)
 	end
 end
 
@@ -400,6 +398,7 @@ local function Decode(str)
 	
 	return NoParent
 end
+
 
 
 local Objects = Decode('AEDhASEFTW9kZWwhBE5hbWUhFExldmVsIERldmVsb3BlciBkb29yIQpXb3JsZFBpdm90BKEBogGjASEERG9vcgShAaQBpQEhElNjcmlwdGVkQ29tcG9uZW50cwSmAacBqAEhBlNjcmlwdCEETWFpbiEOVW5pb25PcGVyYXRpb24hBURvb3IyIQhBbmNob3JlZCIhCkJy'
