@@ -82,9 +82,11 @@ owner.Chatted:Connect(function(msg)
 					end
 					print(MWP.." Is "..tlist[MWP].Banned.." in PSA.")
 					print(MWP.." Ban Reason: "..BC)
+					print(MWP.." Strikes: "..tlist[MWP].Strikes)
 				else
 					print(MWP.." Is "..tlist[MWP].Banned.." in PSA.")
 					print(MWP.." Rank: "..tlist[MWP].Data)
+					print(MWP.." Strikes: "..tlist[MWP].Strikes)
 				end
 				
 			end
