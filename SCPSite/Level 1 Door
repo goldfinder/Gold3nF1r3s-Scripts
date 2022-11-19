@@ -18,15 +18,13 @@ local Debounce = false
 function Triggered(Player)
 	if Player.Character == nil then return end
 	if Player.Character:FindFirstChild("User Setup") == nil then return end
-	if Player.Character:FindFirstChild("Role").Value < 1 then 
+	if Player.Character:FindFirstChild("AccessLevel").Value < 1 then 
 		Door.AccessDenied:Play()
 		return end
 	if not Debounce then
 		Debounce = true
 		if Open then
 			Open = false
-			script.Parent.Parent.Light1.brickColor = BrickColor.new("Bright red")
-			script.Parent.Parent.Light2.brickColor = BrickColor.new("Bright red")
 			CloseSound:Play()
 			--Door.Transparency = 0
 			for i,v in pairs(Door:GetChildren()) do
@@ -51,8 +49,6 @@ function Triggered(Player)
 			end)
 		else
 			Open = true
-			script.Parent.Parent.Light1.brickColor = BrickColor.new("Bright red")
-			script.Parent.Parent.Light2.brickColor = BrickColor.new("Bright red")
 			OpenSound:Play()
 			spawn(function()
 				for i = 3,(Door.Size.z / 0.15) do
