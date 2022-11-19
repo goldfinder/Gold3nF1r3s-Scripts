@@ -67,17 +67,17 @@ function(script,require)
 script.Parent.L0A.ClickDetector.MouseClick:Connect(function(plr)
 	local TLT = "Foundation Personnel"
 	if plr.Character:FindFirstChild("Role") ~= nil then
-		script.Parent.L1A.SurfaceGui.TextLabel.Text="Already have a role."
+		script.Parent.L0A.SurfaceGui.TextLabel.Text="Already have a role."
 		wait(3)
-		script.Parent.L1A.SurfaceGui.TextLabel.Text=TLT
+		script.Parent.L0A.SurfaceGui.TextLabel.Text=TLT
 	else
-		script.Parent.L1A.SurfaceGui.TextLabel.Text="Added Role."
+		script.Parent.L0A.SurfaceGui.TextLabel.Text="Added Role."
 		local inst = Instance.new("StringValue")
 		inst.Value = TLT
 		inst.Name="Role"
 		inst.Parent = plr.Character
 		wait(3)
-		script.Parent.L1A.SurfaceGui.TextLabel.Text=TLT
+		script.Parent.L0A.SurfaceGui.TextLabel.Text=TLT
 	end
 end)
 
