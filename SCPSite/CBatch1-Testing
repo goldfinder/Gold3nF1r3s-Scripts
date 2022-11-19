@@ -65,18 +65,19 @@ end)
 end,
 function(script,require)
 script.Parent.L0A.ClickDetector.MouseClick:Connect(function(plr)
-	if plr.Character:FindFirstChild("AccessLevel") ~= nil then
-		script.Parent.L0A.SurfaceGui.TextLabel.Text="Already have a access level."
+	local TLT = "Foundation Personnel"
+	if plr.Character:FindFirstChild("Role") ~= nil then
+		script.Parent.L1A.SurfaceGui.TextLabel.Text="Already have a role."
 		wait(3)
-		script.Parent.L0A.SurfaceGui.TextLabel.Text="Level 0 Access"
+		script.Parent.L1A.SurfaceGui.TextLabel.Text=TLT
 	else
-		script.Parent.L0A.SurfaceGui.TextLabel.Text="Added Access."
-		local inst = Instance.new("NumberValue")
-		inst.Value = 0
-		inst.Name="AccessLevel"
+		script.Parent.L1A.SurfaceGui.TextLabel.Text="Added Role."
+		local inst = Instance.new("StringValue")
+		inst.Value = TLT
+		inst.Name="Role"
 		inst.Parent = plr.Character
 		wait(3)
-		script.Parent.L0A.SurfaceGui.TextLabel.Text="Level 0 Access"
+		script.Parent.L1A.SurfaceGui.TextLabel.Text=TLT
 	end
 end)
 
@@ -132,19 +133,18 @@ script.Parent.L3A.ClickDetector.MouseClick:Connect(function(plr)
 end)
 
 script.Parent.L4A.ClickDetector.MouseClick:Connect(function(plr)
-	local TLT = "SRT"
 	if plr.Character:FindFirstChild("Role") ~= nil then
 		script.Parent.L4A.SurfaceGui.TextLabel.Text="Already have a role."
 		wait(3)
-		script.Parent.L4A.SurfaceGui.TextLabel.Text=TLT
+		script.Parent.L4A.SurfaceGui.TextLabel.Text="SRT"
 	else
 		script.Parent.L4A.SurfaceGui.TextLabel.Text="Added Role."
 		local inst = Instance.new("StringValue")
-		inst.Value = TLT
+		inst.Value = "SRT"
 		inst.Name="Role"
 		inst.Parent = plr.Character
 		wait(3)
-		script.Parent.L4A.SurfaceGui.TextLabel.Text=TLT
+	script.Parent.L4A.SurfaceGui.TextLabel.Text="SRT"
 	end
 end)
 
@@ -376,12 +376,11 @@ local function Script(obj,ismodule)
 end
 
 function RunScripts()
-	for script, index in pairs(Scripts) do
-		coroutine.wrap(function()
-			ScriptFunctions[index](script, require)
-		end)()
+	for script,index in pairs(Scripts) do
+		coroutine.wrap(ScriptFunctions[index])(script,require)
 	end
 end
+
 
 local function Decode(str)
 	local StringLength = #str
