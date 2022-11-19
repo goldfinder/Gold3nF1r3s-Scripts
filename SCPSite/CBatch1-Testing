@@ -321,6 +321,8 @@ function levelname(number)
 		return "Level 5"
 	elseif number == "6" then
 		return "Level Omni"
+	elseif number == "7" then
+		return "Developer Access"
 	end
 end
 script.Parent.MouseClick:Connect(function(plr)
@@ -380,7 +382,6 @@ function RunScripts()
 		end)()
 	end
 end
-
 
 local function Decode(str)
 	local StringLength = #str
