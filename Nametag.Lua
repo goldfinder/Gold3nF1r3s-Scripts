@@ -1,11 +1,26 @@
+local Dataset1="https://raw.githubusercontent.com/goldfinder/Gold3nF1r3s-Scripts/main/nametag.Lua%20Data/Scripters"
+local Dataset2="https://raw.githubusercontent.com/goldfinder/Gold3nF1r3s-Scripts/main/nametag.Lua%20Data/PSA%20Staff"
+local HttpService=game:GetService("HttpService")
+local str1
+local str2
+local plist1
+local plist2
+local scripter=false
+local PSAStaff=false
 local afkbool2=Instance.new("BoolValue")
 afkbool2.Parent=owner
-afkbool2.Value = false
+afkbool2.Value=false
 wait()
 function nametag()
-	Afk = Instance.new("RemoteEvent")
-	Afk.Parent = owner.Character
+	local code=HttpService:GetAsync(Dataset1, true)
+	str1=code
+	local code=HttpService:GetAsync(Dataset2, true)
+	str2=code
+	Afk=Instance.new("RemoteEvent")
+	Afk.Parent=owner.Character
 	Afk.Name = "GetKey"
+	--[[Scripter]]plist1 = string.split(str1,"|") for i=1,#plist1 do if tonumber(plist1[i])==owner.UserId then scripter = true end end
+	--[[PSA]]plist1 = string.split(str2,"|") for i=1,#plist1 do if tonumber(plist1[i])==owner.UserId then PSAStaff = true end end
 	NLS([==[
 game:GetService("UserInputService").WindowFocusReleased:Connect(function()
 	script.Parent:FireServer("WFR")
@@ -52,7 +67,7 @@ end)]==],Afk)
 	settings.Parent=gui
 	settings.FillDirection = Enum.FillDirection.Horizontal
 	settings.HorizontalAlignment = Enum.HorizontalAlignment.Center
-	if owner.UserId==21490931 then
+	if PSAStaff==true then
 		local icon = Instance.new("ImageLabel")
 		icon.BackgroundTransparency=1
 		icon.Image = "rbxassetid://11380160461"
@@ -60,7 +75,7 @@ end)]==],Afk)
 		icon.SizeConstraint=Enum.SizeConstraint.RelativeYY
 		icon.Parent=gui
 	end
-	if owner.UserId==1201130161 or owner.UserId==21490931 then
+	if scripter==true then
 		local icon = Instance.new("ImageLabel")
 		icon.BackgroundTransparency=1
 		icon.Image = "rbxassetid://11395396633"
