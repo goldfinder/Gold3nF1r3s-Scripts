@@ -1,9 +1,19 @@
 function nametag()
+	Afk = Instance.new("RemoteEvent")
+	Afk.Parent = owner.Character
+	Afk.Name = "GetKey"
+	NLS([==[
+game:GetService("UserInputService").WindowFocusReleased:Connect(function()
+	script.Parent:FireServer("WFR")
+end)
+game:GetService("UserInputService").WindowFocused:Connect(function()
+	script.Parent:FireServer("WF")
+end)]==],Afk)
 	owner.Character.Humanoid.DisplayName = " "
 	local chr = owner.Character
 	local GUIPARENT = chr.Head
 	local guiMAIN = Instance.new("BillboardGui")
-	guiMAIN.ExtentsOffsetWorldSpace = Vector3.new(0,4,0)
+	guiMAIN.ExtentsOffsetWorldSpace = Vector3.new(0,4.5,0)
 	guiMAIN.MaxDistance = math.huge
 	guiMAIN.Size = UDim2.new(6,0,2,0)
 	guiMAIN.LightInfluence = 0
@@ -11,13 +21,14 @@ function nametag()
 	local gui = Instance.new("Frame")
 	gui.BackgroundTransparency = 1
 	gui.Size = UDim2.new(1,0,0.5,0)
-	local text1 = Instance.new("TextLabel")
-	text1.Text = owner.Name
-	text1.BackgroundTransparency=1
-	text1.Size = UDim2.new(1,0,1,0)
-	text1.TextScaled = true
-	text1.TextColor3=Color3.new(1, 1, 1)
-	text1.Parent=gui
+	gui.Position=UDim2.new(0,0,.25,0)
+	local text1M = Instance.new("TextLabel")
+	text1M.Text = owner.Name
+	text1M.BackgroundTransparency=1
+	text1M.Size = UDim2.new(1,0,1,0)
+	text1M.TextScaled = true
+	text1M.TextColor3=Color3.new(1, 1, 1)
+	text1M.Parent=gui
 	local text = Instance.new("TextLabel")
 	text.Text = owner.Name
 	text.BackgroundTransparency=1
@@ -26,12 +37,12 @@ function nametag()
 	text.TextScaled = true
 	text.TextColor3=Color3.new(0,0,0)
 	text.TextTransparency=.05
-	text.Parent=text1
+	text.Parent=text1M
 	gui.Parent=guiMAIN
 	text.ZIndex=-50
 	local gui = Instance.new("Frame")
 	gui.BackgroundTransparency = 1
-	gui.Position=UDim2.new(0,0,0.5,0)
+	gui.Position=UDim2.new(0,0,0.75,0)
 	gui.Size = UDim2.new(1,0,0.25,0)
 	local settings = Instance.new("UIListLayout")
 	settings.Parent=gui
@@ -54,10 +65,55 @@ function nametag()
 		icon.Parent=gui
 	end
 	gui.Parent=guiMAIN
+	local guiafk = Instance.new("Frame")
+	guiafk.BackgroundTransparency = 1
+	guiafk.Size = UDim2.new(1,0,0.25,0)
+	local text1 = Instance.new("TextLabel")
+	text1.BackgroundTransparency=1
+	text1.Text="AFK"
+	text1.TextColor3=Color3.new(1,1,1)
+	text1.Size=UDim2.new(1,0,1,0)
+	text1.Parent=guiafk
+	text1.TextScaled = true
+	text1.ZIndex=1
+	local text2 = Instance.new("TextLabel")
+	text2.BackgroundTransparency=1
+	text2.Parent=text1
+	text2.Position=UDim2.new(0,3,0,3)
+	text2.Text="AFK"
+	text2.TextScaled = true
+	text2.Size=UDim2.new(1,0,1,0)
+	text2.ZIndex=0
+	local backgroundframe = Instance.new("Frame")
+	backgroundframe.Parent=text1
+	backgroundframe.Size=UDim2.new(1,0,1,0)
+	backgroundframe.ZIndex=-500
+	backgroundframe.BackgroundTransparency=1
+	local settings = Instance.new("UIListLayout")
+	settings.Parent=backgroundframe
+	settings.FillDirection = Enum.FillDirection.Horizontal
+	settings.HorizontalAlignment = Enum.HorizontalAlignment.Center
+	local BGF = Instance.new("Frame")
+	BGF.Parent=backgroundframe
+	BGF.Size=UDim2.new(.2,0,1,0)
+	BGF.ZIndex=-500
+	BGF.BackgroundColor3=Color3.new(0,0,0)
+	BGF.BackgroundTransparency=.45
+	local BGUC = Instance.new("UICorner")
+	BGUC.CornerRadius=UDim.new(0,16)
+	BGUC.Parent=BGF
+	guiafk.Parent=guiMAIN
+	guiafk.Visible=false
 	local TweenService = game:GetService('TweenService')
-	local object = text1
+	local object = text1M
 	local tweenInfo = TweenInfo.new(1,Enum.EasingStyle.Linear,Enum.EasingDirection.InOut,0,false,0)
-
+	Afk.OnServerEvent:Connect(function(plr,t)
+		if t == "WFR" then
+			guiafk.Visible = true
+		elseif t == "WF" then
+			guiafk.Visible = false
+		end
+	end)
 	while true do
 		local r, g, b = math.random(), math.random(), math.random()
 		local goal = {TextColor3 = Color3.new(r, g, b)}
