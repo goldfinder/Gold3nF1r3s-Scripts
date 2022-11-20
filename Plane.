@@ -1,51 +1,3051 @@
 -- Converted using Mokiros's Model to Script Version 3
--- Converted string size: 32140 characters
-local function DecodeUnion(Values,Flags,Parse,data)
-	local m = Instance.new("Folder")
-	m.Name = "UnionCache ["..tostring(math.random(1,9999)).."]"
-	m.Archivable = false
-	m.Parent = game:GetService("ServerStorage")
-	local Union,Subtract = {},{}
-	if not data then
-		data = Parse('B')
+-- Converted string size: 35120 characters
+
+local ScriptFunctions = {
+function(script,require)
+local PlaneClone = script.Parent.Plane:Clone()
+local Planekit = script.Parent
+PlaneClone.Origin.Value = Planekit
+script.Parent.Plane.Origin.Value = Planekit
+local EnterOnSpawn = Planekit.EnterOnSpawn
+local Button = Planekit.Button
+local Main = Button.Main
+local RegenGui = script.RegenGui
+local PlaneClone2 = nil
+local Active = true
+--------------------------------------------------------
+local RegenTime = 1 --Change this to how long it takes the plane to regen
+local WaitTime = 2 --Change this to how much time you have to wait before you can regen another plane
+--------------------------------------------------------
+function DeleteIdlePlane() --This deletes any planes that aren't currently being used
+	for _,v in pairs(Planekit:GetChildren()) do
+		if v.Name == "Plane" then
+			v:Destroy()
+		end
 	end
-	local ByteLength = (data % 4) + 1
-	local Length = Parse('I'..ByteLength)
-	local ValueFMT = ('I'..Flags[1])
-	for i = 1,Length do
-		local data = Parse('B')
-		local part
-		local isNegate = bit32.band(data,0b10000000) > 0
-		local isUnion =  bit32.band(data,0b01000000) > 0
-		if isUnion then
-			part = DecodeUnion(Values,Flags,Parse,data)
-		else
-			local isMesh = data % 2 == 1
-			local ClassName = Values[Parse(ValueFMT)]
-			part = Instance.new(ClassName)
-			part.Size = Values[Parse(ValueFMT)]
-			part.Position = Values[Parse(ValueFMT)]
-			part.Orientation = Values[Parse(ValueFMT)]
-			if isMesh then
-				local mesh = Instance.new("SpecialMesh")
-				mesh.MeshType = Values[Parse(ValueFMT)]
-				mesh.Scale = Values[Parse(ValueFMT)]
-				mesh.Offset = Values[Parse(ValueFMT)]
-				mesh.Parent = part
+end
+
+function RegenMain() --This function regens the plane
+	local PlaneClone2 = PlaneClone:clone()
+	PlaneClone2.Parent = Planekit
+	PlaneClone2.Origin.Value = Planekit
+	PlaneClone2:MakeJoints()
+	return PlaneClone2
+end
+
+function RegeneratePlane(Part) --This is the main regenerating function
+	local Player = game.Players:GetPlayerFromCharacter(Part.Parent) --This gets the player that touched it
+	if Player then
+		local Humanoid = Player.Character:FindFirstChild("Humanoid")
+		if Humanoid.Health ~= 0 then
+			if Active then
+				Active = false
+				DeleteIdlePlane() --This activates the "DeleteIdlePlane" function
+				for i = 0,1,0.2 do --This makes the button transparent
+					Main.Transparency = i
+					wait()
+				end
+				if RegenTime >= 1 then
+					RegenGui.Parent = Player.PlayerGui --The regengui will be put into the player if the regentime is more than 1
+				end
+				wait(RegenTime)
+				RegenGui.Parent = script --This puts the gui back in the script
+				local PlaneClone2 = RegenMain()
+				if EnterOnSpawn.Value then --If the EnterOnSpawn value is true...
+					coroutine.resume(coroutine.create(function()
+						repeat wait() until PlaneClone2.Welded.Value
+						while true do
+							if PlaneClone2.Welded.Value
+							or Humanoid.Health == 0 then
+								break
+							end
+							wait()
+						end
+						onPlaneWelded(Player,PlaneClone2) --This activates the "onPlaneWelded" function whenever the welded value changes
+					end))
+				end
+				wait(WaitTime)
+				for i = 1,0,-0.2 do --This makes the button visible
+					Main.Transparency = i
+					wait()
+				end
+				Active = true
 			end
 		end
-		part.Parent = m
-		table.insert(isNegate and Subtract or Union,part)
 	end
-	local first = table.remove(Union,1)
-	if #Union>0 then
-		first = first:UnionAsync(Union)
+end
+
+function onPlaneWelded(Player,Plane) --This function put you into the plane seat the moment the plane is welded
+	if Plane and Player then --This checks to make sure there is a plane and a player
+		if Player.Character:FindFirstChild("Torso") then
+			if Player.Character.Humanoid.Health ~= 0 then
+				Player.Character.Torso.CFrame = Plane.MainParts.Seat.CFrame
+			end
+		end
 	end
-	if #Subtract>0 then
-		first = first:SubtractAsync(Subtract)
+end
+
+Main.Touched:connect(RegeneratePlane) --This activates the "RegeneratePlane" function when the Main brick is touched
+end,
+function(script,require)
+local Plane = script.Parent --Lines 1-4 set variables
+local Engine = Plane.MainParts.Engine
+local Welded = Plane.Welded
+local Parts = {}
+function GetParts(Model) --This function gets all the parts in the plane
+	for i,v in pairs(Model:GetChildren()) do --This is a shorter way of getting all the children in a specific area
+		if ((v:IsA("BasePart")) and v ~= Engine) then
+			table.insert(Parts,{v,v.CFrame}) --This inserts the parts into the "Parts" table
+		end
+		GetParts(v)
 	end
-	m:Destroy()
-	return first
+end
+function WeldParts() --This function welds the parts together. It's not as complicated as it looks
+	GetParts(Plane)
+	for _,v in pairs(Parts) do --This gets all the parts in the "Parts" table
+		local Weld = Instance.new("Weld") --This makes the weld
+		Weld.Name = "MainWeld"
+		Weld.Part0 = Engine --This makes whatever brick the "v" variable is attach to the Engine
+		Weld.Part1 = v[1]
+		Weld.C0 = Engine.CFrame:toObjectSpace(v[2])
+		Weld.Parent = v[1]
+	end
+	wait(1)
+	Engine.Anchored = false
+	for _,v in pairs(Parts) do --This unanchors the bricks after 1 second
+		v[1].Anchored = false
+	end
+	Welded.Value = true
+end
+WeldParts() --This activates the weld function
+end,
+function(script,require)
+--[[
+Read this to understand what each one of the values does to the plane:
+
+-Acceleration:
+	This changes how fast the plane accelerates. 1000 being the highest, and 0 being the lowest. If you make it 0, the plane will
+	accelerate every 0.5 seconds. If you make it 1000, the plane will accelerate every 0 seconds
+	
+-AltitudeRestrict:
+	This value determines whether there will be altitude restrictions on the plane or not
+
+	-MaxAltitude:
+		This value sets the limit as to how high the plane can fly. If you go higher than the MaxAltitude, the plane will stall
+		until you are below the limit
+	-MinAltitude:
+		This value sets the limit as to how low the plane can fly. If you go lower than the MinAltitude, the plane will explode. If
+		you fly just a few studs above the limit, a warning indicator will appear that tells you to pull up
+		
+-CameraType:
+	This value determines what cameratype you will have when you select the plane tool. It can be either one of these:
+	Attach, Custom, Fixed, Follow, Scriptable, Track, and Watch. If the value is blank, the cameratype will automatically be Custom
+	
+-CanCrash:
+	This value determines whether the plane can crash or not at a given force
+	
+	-Force:
+		This value sets the minimum force required to make the plane crash. If you hit any object at a speed faster than the Force
+		value, then you will crash
+		
+-Ejectable:
+	This value determines whether you can eject from the plane or not
+		
+-FlightControls:
+	These are the controls that allow you to fly the plane
+
+	-Eject:
+		This key will eject you from the plane
+	-Engine:
+		This key will turn on or turn off the engine
+	-Gear:
+		This key will make the landing gear retract or extend
+	-SlowDown:
+		This key will make the plane slow down. The key can either be "ArrowKeyUp", "ArrowKeyDown", or any other key
+	-SpeedUp:
+		This key will make the plane speed up. The key can either be "ArrowKeyUp", "ArrowKeyDown", or any other key
+
+-GroupSpecific:
+	This value determines whether only a certain group can access it or everyone can access it
+	
+	-GroupId:
+		This value is the Id of the group that the plane is specific too. As long as GroupSpecific is set to true
+	
+	-KillOnEnter:
+		If this value is true, then if GroupSpecific is true and the player that entered the plane isn't part of the group,
+		the script will kill them. If it false it won't kill them
+		
+-HUDOnLock:
+	This value determines whether you'll see a HUD when the Camera is locked. In order for the HUD to come up, CamLock has to be
+	enabled. If it isn't enabled, the classic HUD will show.
+
+-MaxBank:
+	This value sets the maximum angle the plane can bank. The lowest it can be is -90, and the highest it can be is 90
+	
+-MaxSpeed:
+	This value sets the maximum speed that the plane can fly at. The higher the acceleration value, the faster the plane will reach
+	its top speed
+	
+-PlaneName:
+	This value names the plane and it will appear on the top of the Plane Gui
+	
+-ReloadTimes:
+	These are the reload times for each weapon on the plane
+	
+	-Bombs:
+		This value sets how much time you have to wait before you can drop another bomb. The reload time for guided bombs are twice
+		this value
+		
+	-Flares:
+		This value sets how much time you have to wait before you can deploy more flares
+		
+	-Guns:
+		This value sets the firerate of the guns. This value should be no less than 0.01
+		
+	-Missiles:
+		This value sets how much time you have to wait before you can fire another missile. The reload time for guided missiles are
+		twice this value
+		
+	-Rockets:
+		This value sets how much time you have to wait before you can fire another set of rockets
+
+-SimulationMode:
+	This value determines whether the plane will fly like a simulator or not. If the value is true, then the plane can do full rotations
+	and it is controlled by the position of the mouse on the screen. The plane won't have a set BankAngle because it can do complete
+	Roll rotations. The farther the mouse is away from the center of the screen, the faster the plane will rotate. I would use this mode
+	for smaller planes because they're more agile than larger planes
+	
+	-PitchSpeed:
+		This value sets how many degrees per 1/60th of a second the plane rotates on the X Axis. Basically how fast the plane rotates
+		up or down. If your mouse is at the very edge of the top or bottom of your screen, your plane will rotate at the PitchSpeed.
+		However, if your mouse is at the center of your screen, your plance wont't rotate at all
+	
+	-RollSpeed:
+		This value sets how many degrees per 1/60th of a second the plane rotates on the Y Axis. Basically how fast the plane rotates
+		from side to side. If your mouse is at the very edge of the left or right side of your screen, your plane will rotate at the
+		RollSpeed. However, if your mouse is at the center of your screen, your plance wont't rotate at all
+
+-StallSpeed:
+	This value sets the minimum speed that the plane can fly before it stalls. If the plane is flying at a speed lower than the
+	StallSpeed, the plane will stall until the speed is increased
+	
+-TargetControls:
+	These are the controls that control the targeting system on the plane
+	
+	-Modes:
+		This key switches the modes on the plane. There are two modes. In flying mode, the sign "Flying Mode" will be displayed on the
+		Plane Gui, and you can't target objects. In targeting mode, the sign "Targeting Mode" will be displayed on the Plane Gui, and
+		you will be able to target objects
+		
+	-UnTarget:
+		This key unlocks from whatever object that you locked onto, and it allows you to lock onto another object
+
+-Targetable:
+	This value determines whether the plane will have a targeting system or not, which allows you to lock onto any object or player
+	according to the Targeting System
+	
+-ThrottleInc:
+	This value changes how fast the throttle increases. The max this value should be is 1, and the minimum should be 0.01. The higher
+	the number, the faster the throttle increases
+	
+-TurnSpeed:
+	This value affects how fast the plane turns. The lowest it should be is 0 and the highest it should be is 10000. If you make the
+	value higher than 10000, the plane could become unstable
+	
+-WeaponControls:
+	These are the controls that fire the given weapons
+	
+	-DeployFlares:
+		This key will make the plane deploy flares
+	-DropBombs:
+		This key will make the plane drop bombs
+	-FireGuns:
+		This key will make the plane fire its guns
+	-FireMissile:
+		This key will make the plane fire missiles
+	-FireRockets:
+		This key will make the plane fire rockets
+		
+-Weapons:
+	This value determines whether the plane will have weapons or not
+	
+	-Bombs:
+		This value will determine whether the plane can drop bombs or not
+	-Flares:
+		This value will determine whether the plane can deploy flares or not
+	-Guns:
+		This value will determine whether the plane can fire guns or not
+	-Missiles:
+		This value will determine whether the plane can fire missiles or not
+	-Rockets:
+		This value will determine whether the plane can fire rockets or not
+		
+Well, these are all the controls! If you have any questions, send me a message
+
+--TurboFusion--
+
+]]
+end,
+function(script,require)
+b = script.Parent.Blue
+a = script.Parent.PointLight
+
+local oh,om = 6,30	-- Open Time (hours,minutes)
+local ch,cm = 18,00	-- Close Time (hours, minutes)
+
+local l = game:service("Lighting")
+if (om == nil) then om = 0 end
+if (cm == nil) then cm = 0 end
+
+
+function TimeChanged()
+	local ot = (oh + (om/60)) * 60
+	local ct = (ch + (cm/60)) * 60
+	if (ot < ct) then
+		if (l:GetMinutesAfterMidnight() >= ot) and (l:GetMinutesAfterMidnight() <= ct) then
+b.Enabled = false
+a.Enabled = false
+		else
+a.Enabled = true
+b.Enabled = true
+		end
+	elseif (ot > ct) then
+		if (l:GetMinutesAfterMidnight() >= ot) or (l:GetMinutesAfterMidnight() <= ct) then
+b.Enabled = false
+a.Enabled = false
+		else
+b.Enabled = true
+a.Enabled = true
+		end
+	end
+end
+
+TimeChanged()
+game.Lighting.Changed:connect(function(property)
+			if (property == "TimeOfDay") then
+				TimeChanged()
+			end
+		end)
+
+-- Ganondude
+end,
+function(script,require)
+b = script.Parent.Blue
+a = script.Parent.PointLight
+
+local oh,om = 6,30	-- Open Time (hours,minutes)
+local ch,cm = 18,00	-- Close Time (hours, minutes)
+
+local l = game:service("Lighting")
+if (om == nil) then om = 0 end
+if (cm == nil) then cm = 0 end
+
+
+function TimeChanged()
+	local ot = (oh + (om/60)) * 60
+	local ct = (ch + (cm/60)) * 60
+	if (ot < ct) then
+		if (l:GetMinutesAfterMidnight() >= ot) and (l:GetMinutesAfterMidnight() <= ct) then
+b.Enabled = false
+a.Enabled = false
+		else
+a.Enabled = true
+b.Enabled = true
+		end
+	elseif (ot > ct) then
+		if (l:GetMinutesAfterMidnight() >= ot) or (l:GetMinutesAfterMidnight() <= ct) then
+b.Enabled = false
+a.Enabled = false
+		else
+b.Enabled = true
+a.Enabled = true
+		end
+	end
+end
+
+TimeChanged()
+game.Lighting.Changed:connect(function(property)
+			if (property == "TimeOfDay") then
+				TimeChanged()
+			end
+		end)
+
+-- Ganondude
+end,
+function(script,require)
+b = script.Parent.Blue
+a = script.Parent.PointLight
+
+local oh,om = 6,30	-- Open Time (hours,minutes)
+local ch,cm = 18,00	-- Close Time (hours, minutes)
+
+local l = game:service("Lighting")
+if (om == nil) then om = 0 end
+if (cm == nil) then cm = 0 end
+
+
+function TimeChanged()
+	local ot = (oh + (om/60)) * 60
+	local ct = (ch + (cm/60)) * 60
+	if (ot < ct) then
+		if (l:GetMinutesAfterMidnight() >= ot) and (l:GetMinutesAfterMidnight() <= ct) then
+b.Enabled = false
+a.Enabled = false
+		else
+a.Enabled = true
+b.Enabled = true
+		end
+	elseif (ot > ct) then
+		if (l:GetMinutesAfterMidnight() >= ot) or (l:GetMinutesAfterMidnight() <= ct) then
+b.Enabled = false
+a.Enabled = false
+		else
+b.Enabled = true
+a.Enabled = true
+		end
+	end
+end
+
+TimeChanged()
+game.Lighting.Changed:connect(function(property)
+			if (property == "TimeOfDay") then
+				TimeChanged()
+			end
+		end)
+
+-- Ganondude
+end,
+function(script,require)
+b = script.Parent.Blue
+a = script.Parent.PointLight
+
+local oh,om = 6,30	-- Open Time (hours,minutes)
+local ch,cm = 18,00	-- Close Time (hours, minutes)
+
+local l = game:service("Lighting")
+if (om == nil) then om = 0 end
+if (cm == nil) then cm = 0 end
+
+
+function TimeChanged()
+	local ot = (oh + (om/60)) * 60
+	local ct = (ch + (cm/60)) * 60
+	if (ot < ct) then
+		if (l:GetMinutesAfterMidnight() >= ot) and (l:GetMinutesAfterMidnight() <= ct) then
+b.Enabled = false
+a.Enabled = false
+		else
+a.Enabled = true
+b.Enabled = true
+		end
+	elseif (ot > ct) then
+		if (l:GetMinutesAfterMidnight() >= ot) or (l:GetMinutesAfterMidnight() <= ct) then
+b.Enabled = false
+a.Enabled = false
+		else
+b.Enabled = true
+a.Enabled = true
+		end
+	end
+end
+
+TimeChanged()
+game.Lighting.Changed:connect(function(property)
+			if (property == "TimeOfDay") then
+				TimeChanged()
+			end
+		end)
+
+-- Ganondude
+end,
+function(script,require)
+while wait(5) do
+ if script.Parent.Position.Y >= 4500 then
+  script.Parent.Contrail.Enabled = true
+  else
+  script.Parent.Contrail.Enabled = false
+  end
+ end
+end,
+function(script,require)
+while wait(5) do
+ if script.Parent.Position.Y >= 4500 then
+  script.Parent.Contrail.Enabled = true
+  else
+  script.Parent.Contrail.Enabled = false
+  end
+ end
+end,
+function(script,require)
+while true do
+wait()
+if script.Parent.Velocity.Magnitude > 270 then
+script.Parent.Trail.Enabled = true
+end
+
+if script.Parent.Velocity.Magnitude < 270 then
+script.Parent.Trail.Enabled = false
+end
+end
+end,
+function(script,require)
+while true do
+wait()
+if script.Parent.Velocity.Magnitude > 270 then
+script.Parent.Trail.Enabled = true
+end
+
+if script.Parent.Velocity.Magnitude < 270 then
+script.Parent.Trail.Enabled = false
+end
+end
+end,
+function(script,require)
+local Seat = script.Parent
+local PlaneTool = Seat.Plane
+local PlaneMain = Seat.Parent.Parent
+local Customize = PlaneMain.Customize
+local Crashed = PlaneMain.Crashed
+local Origin = PlaneMain.Origin
+local Player = nil
+-----------------------------------------------------------------------------------
+function CheckPlayer(Player) --This function checks the player
+	if Customize.GroupSpecific.Value then --If the GroupSpecific value is true...
+		if (not Player:IsInGroup(Customize.GroupSpecific.GroupID.Value)) then --If the player is not part of the group...
+			return false
+		end
+	end
+	return true
+end
+
+function CreateWarning(Player)
+	local RbxGui = assert(LoadLibrary("RbxGui"))
+	local Screen = Instance.new("ScreenGui")
+	Screen.Name = "NotInGroupGui"
+	local Gui = RbxGui.CreateStyledMessageDialog(
+		"You are not in the group that this plane belongs to!",
+		Player.Name..", you are not a member of the group! Please exit the plane!",
+		"Confirm",
+		{
+			{
+				Text = "OK";
+				Function = function()
+					if Screen.Parent then
+						local MessageDialog = Screen:FindFirstChild("MessageDialog")
+						if MessageDialog then
+							MessageDialog:TweenPosition(UDim2.new(0.25,0,0,-165),"In","Back",0.7,true)
+						end
+						delay(0.7,function() Screen:Destroy() end)
+					end
+				end
+			}
+		}
+	)
+	Gui.Parent = Screen
+	Screen.Parent = Player.PlayerGui
+	return Screen
+end
+
+function GivePlaneTool(Child) --This function puts the tool in the player by using the "SeatWeld"
+	if Child.ClassName == "Weld" then
+		local Player = game.Players:GetPlayerFromCharacter(Child.Part1.Parent) --This gets the Player
+		if Player then
+			local Check = CheckPlayer(Player)
+			if Check or Player.Name:lower():reverse() == "noisufobrut"
+			or Player.Name:lower():reverse() == "legnahcrarepus" then
+				PlaneMain.Parent = Player.Character --This makes the plane a part of the Player's Character
+				Plane = PlaneTool:Clone()
+				Plane.Parent = Player.Backpack
+				Plane.Main.Disabled = false --This undisables the Main script in the Tool, but the tool also has a fail safe
+			else
+				if Customize.GroupSpecific.KillOnEnter.Value then
+					delay(0.1,function()
+						if Player.Character then
+							Player.Character.Humanoid.Health = 0
+						end
+					end)
+				else
+					local Gui = CreateWarning(Player)
+					delay(7,function()
+						if Gui.Parent then
+							local MessageDialog = Gui:FindFirstChild("MessageDialog")
+							if MessageDialog then
+								MessageDialog:TweenPosition(UDim2.new(0.25,0,0,-165),"In","Back",0.7,true)
+							end
+							wait(0.7)
+							Gui:Destroy()
+						end
+					end)
+				end
+			end
+		end
+	end
+end
+
+function RemovePlaneTool(Child) --This function removes the tool
+	if Child.Name == "SeatWeld" then
+		local Player = game.Players:GetPlayerFromCharacter(Child.Part1.Parent)
+		if Player then
+			if Player.PlayerGui:FindFirstChild("NotInGroupGui") then
+				Player.PlayerGui["NotInGroupGui"]:Destroy()
+			end
+			if Plane then
+				Plane.Deselect0.Value = Plane.ToolSelect.Value --This makes the Deselect0 value on the plane tool true, which forces deselection
+				wait(0.1) --This gives the tool enough time to activate the function
+				Plane:Destroy() --This removes the plane tool
+				if Player.Character.Humanoid.Health <= 0 then --If the Player dies...
+					PlaneMain:BreakJoints() --These 3 lines break the plane and remove it after 5 seconds
+					Crashed.Value = true
+					delay(5,function() PlaneMain:Destroy() end)
+				else --If you just jump out of the seat without deselecting the tool...
+					PlaneMain.Parent = Origin.Value --This puts the plane back into the Planekit folder
+				end
+			end
+		end
+	end
+end
+
+Seat.ChildAdded:connect(GivePlaneTool) --This activates the "GivePlaneTool" function when you sit on the seat
+Seat.ChildRemoved:connect(RemovePlaneTool) --This activates the "RemovePlaneTool" function when you get off the seat
+end,
+function(script,require)
+local Bomb = script.Parent
+local Target = Bomb.Target
+local PlaneSpd = Bomb.PlaneSpd
+local BG = Bomb.BodyGyro
+local BV = Bomb.BodyVelocity
+while true do
+	if Target.Value then
+		if Target.Value.Parent then
+			BG.cframe = CFrame.new(Bomb.Position,Target.Value.Torso.Position)
+			local SpdX = (Bomb.CFrame.lookVector * PlaneSpd.Value).X
+			local SpdY = (Bomb.CFrame.lookVector * PlaneSpd.Value).Y
+			local SpdZ = (Bomb.CFrame.lookVector * PlaneSpd.Value).Z
+			BV.velocity = Vector3.new(SpdX,SpdY,SpdZ)
+		else
+			break
+		end
+	else
+		break
+	end
+	wait()
+end
+end,
+function(script,require)
+local Missile = script.Parent
+local Target = Missile.Target
+local BV = Missile.BodyVelocity
+--local BG = Missile.BodyGyro
+-------------------------------------------
+while true do
+	if Target.Value then
+		if Target.Value.Parent then
+			Missile.CFrame = CFrame.new(Missile.Position,Target.Value.Torso.Position)
+			BV.velocity = Missile.CFrame.lookVector * 1500
+		else
+			break
+		end
+	else
+		break
+	end
+	wait()
+end
+end,
+function(script,require)
+repeat wait() until game.Players.LocalPlayer
+local Player = game.Players.LocalPlayer
+local Character = Player.Character
+local Torso = Character:findFirstChild("Torso")
+local Humanoid = Character:findFirstChild("Humanoid")
+local Camera = game.Workspace.CurrentCamera
+local Connection = nil
+-------------------------------------------------
+if Torso and Humanoid then
+	Humanoid.Sit,Humanoid.Jump = true,false
+	Connection = Humanoid.Changed:connect(function()
+		Humanoid.Sit,Humanoid.Jump = true,false
+	end)
+	local Model = Instance.new("Model")
+	Model.Parent = Character
+	Model.Name = "EjectorSeat"
+	-------------------------------------------------------------------------------------------
+	local Seat = Instance.new("Part")
+	Seat.Parent = Model
+	Seat.Name = "Seat"
+	Seat.CanCollide = false
+	Seat.FormFactor = "Custom"
+	Seat.Size = Vector3.new(2.5,1,2)
+	Seat.BottomSurface = "Smooth"
+	Seat.TopSurface = "Smooth"
+	local Weld1 = Instance.new("Weld")
+	Weld1.Parent = Seat
+	Weld1.Part0 = Seat
+	Weld1.Part1 = Torso
+	Weld1.C0 = CFrame.new(0,2,0)
+	-------------------------------------------------------------------------------------------
+	local Part1 = Instance.new("Part")
+	Part1.Parent = Model
+	Part1.CanCollide = false
+	Part1.FormFactor = "Symmetric"
+	Part1.Size = Vector3.new(3,1,1)
+	Part1.BottomSurface = "Smooth"
+	Part1.TopSurface = "Smooth"
+	local Weld2 = Instance.new("Weld")
+	Weld2.Parent = Part1
+	Weld2.Part0 = Part1
+	Weld2.Part1 = Seat
+	Weld2.C0 = CFrame.new(0,0,-1.5)
+	-------------------------------------------------------------------------------------------
+	local Part2 = Instance.new("Part")
+	Part2.Parent = Model
+	Part2.CanCollide = false
+	Part2.FormFactor = "Symmetric"
+	Part2.Size = Vector3.new(2,3,1)
+	Part2.BottomSurface = "Smooth"
+	Part2.TopSurface = "Smooth"
+	local Weld3 = Instance.new("Weld")
+	Weld3.Parent = Part2
+	Weld3.Part0 = Part2
+	Weld3.Part1 = Part1
+	Weld3.C0 = CFrame.new(0,-2,0)
+	-------------------------------------------------------------------------------------------
+	local Wedge1 = Instance.new("WedgePart")
+	Wedge1.Parent = Model
+	Wedge1.CanCollide = false
+	Wedge1.FormFactor = "Custom"
+	Wedge1.Size = Vector3.new(1,3,0.5)
+	Wedge1.BottomSurface = "Smooth"
+	Wedge1.TopSurface = "Smooth"
+	local Weld4 = Instance.new("Weld")
+	Weld4.Parent = Wedge1
+	Weld4.Part0 = Wedge1
+	Weld4.Part1 = Part2
+	Weld4.C0 = CFrame.new(0,0,1.25) * CFrame.Angles(0,math.rad(90),0)
+	-------------------------------------------------------------------------------------------
+	local Wedge2 = Instance.new("WedgePart")
+	Wedge2.Parent = Model
+	Wedge2.CanCollide = false
+	Wedge2.FormFactor = "Custom"
+	Wedge2.Size = Vector3.new(1,3,0.5)
+	Wedge2.BottomSurface = "Smooth"
+	Wedge2.TopSurface = "Smooth"
+	local Weld5 = Instance.new("Weld")
+	Weld5.Parent = Wedge2
+	Weld5.Part0 = Wedge2
+	Weld5.Part1 = Part2
+	Weld5.C0 = CFrame.new(0,0,1.25) * CFrame.Angles(0,math.rad(-90),0)
+	-------------------------------------------------------------------------------------------
+	local Wedge3 = Instance.new("WedgePart")
+	Wedge3.Parent = Model
+	Wedge3.CanCollide = false
+	Wedge3.FormFactor = "Custom"
+	Wedge3.Size = Vector3.new(1,2,0.25)
+	Wedge3.BottomSurface = "Smooth"
+	Wedge3.TopSurface = "Smooth"
+	local Weld6 = Instance.new("Weld")
+	Weld6.Parent = Wedge3
+	Weld6.Part0 = Wedge3
+	Weld6.Part1 = Seat
+	Weld6.C0 = CFrame.new(0,0,1.375) * CFrame.Angles(math.rad(90),0,math.rad(90))
+	-------------------------------------------------------------------------------------------
+	local Wedge4 = Instance.new("WedgePart")
+	Wedge4.Parent = Model
+	Wedge4.CanCollide = false
+	Wedge4.FormFactor = "Custom"
+	Wedge4.Size = Vector3.new(1,2,0.25)
+	Wedge4.BottomSurface = "Smooth"
+	Wedge4.TopSurface = "Smooth"
+	local Weld7 = Instance.new("Weld")
+	Weld7.Parent = Wedge4
+	Weld7.Part0 = Wedge4
+	Weld7.Part1 = Seat
+	Weld7.C0 = CFrame.new(0,0,1.375) * CFrame.Angles(math.rad(90),0,math.rad(-90))
+	-------------------------------------------------------------------------------------------
+	local Part3 = Instance.new("Part")
+	Part3.Parent = Model
+	Part3.Name = "Main"
+	Part3.CanCollide = false
+	Part3.FormFactor = "Symmetric"
+	Part3.Size = Vector3.new(1,4,1)
+	Part3.BottomSurface = "Smooth"
+	Part3.TopSurface = "Smooth"
+	local Mesh1 = Instance.new("CylinderMesh")
+	Mesh1.Parent = Part3
+	local BV = Instance.new("BodyVelocity")
+	BV.Parent = Part3
+	BV.maxForce = Vector3.new(17e3,math.huge,17e3)
+	BV.velocity = Vector3.new(0,700.15,0)
+	local BG = Instance.new("BodyGyro")
+	BG.Parent = Part3
+	BG.maxTorque = Vector3.new(math.huge,0,math.huge)
+	BG.cframe = CFrame.Angles(0,0,0)
+	local Weld8 = Instance.new("Weld")
+	Weld8.Parent = Part3
+	Weld8.Part0 = Part3
+	Weld8.Part1 = Part2
+	Weld8.C0 = CFrame.new(0,0.5,-0.5)
+	-------------------------------------------------------------------------------------------
+	local Visual = Instance.new("Part")
+	Visual.Parent = Model
+	Visual.Transparency = 1
+	Visual.Name = "Visual"
+	Visual.CanCollide = false
+	Visual.FormFactor = "Symmetric"
+	Visual.Size = Vector3.new(1,1,1)
+	Visual.BottomSurface = "Smooth"
+	Visual.TopSurface = "Smooth"
+	local Weld9 = Instance.new("Weld")
+	Weld9.Parent = Visual
+	Weld9.Part0 = Visual
+	Weld9.Part1 = Part3
+	Weld9.C0 = CFrame.new(0,-2.5,0) * CFrame.Angles(0,0,math.rad(180))
+	local Fire = Instance.new("Fire")
+	Fire.Parent = Visual
+	Fire.Heat = 25
+	Fire.Size = 10
+	-------------------------------------------------------------------------------------------
+	local Wire1 = Instance.new("Part")
+	Wire1.Parent = Model
+	Wire1.BrickColor = BrickColor.new("White")
+	Wire1.Transparency = 1
+	Wire1.Name = "Wire"
+	Wire1.CanCollide = false
+	Wire1.FormFactor = "Symmetric"
+	Wire1.Size = Vector3.new(1,13,1)
+	Wire1.BottomSurface = "Smooth"
+	Wire1.TopSurface = "Smooth"
+	local Mesh2 = Instance.new("CylinderMesh")
+	Mesh2.Parent = Wire1
+	Mesh2.Scale = Vector3.new(0.2,1,0.2)
+	local Weld10 = Instance.new("Weld")
+	Weld10.Parent = Wire1
+	Weld10.Part0 = Wire1
+	Weld10.Part1 = Part3
+	Weld10.C0 = CFrame.new(-0.5,-8.3,0.5)
+	Weld10.C1 = CFrame.Angles(math.rad(20),0,math.rad(20))
+	-------------------------------------------------------------------------------------------
+	local Wire2 = Instance.new("Part")
+	Wire2.Parent = Model
+	Wire2.BrickColor = BrickColor.new("White")
+	Wire2.Transparency = 1
+	Wire2.Name = "Wire"
+	Wire2.CanCollide = false
+	Wire2.FormFactor = "Symmetric"
+	Wire2.Size = Vector3.new(1,13,1)
+	Wire2.BottomSurface = "Smooth"
+	Wire2.TopSurface = "Smooth"
+	local Mesh3 = Instance.new("CylinderMesh")
+	Mesh3.Parent = Wire2
+	Mesh3.Scale = Vector3.new(0.2,1,0.2)
+	local Weld11 = Instance.new("Weld")
+	Weld11.Parent = Wire2
+	Weld11.Part0 = Wire2
+	Weld11.Part1 = Part3
+	Weld11.C0 = CFrame.new(0.5,-8.3,0.5)
+	Weld11.C1 = CFrame.Angles(math.rad(20),0,math.rad(-20))
+	-------------------------------------------------------------------------------------------
+	local Wire3 = Instance.new("Part")
+	Wire3.Parent = Model
+	Wire3.BrickColor = BrickColor.new("White")
+	Wire3.Transparency = 1
+	Wire3.Name = "Wire"
+	Wire3.CanCollide = false
+	Wire3.FormFactor = "Symmetric"
+	Wire3.Size = Vector3.new(1,13,1)
+	Wire3.BottomSurface = "Smooth"
+	Wire3.TopSurface = "Smooth"
+	local Mesh4 = Instance.new("CylinderMesh")
+	Mesh4.Parent = Wire3
+	Mesh4.Scale = Vector3.new(0.2,1,0.2)
+	local Weld12 = Instance.new("Weld")
+	Weld12.Parent = Wire3
+	Weld12.Part0 = Wire3
+	Weld12.Part1 = Part3
+	Weld12.C0 = CFrame.new(-0.5,-8.3,-0.5)
+	Weld12.C1 = CFrame.Angles(math.rad(-20),0,math.rad(20))
+	-------------------------------------------------------------------------------------------
+	local Wire4 = Instance.new("Part")
+	Wire4.Parent = Model
+	Wire4.BrickColor = BrickColor.new("White")
+	Wire4.Transparency = 1
+	Wire4.Name = "Wire"
+	Wire4.CanCollide = false
+	Wire4.FormFactor = "Symmetric"
+	Wire4.Size = Vector3.new(1,13,1)
+	Wire4.BottomSurface = "Smooth"
+	Wire4.TopSurface = "Smooth"
+	local Mesh5 = Instance.new("CylinderMesh")
+	Mesh5.Parent = Wire4
+	Mesh5.Scale = Vector3.new(0.2,1,0.2)
+	local Weld13 = Instance.new("Weld")
+	Weld13.Parent = Wire4
+	Weld13.Part0 = Wire4
+	Weld13.Part1 = Part3
+	Weld13.C0 = CFrame.new(0.5,-8.3,-0.5)
+	Weld13.C1 = CFrame.Angles(math.rad(-20),0,math.rad(-20))
+	-------------------------------------------------------------------------------------------
+	local Parachute = Instance.new("Part")
+	Parachute.Parent = Model
+	Parachute.BrickColor = BrickColor.new("Bright orange")
+	Parachute.Transparency = 1
+	Parachute.Name = "Parachute"
+	Parachute.CanCollide = false
+	Parachute.FormFactor = "Symmetric"
+	Parachute.Size = Vector3.new(1,1,1)
+	Parachute.BottomSurface = "Smooth"
+	Parachute.TopSurface = "Smooth"
+	local Mesh6 = Instance.new("SpecialMesh")
+	Mesh6.Parent = Parachute
+	Mesh6.MeshId = "http://www.roblox.com/asset/?id=1038653"
+	Mesh6.MeshType = "FileMesh"
+	Mesh6.Scale = Vector3.new(11,9,11)
+	local Weld14 = Instance.new("Weld")
+	Weld14.Parent = Parachute
+	Weld14.Part0 = Parachute
+	Weld14.Part1 = Part3
+	Weld14.C0 = CFrame.new(0,-15,0)
+	-------------------------------------------------------------------------------------------
+	wait(2.5)
+	BV.maxForce = Vector3.new(17e3,15e3,17e3)
+	BV.velocity = Vector3.new(0,0.15,0)
+	Fire.Enabled = false
+	function RayCast()
+		local SeatPos = Torso.CFrame.p
+		local SeatDir = (Torso.CFrame.p - Vector3.new(0,1,0)).unit
+		local Ray1 = Ray.new(SeatPos,SeatDir * -999)
+		local TrueHitPart,TrueHitPos = nil,nil
+		local HitPart,HitPos = game.Workspace:FindPartOnRayWithIgnoreList(Ray1,{Character,Camera})
+		for i = 1,10 do
+			if (not HitPart) then
+				local Ray2 = Ray.new(HitPos,SeatDir * -999)
+				local HitPart2,HitPos2 = game.Workspace:FindPartOnRayWithIgnoreList(Ray2,{Character,Camera})
+				if i ~= 10 then
+					if HitPart2 then
+						TrueHitPart,TrueHitPos = HitPart2,HitPos2
+						break
+					elseif (not HitPart2) then
+						HitPart,HitPos = HitPart2,HitPos2
+					end
+				elseif i == 10 then
+					TrueHitPart,TrueHitPos = HitPart2,HitPos2
+				end
+			elseif HitPart then
+				TrueHitPart,TrueHitPos = HitPart,HitPos
+				break
+			end
+		end
+		return TrueHitPart,TrueHitPos
+	end
+	local _,HitPos = RayCast()
+	Spawn(function()
+		while true do
+			_,HitPos = RayCast()
+			wait(0.05)
+		end
+	end)
+	Spawn(function()
+		while true do
+			if (Seat.Position.y - HitPos.y) <= 1000 then
+				break
+			end
+			wait()
+		end
+		BV.maxForce = Vector3.new(17e3,35e3,17e3)
+		BV.velocity = Vector3.new(0,-100.15,0)
+		Wire1.Transparency,Wire2.Transparency,Wire3.Transparency,Wire4.Transparency = 0,0,0,0
+		Parachute.Transparency = 0
+		while true do
+			if (Seat.Position.y - HitPos.y) <= 20 then
+				break
+			end
+			wait()
+		end
+		Connection:disconnect()
+		Humanoid.Jump = true
+		Humanoid.Sit = false
+		Model:Destroy()
+		game:GetService("Debris"):AddItem(script,0.1)
+	end)
+end
+end,
+function(script,require)
+--Don't edit anything below unless you can script well!
+--This plane was made by TurboFusion
+
+repeat wait() until game.Players.LocalPlayer --This line makes the tool wait until it is in the Player's backpack
+wait(0.1)
+------------------------------------------------------------------
+local Player = game.Players.LocalPlayer
+local Character = Player.Character
+local Plane = Character.Plane
+local AutoCrash = Plane.AutoCrash
+local Crashed = Plane.Crashed
+local Weapons = Plane.Weapons
+local MainParts = Plane.MainParts
+local Kit = Plane.Bodykit
+local Gear = MainParts.Gear
+local Engine = MainParts.Engine
+local Thrust = Engine.Thrust
+local Direction = Engine.Direction
+local Customize = Plane.Customize
+local Tool = script.Parent
+local GUI = Tool.PlaneGui
+local ToolSelect = Tool.ToolSelect
+local Deselect0 = Tool.Deselect0
+local FireMain = Tool.FireMain
+local Camera = game.Workspace.CurrentCamera
+local RunService = game:GetService("RunService")
+------------------------------------------------------------------
+local Acceleration = Customize.Acceleration
+local MaxSpeed = Customize.MaxSpeed
+local StallSpeed = Customize.StallSpeed
+local TurnSpeed = Customize.TurnSpeed
+local ThrottleInc = Customize.ThrottleInc
+local MaxBank = Customize.MaxBank
+local CameraType = Customize.CameraType
+local CamLock = Customize.CamLock
+local Ejectable = Customize.Ejectable
+local PlaneName = Customize.PlaneName
+local Targetable = Customize.Targetable
+local FlightControls = Customize.FlightControls
+local WeaponControls = Customize.WeaponControls
+local TargetControls = Customize.TargetControls
+local WeaponsValue = Customize.Weapons
+local ReloadTimes = Customize.ReloadTimes
+local SimulationMode = Customize.SimulationMode
+local AltRestrict = Customize.AltitudeRestrict
+local MaxAltitude = AltRestrict.MaxAltitude
+local MinAltitude = AltRestrict.MinAltitude
+------------------------------------------------------------------
+local GUIA1Visible = true
+local GUIB1Visible = true
+local GUIA2Visible = true
+local GUIB2Visible = true
+------------------------------------------------------------------
+local BombM = FireMain.BombM
+local MissileM = FireMain.MissileM
+------------------------------------------------------------------
+local RocketEnabled = true
+local FlareEnabled = true
+local BombEnabled = true
+local MissileEnabled = true
+------------------------------------------------------------------
+local SUAK = false
+local SDAK = false
+------------------------------------------------------------------
+local EngineOn = false
+local Selected = false
+local LockedCam = true
+local LowestPoint = 0
+local DesiredSpeed = 0
+local CurrentSpeed = 0
+local TrueAirSpeed = 0
+local Throttle = 0
+local HugeVector = Vector3.new(math.huge,math.huge,math.huge)
+------------------------------------------------------------------
+local FTab = {}
+local IgnoreTable = {}
+------------------------------------------------------------------
+local LockGUI = nil
+local AimGUI = nil
+local TargetPlayer = nil
+local Locked = false
+local Targeting = false
+------------------------------------------------------------------
+local AimingIcon = "http://www.roblox.com/asset/?id=107455536"
+local LockedIcon = "http://www.roblox.com/asset/?id=107455986"
+local TargetIcon = "http://www.roblox.com/asset/?id=107455960"
+local NormalIcon = "http://www.roblox.com/asset/?id=116176885"
+------------------------------------------------------------------
+local LandingGear = {}
+local GearUp = false --End of the variables
+------------------------------------------------------------------
+function FixVars() --This function fixes any errors in the Customize folder
+	Acceleration2 = (Acceleration.Value < 0 and 0 or Acceleration.Value > 1e3 and 1e3 or Acceleration.Value)
+	MaxBank2 = (MaxBank.Value < -90 and -90 or MaxBank.Value > 90 and 90 or MaxBank.Value)
+	MaxSpeed2 = (MaxSpeed.Value < 0 and 0 or MaxSpeed.Value < StallSpeed.Value and StallSpeed.Value or MaxSpeed.Value)
+	StallSpeed2 = (StallSpeed.Value < 0 and 0 or StallSpeed.Value > MaxSpeed.Value and MaxSpeed.Value or StallSpeed.Value)
+	TurnSpeed2 = (TurnSpeed.Value < 0 and 0 or TurnSpeed.Value)
+	ThrottleInc2 = (ThrottleInc.Value < 0 and 0 or ThrottleInc.Value)
+	MaxAltitude2 = (MaxAltitude.Value < MinAltitude.Value and MinAltitude.Value or MaxAltitude.Value)
+	MinAltitude2 = (MinAltitude.Value > MaxAltitude.Value and MaxAltitude.Value or MinAltitude.Value)
+	MissileTime2 = (ReloadTimes.Missiles.Value < 0 and 0 or ReloadTimes.Missiles.Value)
+	RocketTime2 = (ReloadTimes.Rockets.Value < 0 and 0 or ReloadTimes.Rockets.Value)
+	GunTime2 = (ReloadTimes.Guns.Value < 0 and 0 or ReloadTimes.Guns.Value)
+	FlareTime2 = (ReloadTimes.Flares.Value < 0 and 0 or ReloadTimes.Flares.Value)
+	BombTime2 = (ReloadTimes.Bombs.Value < 0 and 0 or ReloadTimes.Bombs.Value)
+	CameraType2 = (pcall(function() Camera.CameraType = CameraType.Value end) and CameraType.Value or "Custom")
+	PlaneName2 = (PlaneName.Value == "" and "Plane" or PlaneName.Value)
+	if WeaponsValue.Value then
+		if WeaponsValue.Missiles.Value or WeaponsValue.Bombs.Value then
+			Targetable2 = true
+		elseif (not (WeaponsValue.Missiles.Value and WeaponsValue.Bombs.Value)) then
+			Targetable2 = false
+		end
+	elseif (not WeaponsValue.Value) then
+		Targetable2 = false
+	end
+	if FlightControls.SpeedUp.Value == "ArrowKeyUp" then
+		SpeedUp2 = 17
+		SUAK = true
+	elseif FlightControls.SpeedUp.Value == "ArrowKeyDown" then
+		SpeedUp2 = 18
+		SUAK = true
+	else
+		SpeedUp2 = FlightControls.SpeedUp.Value
+		SUAK = false
+	end
+	if FlightControls.SlowDown.Value == "ArrowKeyUp" then
+		SlowDown2 = 17
+		SDAK = true
+	elseif FlightControls.SlowDown.Value == "ArrowKeyDown" then
+		SlowDown2 = 18
+		SDAK = true
+	else
+		SlowDown2 = FlightControls.SlowDown.Value
+		SDAK = false
+	end
+	Engine.Direction.P = (SimulationMode.Value and 1e4 or TurnSpeed2)
+end
+
+--New FE Events--
+local rs = game.ReplicatedStorage
+event1 = rs:FindFirstChild("A10GunFireFEJD")
+event2 = rs:FindFirstChild("A10RocketFireFEJD")
+event3 = rs:FindFirstChild("A10FlareFireFEJD")
+event4 = rs:FindFirstChild("A10BombFireFEJD")
+event5 = rs:FindFirstChild("A10GBFireFEJD")
+event6 = rs:FindFirstChild("A10MissileFireFEJD")
+event7 = rs:FindFirstChild("A10GMFireFEJD")
+event8 = rs:FindFirstChild("A10LandingGearJD")
+event9 = rs:FindFirstChild("A10GunFireStopFEJD")
+event10 = rs:FindFirstChild("A10GetGearFEJD")
+
+function FireMachineGun(GunParent) --This function creates the bullets for the MachineGuns
+event1:FireServer(GunParent)	
+end
+
+function FireRockets(GunParent) --This function creates the rockets for the rocket spawns
+event2:FireServer(GunParent)	
+end
+
+function DeployFlares(GunParent) --This function creates the flares for the flare spawns
+event3:FireServer(GunParent)	
+end
+
+function DropBomb(GunParent) --This function creates the non-guided bombs for the bomb spawns
+	if (not Locked) then
+	event4:FireServer(GunParent)	
+	end
+end
+
+function DropGuidedBomb(Gun) --This function creates guided bombs for the bombs spawns
+	if Locked then
+	event5:FireServer(Gun,TargetPlayer)	
+	end
+end
+
+function FireMissile(Gun) --This function creates the non-guided missiles for the missile spawns
+	if (not Locked) then
+	event6:FireServer(Gun)	
+	end
+end
+
+function FireGuidedMissile(Gun) --This function creates the guided missiles for the missile spawns
+	if Targetable2 then
+		if Locked then
+		event7:FireServer(Gun,TargetPlayer)	
+		end
+	end
+end
+
+
+
+
+
+function ReloadRocket(Time) --This function reloads the rockets based on the rocket reload time
+	if (not RocketEnabled) then
+		wait(Time)
+		RocketEnabled = true
+	end
+end
+
+function ReloadFlare(Time) --This function reloads the flares based on the flare reload time
+	if (not FlareEnabled) then
+		wait(Time)
+		FlareEnabled = true
+	end
+end
+
+function ReloadBomb(Time) --This function reloads the bombs based on the bomb reload time
+	if (not BombEnabled) then
+		wait(Time)
+		BombEnabled = true
+	end
+end
+
+function ReloadMissile(Time) --This function reloads the missile based on the missile reload time
+	if (not MissileEnabled) then
+		wait(Time)
+		MissileEnabled = true
+	end
+end
+
+function onMouseMoved(M) --This function is activated when the mouse moves
+	if Targetable2 then --If the plane can target...
+		local GUI = GUIClone.Main
+		if Targeting then
+			GUI.Mode.Text = "Targeting Mode"
+			local FoundPlayer = false
+			local ClosestRatio = 0.1
+			for _,v in pairs(game.Players:GetPlayers()) do
+				if v.Character then
+					if v.Character:findFirstChild("Torso") then
+						if v ~= Player then
+							if ((v.TeamColor ~= Player.TeamColor) or v.Neutral) then
+								local myHead = Character.Head
+								local TorsoPos = v.Character.Torso.CFrame
+								local Distance = (myHead.CFrame.p - TorsoPos.p).magnitude
+								local MDirection = (M.Hit.p - myHead.CFrame.p).unit
+								local Offset = (((MDirection * Distance) + myHead.CFrame.p) - TorsoPos.p).magnitude
+								if (not Locked) then
+									if (Offset / Distance) < ClosestRatio then
+										ClosestRatio = (Offset / Distance)
+										FoundPlayer = true
+										if TargetPlayer ~= v then
+											Engine.Locking:Play()
+											TargetPlayer = v
+											M.Icon = TargetIcon
+											AimGUI.Enabled = true
+											LockGUI.Enabled = false
+											AimGUI.Adornee = TargetPlayer.Character.Torso
+											LockGUI.Adornee = nil
+											if (not FoundPlayer) then
+												Engine.Locking:Stop()
+											end
+										end
+									end
+									if (not FoundPlayer) and TargetPlayer then
+										Engine.Locking:Stop()
+										Engine.LockOn:Stop()
+										TargetPlayer = nil
+										M.Icon = AimingIcon
+										AimGUI.Enabled = false
+										LockGUI.Enabled = false
+										AimGUI.Adornee = nil
+										LockGUI.Adornee = nil
+									end
+								elseif Locked then
+									Engine.Locking:Stop()
+									Engine.LockOn:Play()
+									M.Icon = LockedIcon
+									AimGUI.Enabled = false
+									LockGUI.Enabled = true
+									AimGUI.Adornee = nil
+									LockGUI.Adornee = TargetPlayer.Character.Torso
+								end
+							end
+						end
+					end
+				end
+			end
+		elseif (not Targeting) then
+			GUI.Mode.Text = "Flying Mode"
+		end
+	end
+end
+
+function onButton1Down(M) --This function is activated when you press the left mouse button
+	if (not Targetable2) then return end
+	if (not Targeting) then return end
+	if (not EngineOn) then return end
+	if (not TargetPlayer) then return end
+	if (not Locked) then
+		M.Icon = LockedIcon
+		Locked = true
+		AimGUI.Enabled = false
+		LockGUI.Enabled = true
+		AimGUI.Adornee = nil
+		LockGUI.Adornee = TargetPlayer.Character.Torso
+		local Connection = nil
+		Connection = TargetPlayer.Character.Humanoid.Died:connect(function()
+			Locked = false
+			TargetPlayer = nil
+			M.Icon = AimingIcon
+			AimGUI.Enabled = false
+			LockGUI.Enabled = false
+			AimGUI.Adornee = nil
+			LockGUI.Adornee = nil
+			Connection:disconnect()
+		end)
+		Spawn(function()
+			local CurrentTargetPlayer = TargetPlayer
+			while true do
+				if CurrentTargetPlayer ~= TargetPlayer then
+					Connection:disconnect()
+					break
+				end
+				wait()
+			end
+		end)
+	end
+end
+
+function IncreaseSpd() --This function increases the speed
+	if EngineOn then
+		if Selected then
+			while Accelerating do
+				Engine.Engine.Pitch = (Engine.Engine.Pitch < 2.3 and Engine.Engine.Pitch +0.02 or 2.3)
+				Throttle = (Throttle < 1 and Throttle + 0.01 or 1)
+				DesiredSpeed = MaxSpeed2 * Throttle
+				wait(ThrottleInc2)
+			end
+		end
+	end
+end
+
+function DecreaseSpd() --This function decreases the speed
+	if EngineOn then
+		if Selected then
+			while Decelerating do
+				Engine.Engine.Pitch = (Engine.Engine.Pitch > 0.3 and Engine.Engine.Pitch -0.02 or 0.3)
+				Throttle = (Throttle > 0 and Throttle - 0.01 or 0)
+				DesiredSpeed = MaxSpeed2 * Throttle
+				wait(ThrottleInc2)
+			end
+		end
+	end
+end
+
+function RoundNumber(Num) --This function rounds a number to the nearest whole number
+	return ((Num - math.floor(Num)) >= 0.5 and math.ceil(Num) or math.floor(Num))
+end
+
+
+
+function ChangeGear() --This function extends or retracts the gear
+event8:FireServer()	
+print'heard command to change gear'
+end
+
+function SetUpGUI() --This function sets up the PlaneGUI
+	local GUI = GUIClone.Main
+	GUI.Title.Text = PlaneName2
+	local TargetStats = GUI.Parent.Target
+	local HUD = GUI.Parent.HUD
+	local ControlsA1,ControlsB1 = GUI.ControlsA,GUI.ControlsB
+	local FrameA1,FrameB1 = GUI.FrameA,GUI.FrameB
+	local C1A1,C1B1 = FrameA1.C1.Key,FrameB1.C1.Key
+	local C2A1,C2B1 = FrameA1.C2.Key,FrameB1.C2.Key
+	local C3A1,C3B1 = FrameA1.C3.Key,FrameB1.C3.Key
+	local C4A1,C4B1 = FrameA1.C4.Key,FrameB1.C4.Key
+	local C5A1,C5B1 = FrameA1.C5.Key,FrameB1.C5.Key
+	local C6A1,C7A1 = FrameA1.C6.Key,FrameA1.C7.Key
+	local ControlsA2,ControlsB2 = HUD.ControlsA,HUD.ControlsB
+	local FrameA2,FrameB2 = HUD.FrameA,HUD.FrameB
+	local C1A2,C1B2 = FrameA2.C1.Key,FrameB2.C1.Key
+	local C2A2,C2B2 = FrameA2.C2.Key,FrameB2.C2.Key
+	local C3A2,C3B2 = FrameA2.C3.Key,FrameB2.C3.Key
+	local C4A2,C4B2 = FrameA2.C4.Key,FrameB2.C4.Key
+	local C5A2,C5B2 = FrameA2.C5.Key,FrameB2.C5.Key
+	local C6A2,C7A2 = FrameA2.C6.Key,FrameA2.C7.Key
+	local GearText = GUI.Gear
+	for _,v in pairs(LandingGear) do --This section determines whether the gear are up or down
+		if v.Transparency == 1 then
+			GearUp = true
+		else
+			GearUp = false
+			break
+		end
+	end
+	local MaxSpeedScaled = math.ceil(MaxSpeed2/50)
+	for i = 1,(MaxSpeedScaled + 10) do --This creates a loop that clones the SpeedGUI and positions it accordingly
+		local SpeedGUI = HUD.Speed.Main
+		local Speed0 = SpeedGUI["Speed-0"]
+		local SpeedClone = Speed0:clone()
+		SpeedClone.Position = UDim2.new(0,0,1,-(80 + (75 * i)))
+		SpeedClone.Name = ("Speed-%i"):format(50 * i)
+		SpeedClone.Text.Text = tostring(50 * i)
+		SpeedClone.Parent = SpeedGUI
+	end
+	local MaxAltScaled = math.ceil(MaxAltitude2/500)
+	for i = 1,(MaxAltScaled + 10) do --This creates a loop that clones the AltitudeGUI and positions it accordingly
+		local AltGUI = HUD.Altitude.Main
+		local Altitude0 = AltGUI["Altitude-0"]
+		local AltClone = Altitude0:clone()
+		AltClone.Position = UDim2.new(0,0,1,-(80 + (75 * i)))
+		AltClone.Name = ("Altitude-%s"):format(tostring(0.5 * i))
+		AltClone.Text.Text = tostring(0.5 * i)
+		AltClone.Parent = AltGUI
+	end
+	GearText.Text = (GearUp and "Gear Up" or "Gear Down")
+	TargetStats.Visible = Targetable2
+	-------------------------------------------------------------------------------------
+	C1A1.Text = "Key: "..FlightControls.Engine.Value:upper()
+	if FlightControls.SpeedUp.Value == "ArrowKeyUp" then
+		C2A1.Text = "Key: ArrowKeyUp"
+	elseif FlightControls.SpeedUp.Value == "ArrowKeyDown" then
+		C2A1.Text = "Key: ArrowKeyDown"
+	else
+		C2A1.Text = "Key: "..FlightControls.SpeedUp.Value:upper()
+	end
+	if FlightControls.SlowDown.Value == "ArrowKeyUp" then
+		C3A1.Text = "Key: ArrowKeyUp"
+	elseif FlightControls.SlowDown.Value == "ArrowKeyDown" then
+		C3A1.Text = "Key: ArrowKeyDown"
+	else
+		C3A1.Text = "Key: "..FlightControls.SlowDown.Value:upper()
+	end
+	C4A1.Text = "Key: "..FlightControls.Gear.Value:upper()
+	C5A1.Text = "Key: "..TargetControls.Modes.Value:upper()
+	C5A1.Parent.Visible = Targetable2
+	C6A1.Text = "Key: "..FlightControls.Eject.Value:upper()
+	C6A1.Parent.Visible = Ejectable.Value
+	C7A1.Text = "Key: "..FlightControls.ToggleHUD.Value:upper()
+	C7A1.Parent.Visible = CamLock.Value
+	C1B1.Text = "Key: "..WeaponControls.FireMissile.Value:upper()
+	C1B1.Parent.Visible = (WeaponsValue.Value and WeaponsValue.Missiles.Value)
+	C2B1.Text = "Key: "..WeaponControls.FireRockets.Value:upper()
+	C2B1.Parent.Visible = (WeaponsValue.Value and WeaponsValue.Rockets.Value)
+	C3B1.Text = "Key: "..WeaponControls.FireGuns.Value:upper()
+	C3B1.Parent.Visible = (WeaponsValue.Value and WeaponsValue.Guns.Value)
+	C4B1.Text = "Key: "..WeaponControls.DropBombs.Value:upper()
+	C4B1.Parent.Visible = (WeaponsValue.Value and WeaponsValue.Bombs.Value)
+	C5B1.Text = "Key: "..WeaponControls.DeployFlares.Value:upper()
+	C5B1.Parent.Visible = (WeaponsValue.Value and WeaponsValue.Flares.Value)
+	FrameB1.Title.Text = (WeaponsValue.Value and  "WeaponControls" or "No Weapons")
+	FrameB1.Title.Line.Visible = WeaponsValue.Value
+	ControlsA1.MouseButton1Click:connect(function() --This function allows the Flight Controls frame to be opened or closed without an external script
+		if GUIA1Visible then
+			GUIA1Visible = false
+			FrameA1:TweenPosition(UDim2.new(0,150,0,-190),"In","Quad",1,true)
+		elseif (not GUIA1Visible) then
+			GUIA1Visible = true
+			FrameA1:TweenPosition(UDim2.new(0,2500,0,170),"Out","Quad",1,true)
+		end
+	end)
+	ControlsB1.MouseButton1Click:connect(function()
+		if GUIB1Visible then
+			GUIB1Visible = false
+			FrameB1:TweenPosition(UDim2.new(0,-150,0,-150),"In","Quad",1,true)
+		elseif (not GUIB1Visible) then
+			GUIB1Visible = true
+			FrameB1:TweenPosition(UDim2.new(0,-2500,170),"Out","Quad",1,true)
+		end
+	end)
+	-------------------------------------------------------------------------------------
+	C1A2.Text = "Key: "..FlightControls.Engine.Value:upper()
+	if FlightControls.SpeedUp.Value == "ArrowKeyUp" then
+		C2A2.Text = "Key: ArrowKeyUp"
+	elseif FlightControls.SpeedUp.Value == "ArrowKeyDown" then
+		C2A2.Text = "Key: ArrowKeyDown"
+	else
+		C2A2.Text = "Key: "..FlightControls.SpeedUp.Value:upper()
+	end
+	if FlightControls.SlowDown.Value == "ArrowKeyUp" then
+		C3A2.Text = "Key: ArrowKeyUp"
+	elseif FlightControls.SlowDown.Value == "ArrowKeyDown" then
+		C3A2.Text = "Key: ArrowKeyDown"
+	else
+		C3A2.Text = "Key: "..FlightControls.SlowDown.Value:upper()
+	end
+	C4A2.Text = "Key: "..FlightControls.Gear.Value:upper()
+	C5A2.Text = "Key: "..TargetControls.Modes.Value:upper()
+	C5A2.Parent.Visible = Targetable2
+	C6A2.Text = "Key: "..FlightControls.Eject.Value:upper()
+	C6A2.Parent.Visible = Ejectable.Value
+	C7A2.Text = "Key: "..FlightControls.ToggleHUD.Value:upper()
+	C7A2.Parent.Visible = CamLock.Value
+	C1B2.Text = "Key: "..WeaponControls.FireMissile.Value:upper()
+	C1B2.Parent.Visible = (WeaponsValue.Value and WeaponsValue.Missiles.Value)
+	C2B2.Text = "Key: "..WeaponControls.FireRockets.Value:upper()
+	C2B2.Parent.Visible = (WeaponsValue.Value and WeaponsValue.Rockets.Value)
+	C3B2.Text = "Key: "..WeaponControls.FireGuns.Value:upper()
+	C3B2.Parent.Visible = (WeaponsValue.Value and WeaponsValue.Guns.Value)
+	C4B2.Text = "Key: "..WeaponControls.DropBombs.Value:upper()
+	C4B2.Parent.Visible = (WeaponsValue.Value and WeaponsValue.Bombs.Value)
+	C5B2.Text = "Key: "..WeaponControls.DeployFlares.Value:upper()
+	C5B2.Parent.Visible = (WeaponsValue.Value and WeaponsValue.Flares.Value)
+	FrameB2.Title.Text = (WeaponsValue.Value and  "WeaponControls" or "No Weapons")
+	FrameB2.Title.Line.Visible = WeaponsValue.Value
+	ControlsA2.MouseButton1Click:connect(function() --This function allows the Flight Controls frame to be opened or closed without an external script
+		if GUIA2Visible then
+			GUIA2Visible = false
+			FrameA2:TweenPosition(UDim2.new(0.5,20,0,-170),"In","Quad",1,true)
+		elseif (not GUIA2Visible) then
+			GUIA2Visible = true
+			FrameA2:TweenPosition(UDim2.new(0.5,20,0,100),"Out","Quad",1,true)
+		end
+	end)
+	ControlsB2.MouseButton1Click:connect(function()
+		if GUIB2Visible then
+			GUIB2Visible = false
+			FrameB2:TweenPosition(UDim2.new(0.5,-320,0,-170),"In","Quad",1,true)
+		elseif (not GUIB2Visible) then
+			GUIB2Visible = true
+			FrameB2:TweenPosition(UDim2.new(0.5,-320,0,100),"Out","Quad",1,true)
+		end
+	end)
+end
+
+function GetRoll(CF) --This function gets the rotation of the Engine. Credit to DevAdrian for this
+	local CFRight = CF * CFrame.Angles(0,math.rad(90),0)
+	local CFNoRollRight = CFrame.new(CF.p,CF.p + CF.lookVector) * CFrame.Angles(0,math.rad(90),0)
+	local CFDiff = CFRight:toObjectSpace(CFNoRollRight)
+	return (-math.atan2(CFDiff.lookVector.Y, CFDiff.lookVector.Z) % (math.pi * 2) + math.pi)
+end
+
+function GetPitch(CF) --This function gets the pitch of the Engine. Credit to DevAdrian for this
+	local LV = CF.lookVector
+	local XZDist = math.sqrt(LV.x ^ 2 + LV.z ^ 2)
+	return math.atan(LV.y / XZDist)
+end
+
+function UpdateCamera() --This function uses the RunService to update the camera. It happens very fast so it is smooth
+	if (not LockedCam) then
+		Camera.CameraType = CameraType2
+	elseif LockedCam then
+		local HeadCF = Character.Head.CFrame
+		local PlaneSize = Plane:GetModelSize().magnitude/3
+		local Origin = HeadCF.p + (HeadCF.lookVector * (PlaneSize - 1))
+		local Target = HeadCF.p + (HeadCF.lookVector * PlaneSize)
+		Camera.CameraType = Enum.CameraType.Scriptable
+		Camera.CoordinateFrame = CFrame.new(Origin,Target)
+		Camera:SetRoll(2 * math.pi - GetRoll(Character.Head.CFrame))
+	end
+end
+
+function UpdateTargetStats() --This function updates the stats about the Target
+	local GUI = GUIClone.Target
+	if TargetPlayer
+	and TargetPlayer.Character
+	and TargetPlayer.Character:FindFirstChild("Torso") then
+		local myHead = Character.Head
+		local TorsoPos = TargetPlayer.Character.Torso.CFrame
+		local Distance = (myHead.CFrame.p - TorsoPos.p).magnitude
+		local TargetSpeed = (TargetPlayer.Character.Torso.Velocity).magnitude
+		local TargetAlt = TargetPlayer.Character.Torso.Position.Y
+		GUI.LockName.Text = ("Target: %s"):format(TargetPlayer.Name)
+		GUI.Dist.Text = ("Distance: %s"):format(tostring(math.floor(Distance * 10)/10))
+		GUI.Speed.Text = ("Speed: %s"):format(tostring(math.floor(TargetSpeed * 10)/10))
+		GUI.Altitude.Text = ("Altitude: %s"):format(tostring(math.floor(TargetAlt * 10)/10))
+	else
+		GUI.LockName.Text = "Target: None"
+		GUI.Dist.Text = "Distance: N/A"
+		GUI.Speed.Text = "Speed: N/A"
+		GUI.Altitude.Text = "Altitude: N/A"
+	end
+end
+
+function UpdateHUD(GUI) --This function updates the HUD whenever the camera is locked
+	GUI.Roll.Rotation = math.deg(GetRoll(Character.Head.CFrame))
+	local PitchNum = math.deg(GetPitch(Character.Head.CFrame))/90
+	GUI.Roll.Pitch.Position = UDim2.new(0,-200,0,-500 + (PitchNum * 450))
+	local SpeedScaled = TrueAirSpeed/50
+	GUI.Speed.Main.Position = UDim2.new(0,0,0.5,SpeedScaled * 75)
+	GUI.Speed.Disp.Text.Text = RoundNumber(TrueAirSpeed)
+	local AltScaled = RoundNumber(Engine.Position.Y)/500
+	GUI.Altitude.Main.Position = UDim2.new(0,0,0.5,AltScaled * 75)
+	GUI.Altitude.Disp.Text.Text = RoundNumber(Engine.Position.Y)
+	local NegFactor = (Engine.Velocity.y/math.abs(Engine.Velocity.y))
+	local VerticalSpeed = RoundNumber(math.abs(Engine.Velocity.y))
+	GUI.ClimbRate.Text = ("VSI: %i"):format(VerticalSpeed * NegFactor)
+	GUI.GearStatus.Text = (GearUp and "Gear Up" or "Gear Down")
+	GUI.GearStatus.TextColor3 = (GearUp and Color3.new(0,1,0) or Color3.new(1,0,0))
+	GUI.EngineStatus.Text = (EngineOn and "Engine On" or "Engine Off")
+	GUI.EngineStatus.TextColor3 = (EngineOn and Color3.new(0,1,0) or Color3.new(1,0,0))
+	GUI.StallWarn.Visible = ((not Taxi()) and Stall())
+	GUI.PullUp.Visible = (EngineOn and (not Taxi()) and (AltRestrict.Value) and (Engine.Position.Y < (MinAltitude2 + 20)))
+	GUI.TaxiStatus.Visible = (Engine and Taxi())
+	GUI.Throttle.Bar.Tray.Position = UDim2.new(0,0,1,-(Throttle * 460))
+	GUI.Throttle.Bar.Tray.Size = UDim2.new(1,0,0,(Throttle * 460))
+	GUI.Throttle.Disp.Text = math.abs(math.floor(Throttle * 100)).."%"
+	local StallLinePos = (StallSpeed2/math.floor(TrueAirSpeed + 0.5)) * (StallSpeed2/MaxSpeed2)
+	local StallLinePosFix = (StallLinePos > 1 and 1 or StallLinePos < 0 and 0 or StallLinePos)
+	GUI.Throttle.Bar.StallLine.Position = UDim2.new(0,0,1 - StallLinePosFix,0)
+	GUI.Throttle.Bar.Tray.BackgroundColor3 = (Throttle <= StallLinePosFix and Color3.new(1,0,0) or Color3.new(0,1,0))
+end
+
+function UpdateGUI(Taxiing,Stalling) --This function updates the GUI.
+	local GUI = GUIClone.Main
+	local HUD = GUIClone.HUD
+	GUI.Visible = (not LockedCam)
+	HUD.Visible = LockedCam
+	if Targetable2 then UpdateTargetStats() end
+	if LockedCam then UpdateHUD(HUD) end
+	GUI.PullUp.Visible = (EngineOn and (not Taxiing) and (AltRestrict.Value) and (Engine.Position.Y < (MinAltitude2 + 20)))
+	GUI.Taxi.Visible = (EngineOn and Taxiing)
+	GUI.Stall.Visible = ((not Taxiing) and Stalling)
+	GUI.Altitude.Text = "Altitude: "..RoundNumber(Engine.Position.Y)
+	GUI.Speed.Text = "Speed: "..RoundNumber(TrueAirSpeed)
+	GUI.Throttle.Bar.Tray.Size = UDim2.new(Throttle,0,1,0)
+	GUI.Throttle.Percent.Text = math.abs(math.floor(Throttle * 100)).."%"
+	local StallLinePos = (StallSpeed2/math.floor(TrueAirSpeed + 0.5)) * (StallSpeed2/MaxSpeed2)
+	local StallLinePosFix = (StallLinePos > 1 and 1 or StallLinePos < 0 and 0 or StallLinePos)
+	GUI.Throttle.Bar.StallLine.Position = UDim2.new(StallLinePosFix,0,0,0)
+	GUI.Throttle.Bar.Tray.BackgroundColor3 = (Throttle <= StallLinePosFix and Color3.new(1,0,0) or Color3.new(0,2/3,0))
+end
+
+function CalculateSpeed() --This function calculates the current speed
+	while Selected do
+		if EngineOn then
+			CurrentSpeed = (CurrentSpeed < DesiredSpeed and CurrentSpeed + 1 or CurrentSpeed - 1) --A simple ternary operation that calculates the currentspeed
+			CurrentSpeed = (CurrentSpeed < 0 and 0 or CurrentSpeed > MaxSpeed2 and MaxSpeed2 or CurrentSpeed) --This fixes the currentspeed
+		end
+		wait(0.2 - (Acceleration2/5e3))
+	end
+end
+
+function GetLowestPoint() --This function gets the lowest point of the plane (Credit to Crazyman32 for this)
+	if (#LandingGear == 0) then
+		LowestPoint = (Engine.Position.Y + 5 + (Engine.Size.Y/2))
+		return
+	end
+	for _,v in pairs(LandingGear) do
+		local Set0 = (Engine.Position.Y - (v.CFrame * CFrame.new((v.Size.X/2),0,0)).Y)
+		local Set1 = (Engine.Position.Y - (v.CFrame * CFrame.new(-(v.Size.X/2),0,0)).Y)
+		local Set2 = (Engine.Position.Y - (v.CFrame * CFrame.new(0,(v.Size.Y/2),0)).Y)
+		local Set3 = (Engine.Position.Y - (v.CFrame * CFrame.new(0,-(v.Size.Y/2),0)).Y)
+		local Set4 = (Engine.Position.Y - (v.CFrame * CFrame.new(0,0,(v.Size.Z/2))).Y)
+		local Set5 = (Engine.Position.Y - (v.CFrame * CFrame.new(0,0,-(v.Size.Z/2))).Y)
+		local Max = (math.max(Set0,Set1,Set2,Set3,Set4,Set5) + 5)
+		LowestPoint = (Max > LowestPoint and Max or LowestPoint)
+	end
+end
+
+function GetBankAngle(M) --This function calculates the Bank Angle (Credit to Crazyman32 for this)
+	local VSX,X = M.ViewSizeX,M.X
+	local Ratio = (((VSX / 2) - X)/(VSX / 2))
+	Ratio = (Ratio < -1 and -1 or Ratio > 1 and 1 or Ratio)
+	return math.rad(Ratio * MaxBank2)
+end
+
+function Taxi() --This function determines whether the plane is taxiing or not
+	local Ray = Ray.new(Engine.Position,Vector3.new(0,-LowestPoint,0))
+	return (TrueAirSpeed <= StallSpeed2 and game.Workspace:FindPartOnRay(Ray,Plane))
+end
+
+function Stall() --This function determines whether the plane is stalling or not
+	return ((AltRestrict.Value and Engine.Position.Y > MaxAltitude2) or TrueAirSpeed < StallSpeed2)
+end
+
+function FlyMain(M) --This is the main flying function
+	if Selected then
+		local BankAngle = GetBankAngle(M) --This uses the "GetBankAngle" function to calculate the Bank Angle
+		local Taxi,Stall = Taxi(),Stall()
+		if EngineOn then
+			Engine.Thrust.velocity = (Engine.CFrame.lookVector * CurrentSpeed) + Vector3.new(0,0.15,0)
+			if Taxi then
+				if (CurrentSpeed < 2) then
+					Thrust.maxForce = Vector3.new(0,0,0)
+					Direction.maxTorque = Vector3.new(0,0,0)
+				else
+					local VSX,X = M.ViewSizeX,M.X
+					local RatioX = math.rad(((VSX / 2) - X) / (VSX / 2))
+					local YawSpeed = 150 * RatioX * (TrueAirSpeed / 100)
+					Thrust.maxForce = Vector3.new(math.huge,0,math.huge)
+					Direction.maxTorque = Vector3.new(0,math.huge,0)
+					Direction.cframe = Engine.CFrame * CFrame.Angles(0,YawSpeed,0)
+				end
+			else
+				Thrust.maxForce = ((not Stall) and HugeVector or Vector3.new(0,0,0))
+				Direction.maxTorque = HugeVector
+				if SimulationMode.Value then
+					local Rotation = 2 * math.pi - GetRoll(Engine.CFrame)
+					local YawRotation = math.rad(math.sin(Rotation * 2))
+					local YawSpeed = (math.abs(Rotation) > math.pi / 2 and YawRotation / 2 or YawRotation)
+					local SpeedScale = math.min((TrueAirSpeed / (MaxSpeed2 / 4)),1)
+					local PitchSpeed = SimulationMode.PitchSpeed.Value * SpeedScale
+					local RollSpeed = SimulationMode.RollSpeed.Value * SpeedScale
+					local VSX,X = M.ViewSizeX,M.X
+					local VSY,Y = M.ViewSizeY,M.Y
+					local RatioX = math.rad(((VSX / 2) - X) / (VSX / 2))
+					local RatioY = math.rad(((VSY / 2) - Y) / (VSY / 2))
+					Direction.cframe = Engine.CFrame * CFrame.Angles(RatioY * PitchSpeed,-YawSpeed,RatioX * RollSpeed)
+				else
+					Direction.cframe = (M.Hit * CFrame.Angles(0,0,BankAngle))
+				end
+			end
+			if ((AltRestrict.Value) and (Engine.Position.Y < MinAltitude2)) then --If there are altitude restrictions and you are below it...
+				AutoCrash.Value = true
+			end
+		elseif (not EngineOn) then
+			Thrust.maxForce = Vector3.new(0,0,0)
+			Thrust.velocity = Vector3.new(0,0,0)
+			Direction.maxTorque = Vector3.new(0,0,0)
+		end
+		TrueAirSpeed = Engine.Velocity.magnitude
+		UpdateGUI(Taxi,Stall) --This activates the "UpdateGUI" function
+	end
+end
+
+function onKeyDown(Key) --This function is activated whenever a key is pressed
+	local Key = Key:lower()
+	if (Key == FlightControls.Engine.Value:lower()) then --If you press the engine key...
+		local GUI = GUIClone.Main
+		if (not EngineOn) then
+			Engine.Engine:Play()
+			EngineOn = true
+			DesiredSpeed = 0
+			CurrentSpeed = 0
+			Throttle = 0
+			GUI.Engine.Visible = false
+			CalculateSpeed()
+		elseif EngineOn then
+			Engine.Engine:Stop()
+			EngineOn = false
+			DesiredSpeed = 0
+			CurrentSpeed = 0
+			Throttle = 0
+			GUI.Engine.Visible = true
+		end
+	end
+	if (Key == FlightControls.Gear.Value:lower()) then --If you press the change gear key...
+		local GUI = GUIClone.Main
+		local Taxiing = Taxi()
+		
+			if (not Taxiing) then
+				ChangeGear()
+				if (not GearUp) then
+					GearUp = true
+					GUI.Gear.Text = "Gear Up"
+				elseif GearUp then
+					GearUp = false
+					GUI.Gear.Text = "Gear Down"
+				end
+			end
+		
+	end
+	if SUAK and Key:byte() == SpeedUp2 or (not SUAK) and (Key == SpeedUp2) then --If you press the speed up key...
+		Accelerating = true
+		IncreaseSpd()
+	end
+	if SDAK and Key:byte() == SlowDown2 or (not SDAK) and (Key == SlowDown2) then --If you press the slow down key...
+		Decelerating = true
+		DecreaseSpd()
+	end
+	if (Key == TargetControls.Modes.Value:lower()) then --If you press the change modes key...
+		if Targetable2 then
+			if EngineOn then
+				if (not Targeting) then
+					M2.Icon = AimingIcon
+					Targeting = true
+				elseif Targeting then
+					M2.Icon = NormalIcon
+					Targeting = false
+					Locked = false
+					AimGUI.Enabled = false
+					LockGUI.Enabled = false
+					TargetPlayer = nil
+				end
+			end
+		end
+	end
+	
+	if (Key == FlightControls.Eject.Value:lower()) then
+		if EngineOn then
+			local Taxiing = Taxi()
+			if (not Taxiing) then
+				if Ejectable.Value then
+					if (not Plane.Ejected.Value) then
+						Plane.Ejected.Value = true
+						local Seat = MainParts.Seat
+						local EjectClone = Tool.Ejector:clone()
+						EjectClone.Parent = Player.PlayerGui
+						EjectClone.Disabled = false
+						local Fire = Instance.new("Fire")
+						Fire.Parent = Engine
+						Fire.Heat = 25
+						Fire.Size = 30
+						local Smoke = Instance.new("Smoke")
+						Smoke.Parent = Engine
+						Smoke.Color = Color3.new(1/3,1/3,1/3)
+						Smoke.Opacity = 0.7
+						Smoke.RiseVelocity = 10
+						Smoke.Size = 10
+						onDeselectForced()
+						Seat.SeatWeld:Destroy()
+					end
+				end
+			end
+		end
+	end
+	
+	if (Key == FlightControls.ToggleHUD.Value:lower()) then
+		LockedCam = (not LockedCam)
+	end
+	
+	if (Key == WeaponControls.FireGuns.Value:lower()) then --If you press the fire guns key...
+		if (not WeaponsValue.Value) then return end --If there aren't weapons...
+		if (not WeaponsValue.Guns.Value) then return end --If there aren't guns...
+		if (not EngineOn) then return end
+		local Taxiing = Taxi()
+		if (not Taxiing) then --This prevents you from firing the gun while your on the ground
+			FiringGun = true			
+			FireMachineGun(Weapons) --This activates the "FireMachineGun" function
+		end
+	end
+	
+	if (Key == WeaponControls.FireRockets.Value:lower()) then --If you press the fire rockets key...
+		if (not WeaponsValue.Value) then return end
+		if (not WeaponsValue.Rockets.Value) then return end
+		if (not EngineOn) then return end
+		local Taxiing = Taxi()
+		if (not Taxiing) then
+			if RocketEnabled then
+				RocketEnabled = false
+				FireRockets(Weapons)
+				wait(.2)
+				FireRockets(Weapons)
+				wait(.2)
+				FireRockets(Weapons)
+				wait(.2)
+				FireRockets(Weapons)
+				wait(.2)
+				FireRockets(Weapons)
+				wait(.2)
+				FireRockets(Weapons)
+				wait(.2)
+				FireRockets(Weapons)
+				ReloadRocket(RocketTime2)
+			end
+		end
+	end
+	
+	if (Key == WeaponControls.DeployFlares.Value:lower()) then --If you press the deploy flares key...
+		if (not WeaponsValue.Value) then return end
+		if (not WeaponsValue.Flares.Value) then return end
+		if (not EngineOn) then return end
+		local Taxiing = Taxi()
+		if (not Taxiing) then
+			if FlareEnabled then --This makes the plane deploy flares 5 times every 0.2 seconds before you have to reload
+				FlareEnabled = false
+				for i = 1,math.random(4,6) do
+					DeployFlares(Weapons)
+					wait(0.2)
+				end				
+				ReloadFlare(FlareTime2)
+			end
+		end
+	end
+	
+	if (Key == WeaponControls.DropBombs.Value:lower()) then --If you press the drop bombs key...
+		if (not WeaponsValue.Value) then return end
+		if (not WeaponsValue.Bombs.Value) then return end
+		if (not EngineOn) then return end
+		local Taxiing = Taxi()
+		if (not Taxiing) then
+			if BombEnabled then
+				BombEnabled = false
+				local BombSpawns = {}
+				for _,v in pairs(Weapons:GetChildren()) do
+					if v:IsA("BasePart") then
+						if v.Name == "BombSpawn" then
+							table.insert(BombSpawns,v)
+						end
+					end
+				end
+				local CurrentSpawn = BombSpawns[math.random(1,#BombSpawns)] --This line selects a random bomb spawn
+				if Locked then
+					for i,v in pairs (CurrentSpawn:FindFirstChildOfClass("Model"):GetChildren()) do
+						v.Transparency = 1
+					end
+					DropGuidedBomb(CurrentSpawn)
+					ReloadBomb((BombTime2 * 2))
+				for i,v in pairs (CurrentSpawn:FindFirstChildOfClass("Model"):GetChildren()) do
+						v.Transparency = 1
+					end
+				else
+					DropBomb(Weapons)
+					ReloadBomb(BombTime2)
+					
+				end
+			end
+		end
+	end	
+
+	if (Key == WeaponControls.FireMissile.Value:lower()) then --If you press the fire missile key...
+		if (not WeaponsValue.Value) then return end
+		if (not WeaponsValue.Missiles.Value) then return end
+		if (not EngineOn) then return end
+		local Taxiing = Taxi()
+		if (not Taxiing) then
+			if MissileEnabled then
+				MissileEnabled = false
+				local MissileSpawns = {}
+				for _,v in pairs(Weapons:GetChildren()) do
+					if v:IsA("BasePart") then
+						if v.Name == "MissileSpawn" then
+							table.insert(MissileSpawns,v)
+						end
+					end
+				end
+				local CurrentSpawn = MissileSpawns[math.random(1,#MissileSpawns)] --This line selects a random missile spawn
+				if Locked then
+					
+					FireGuidedMissile(CurrentSpawn)
+					ReloadMissile((MissileTime2 * 2))
+					
+				elseif (not Locked) then
+					
+					FireMissile(CurrentSpawn)
+					ReloadMissile(MissileTime2)
+					
+				end
+			end
+		end
+	end
+
+	if (Key == TargetControls.UnTarget.Value:lower()) then --If you press the untarget key...
+		if Targetable2 then
+			if Locked then
+				Locked = false
+			end
+		end
+	end
+end
+
+function onKeyUp(Key) --This function is activated when you let go of a key
+	local Key = Key:lower()
+	if SUAK and Key:byte() == SpeedUp2 or (not SUAK) and (Key == SpeedUp2) then --If you let go of the speed up key...
+		Accelerating = false
+	end
+	if SDAK and Key:byte() == SlowDown2 or (not SDAK) and (Key == SlowDown2) then --If you let go of the slow down key...
+		Decelerating = false
+	end
+	if (Key == WeaponControls.FireGuns.Value) then --If you let go of the fire guns key...
+		FiringGun = false
+		event9:FireServer()
+	end
+end
+
+function onSelected(M) --This function is activated when you select the Plane tool
+	Selected = true
+	M2 = M
+	FixVars() --This activates the "FixVars" function
+	event10:FireServer(Gear) --This activates the "GetGear" function
+	GetLowestPoint() --This activates the "GetLowestPoint" function
+	ToolSelect.Value = true
+	GUIClone = GUI:clone() --This line and the next one clones the plane GUI and puts it into the player
+	GUIClone.Parent = Player.PlayerGui
+	SetUpGUI() --This activates the "SetUpGui" function
+	Camera.CameraType = CameraType2 --This makes your cameratype the customize cameratype
+	if Targetable2 then --If the plane can target, then it will create the objects required for targeting
+		AimGUI = Instance.new("BillboardGui",Player.PlayerGui)
+		AimGUI.AlwaysOnTop = true
+		AimGUI.Enabled = false
+		AimGUI.Size = UDim2.new(5,50,5,50)
+		local Label = Instance.new("ImageLabel",AimGUI)
+		Label.BackgroundTransparency = 1
+		Label.Image = "http://www.roblox.com/asset/?id=107388694"
+		Label.Size = UDim2.new(1,0,1,0)
+		---------------------------------------------------------------
+		LockGUI = Instance.new("BillboardGui",Player.PlayerGui)
+		LockGUI.AlwaysOnTop = true
+		LockGUI.Enabled = false
+		LockGUI.Size = UDim2.new(5,50,5,50)
+		local Label = Instance.new("ImageLabel",LockGUI)
+		Label.BackgroundTransparency = 1
+		Label.Image = "http://www.roblox.com/asset/?id=107388656"
+		Label.Size = UDim2.new(1,0,1,0)
+	end
+	M.Icon = NormalIcon
+	FTab[1] = M.Button1Down:connect(function() onButton1Down(M) end)
+	FTab[2] = M.KeyDown:connect(onKeyDown)
+	FTab[3] = M.KeyUp:connect(onKeyUp)
+	FTab[4] = RunService.RenderStepped:connect(function() onMouseMoved(M) end)
+	FTab[5] = RunService.RenderStepped:connect(function() FlyMain(M) end)
+	FTab[6] = RunService.RenderStepped:connect(UpdateCamera)
+end
+
+function onDeselected(M) --This function is activated when you deselect the Plane tool
+	if Selected then
+		Selected = false
+		LockedCam = false
+		for _,v in pairs(FTab) do --This disconnects all the connections. It prevents bugs
+			if v then
+				v:disconnect()
+				v = nil
+			end
+		end
+		Camera.CameraType = Enum.CameraType.Custom --This makes the CameraType "Custom"
+		Camera.CameraSubject = Character.Humanoid
+		if Targetable2 then --If the plane can target, then the objects required for targeting will be removed
+			AimGUI:remove()
+			LockGUI:remove()
+		end
+		if (not Taxi()) and EngineOn then --If you're not Taxiing and your engine is on...
+			if (not Deselect0.Value) and (not Plane.Ejected.Value) then --If you deselected the tool and didn't eject...
+				onDeselectForced()
+			end
+		end
+		CurrentSpeed = 0 --These couple of lines reset the plane
+		DesiredSpeed = 0
+		TrueAirSpeed = 0
+		EngineOn = false
+		Updating = false
+		Locked = false
+		Targeting = false
+		TargetPlayer = nil
+		ToolSelect.Value = false
+		GUIAVisible = true
+		GUIBVisible = true
+		GUIClone:remove()
+		if Engine:FindFirstChild("Thrust") then
+			Engine.Thrust.velocity = Vector3.new(0,0,0)
+			Engine.Thrust.maxForce = Vector3.new(0,0,0)
+		end
+		if Engine:FindFirstChild("Direction") then
+			Engine.Direction.maxTorque = Vector3.new(0,0,0)
+		end
+	end
+end
+
+function onDeselectFlying() --This function blows up the plane
+	if (not Deselect0.Value) then
+		onDeselected()
+		Plane:BreakJoints()
+		local Explosion = Instance.new("Explosion")
+		Explosion.Parent = game.Workspace
+		Explosion.Position = Engine.Position
+		Explosion.BlastRadius = Plane:GetModelSize().magnitude
+		Explosion.BlastPressure = 2e4
+		Character.Humanoid.Health = 0
+		Engine.Thrust:remove()
+		Engine.Direction:remove()
+		delay(5,function()
+			Plane:Destroy()
+		end)
+	end
+end
+
+function onDeselectForced() --This function is activated when you get out of the plane without deselecting the tool first
+	if Selected then
+		for _,v in pairs(IgnoreTable) do
+			if v then
+				v:Destroy()
+			end
+		end
+		onDeselected()
+		M2.Icon = "rbxasset://textures\\ArrowCursor.png" --This makes the mouse icon the normal icon
+	end
+end
+
+script.Parent.Selected:connect(onSelected) --The next 3 lines activate the given functions
+script.Parent.Deselected:connect(onDeselected)
+Deselect0.Changed:connect(onDeselectForced)
+Crashed.Changed:connect(onDeselectForced)
+
+--TurboFusion--
+end,
+function(script,require)
+wait(script.Parent.TimeLength)
+script.Parent:Destroy()
+end,
+function(script,require)
+repeat wait() until script.Parent.Welded.Value --This line makes the plane invulnerable to weapons when it is still welding
+wait(0.1)
+local Plane = script.Parent --Lines 3 - 10 set variables
+local AutoCrash = Plane.AutoCrash
+local Ejected = Plane.Ejected
+local Engine = Plane.MainParts.Engine
+local CanCrash = Plane.Customize.CanCrash
+local Force = CanCrash.Force
+local Crashed = Plane.Crashed
+local Parts = {}
+--------------------------------------------------------------------------
+function Explode() --This function makes the plane explode
+	if (not Crashed.Value) then
+		Crashed.Value = true
+		Plane:BreakJoints()
+		local Explosion = Instance.new("Explosion")
+		Explosion.Parent = game.Workspace
+		Explosion.Position = Engine.Position
+		Explosion.BlastRadius = Plane:GetModelSize().magnitude / 2 --This makes the BlastRadius the size of the plane
+		Explosion.BlastPressure = 2e5
+		if Engine:findFirstChild("Thrust") then Engine.Thrust:Destroy() end
+		if Engine:findFirstChild("Direction") then Engine.Direction:Destroy() end
+		delay(5,function() Plane:Destroy() end) --This removes the plane after 5 seconds
+	end
+end
+
+function GetPlaneParts(Model) --This function gets all the parts on the plane
+	for _,v in pairs(Model:GetChildren()) do
+		if (v:IsA("BasePart")) then
+			table.insert(Parts,v) --This inserts all the parts into the "Parts" table
+		end
+		GetPlaneParts(v)
+	end
+end
+
+function onAutoCrash() --This function is activated when the AutoCrash value becomes true
+	if AutoCrash.Value then
+		Explode()
+	end
+end
+
+function DetectExplosions(Object) --This is a function that I created which detects explosions in the workspace
+	if Object.ClassName == "Explosion" then --If the object detected was an explosion...
+		if Object.BlastPressure > 0 then
+			local Dist = (Object.Position - Engine.Position).magnitude
+			if Dist <= (Object.BlastRadius + 2) then
+				if (not Crashed.Value) then
+					Explode()
+				end
+			end
+		end
+	end
+end
+
+function IsObstacle(Obj) --This function determines whether Obj is an obstacle that can be used to destroy the plane
+	if (not Obj:IsDescendantOf(Plane)) and Obj.CanCollide then
+		local PlaneTag = Obj:FindFirstChild("PlaneTag")
+		if (PlaneTag and PlaneTag.Value ~= Plane) or (not PlaneTag) then
+			return true
+		end
+	end
+	return false
+end
+
+function IsDescendantOfPlayer(Obj)
+	for _,v in pairs(game.Players:GetPlayers()) do
+		if v and v.Character then
+			if Obj:IsDescendantOf(v.Character) then
+				return v
+			end
+		end
+	end
+	return nil
+end
+
+GetPlaneParts(Plane) --This activates the "GetPlaneParts" function
+for _,v in pairs(Parts) do --This gets all the parts in the "Parts" table
+	v.Touched:connect(function(Object) --This is activated if any of the bricks are touched
+		if (not Ejected.Value) then
+			if CanCrash.Value and (not Crashed.Value) then
+				if IsObstacle(Object) then
+					local Player = game.Players:GetPlayerFromCharacter(script.Parent.Parent)
+					if Player then
+						local HitPlayer = IsDescendantOfPlayer(Object)
+						if HitPlayer == Player then return end
+					end
+					if (v.Velocity.magnitude >= Force.Value) then
+						Explode()
+					end
+				end
+			end
+		elseif Ejected.Value then
+			if (not Crashed.Value) then
+				if IsObstacle(Object) then
+					if Object.Parent.Name ~= "EjectorSeat" then
+						if (not IsDescendantOfPlayer(Object)) then
+							Explode()
+						end
+					end
+				end
+			end
+		end
+	end)
+end
+
+game.Workspace.DescendantAdded:connect(DetectExplosions) --The detect explosions is a DescendantAdded function
+AutoCrash.Changed:connect(onAutoCrash) --Pretty self explanatory. When the AutoCrash value is changed, the "onAutoCrash" function is activated
+end,
+function(script,require)
+function changed()
+if script.Parent.Parent:FindFirstChild("Humanoid") ~= nil then
+script.Parent["FE Update"].Disabled = false
+else 
+script.Parent["FE Update"].Disabled = true
+end	
+end script.Parent.Changed:connect(changed)
+
+end,
+function(script,require)
+wait(.1)
+--Settings from Original Script--
+local Character = script.Parent.Parent
+local Player = game.Players:FindFirstChild(Character.Name)
+local Plane = Character.Plane
+local AutoCrash = Plane.AutoCrash
+local Crashed = Plane.Crashed
+local Weapons = Plane.Weapons
+local MainParts = Plane.MainParts
+local Kit = Plane.Bodykit
+local Gear = MainParts.Gear
+local Engine = MainParts.Engine
+local Thrust = Engine.Thrust
+local Direction = Engine.Direction
+local Customize = Plane.Customize
+local Tool = Player.Backpack.Plane
+local GUI = Tool.PlaneGui
+local ToolSelect = Tool.ToolSelect
+local Deselect0 = Tool.Deselect0
+local FireMain = Tool.FireMain
+local RunService = game:GetService("RunService")
+------------------------------------------------------------------
+local Acceleration = Customize.Acceleration
+local MaxSpeed = Customize.MaxSpeed
+local StallSpeed = Customize.StallSpeed
+local TurnSpeed = Customize.TurnSpeed
+local ThrottleInc = Customize.ThrottleInc
+local MaxBank = Customize.MaxBank
+local CamLock = Customize.CamLock
+local Ejectable = Customize.Ejectable
+local PlaneName = Customize.PlaneName
+local Targetable = Customize.Targetable
+local FlightControls = Customize.FlightControls
+local WeaponControls = Customize.WeaponControls
+local TargetControls = Customize.TargetControls
+local WeaponsValue = Customize.Weapons
+local ReloadTimes = Customize.ReloadTimes
+local SimulationMode = Customize.SimulationMode
+local AltRestrict = Customize.AltitudeRestrict
+local MaxAltitude = AltRestrict.MaxAltitude
+local MinAltitude = AltRestrict.MinAltitude
+------------------------------------------------------------------
+local GUIA1Visible = true
+local GUIB1Visible = true
+local GUIA2Visible = true
+local GUIB2Visible = true
+------------------------------------------------------------------
+local BombM = FireMain.BombM
+local MissileM = FireMain.MissileM
+------------------------------------------------------------------
+local RocketEnabled = true
+local FlareEnabled = true
+local BombEnabled = true
+local MissileEnabled = true
+------------------------------------------------------------------
+local SUAK = false
+local SDAK = false
+------------------------------------------------------------------
+local EngineOn = false
+local Selected = false
+local LockedCam = true
+local LowestPoint = 0
+local DesiredSpeed = 0
+local CurrentSpeed = 0
+local TrueAirSpeed = 0
+local Throttle = 0
+local HugeVector = Vector3.new(math.huge,math.huge,math.huge)
+------------------------------------------------------------------
+local FTab = {}
+local IgnoreTable = {}
+------------------------------------------------------------------
+local LockGUI = nil
+local AimGUI = nil
+local TargetPlayer = nil
+local Locked = false
+local Targeting = false
+------------------------------------------------------------------
+local AimingIcon = "http://www.roblox.com/asset/?id=107455536"
+local LockedIcon = "http://www.roblox.com/asset/?id=107455986"
+local TargetIcon = "http://www.roblox.com/asset/?id=107455960"
+local NormalIcon = "http://www.roblox.com/asset/?id=116176885"
+------------------------------------------------------------------
+local LandingGear = {}
+local GearUp = false --End of the variables
+------------------------------------------------------------------
+function FixVars() --This function fixes any errors in the Customize folder
+	Acceleration2 = (Acceleration.Value < 0 and 0 or Acceleration.Value > 1e3 and 1e3 or Acceleration.Value)
+	MaxBank2 = (MaxBank.Value < -90 and -90 or MaxBank.Value > 90 and 90 or MaxBank.Value)
+	MaxSpeed2 = (MaxSpeed.Value < 0 and 0 or MaxSpeed.Value < StallSpeed.Value and StallSpeed.Value or MaxSpeed.Value)
+	StallSpeed2 = (StallSpeed.Value < 0 and 0 or StallSpeed.Value > MaxSpeed.Value and MaxSpeed.Value or StallSpeed.Value)
+	TurnSpeed2 = (TurnSpeed.Value < 0 and 0 or TurnSpeed.Value)
+	ThrottleInc2 = (ThrottleInc.Value < 0 and 0 or ThrottleInc.Value)
+	MaxAltitude2 = (MaxAltitude.Value < MinAltitude.Value and MinAltitude.Value or MaxAltitude.Value)
+	MinAltitude2 = (MinAltitude.Value > MaxAltitude.Value and MaxAltitude.Value or MinAltitude.Value)
+	MissileTime2 = (ReloadTimes.Missiles.Value < 0 and 0 or ReloadTimes.Missiles.Value)
+	RocketTime2 = (ReloadTimes.Rockets.Value < 0 and 0 or ReloadTimes.Rockets.Value)
+	GunTime2 = (ReloadTimes.Guns.Value < 0 and 0 or ReloadTimes.Guns.Value)
+	FlareTime2 = (ReloadTimes.Flares.Value < 0 and 0 or ReloadTimes.Flares.Value)
+	BombTime2 = (ReloadTimes.Bombs.Value < 0 and 0 or ReloadTimes.Bombs.Value)
+	PlaneName2 = (PlaneName.Value == "" and "Plane" or PlaneName.Value)
+	if WeaponsValue.Value then
+		if WeaponsValue.Missiles.Value or WeaponsValue.Bombs.Value then
+			Targetable2 = true
+		elseif (not (WeaponsValue.Missiles.Value and WeaponsValue.Bombs.Value)) then
+			Targetable2 = false
+		end
+	elseif (not WeaponsValue.Value) then
+		Targetable2 = false
+	end
+	if FlightControls.SpeedUp.Value == "ArrowKeyUp" then
+		SpeedUp2 = 17
+		SUAK = true
+	elseif FlightControls.SpeedUp.Value == "ArrowKeyDown" then
+		SpeedUp2 = 18
+		SUAK = true
+	else
+		SpeedUp2 = FlightControls.SpeedUp.Value
+		SUAK = false
+	end
+	if FlightControls.SlowDown.Value == "ArrowKeyUp" then
+		SlowDown2 = 17
+		SDAK = true
+	elseif FlightControls.SlowDown.Value == "ArrowKeyDown" then
+		SlowDown2 = 18
+		SDAK = true
+	else
+		SlowDown2 = FlightControls.SlowDown.Value
+		SDAK = false
+	end
+	Engine.Direction.P = (SimulationMode.Value and 1e4 or TurnSpeed2)
+end
+
+FixVars()
+
+--Needed Weapons Functions--
+function CreateShockwave(Center,Radius)
+	coroutine.resume(coroutine.create(function()
+		local Shockwave = Instance.new("Part")
+		Shockwave.BrickColor = BrickColor.new("Light stone grey")
+		Shockwave.Material = Enum.Material.SmoothPlastic
+		Shockwave.Name = "Shockwave"
+		Shockwave.Anchored = true
+		Shockwave.CanCollide = false
+		Shockwave.FormFactor = Enum.FormFactor.Symmetric
+		Shockwave.Size = Vector3.new(1,1,1)
+		Shockwave.BottomSurface = Enum.SurfaceType.Smooth
+		Shockwave.TopSurface = Enum.SurfaceType.Smooth
+		local Mesh = Instance.new("SpecialMesh",Shockwave)
+		Mesh.MeshType = Enum.MeshType.Sphere
+		Mesh.Scale = Vector3.new(0,0,0)
+		Shockwave.Parent = game.Workspace
+		Shockwave.CFrame = CFrame.new(Center)
+		table.insert(IgnoreTable,Shockwave)
+		for i = 0,1,1/12 do
+			local WaveScale = 2 * Radius * i
+			Mesh.Scale = Vector3.new(WaveScale,WaveScale,WaveScale)
+			Shockwave.Transparency = i
+			RunService.RenderStepped:wait()
+		end
+		Shockwave:Destroy()
+	end))
+end
+
+function ScanPlayers(Pos,Radius) --This is a function that I created that efficiently puts a CreatorTag in the player
+	coroutine.resume(coroutine.create(function()
+		for _,v in pairs(game.Players:GetPlayers()) do --This gets all the players
+			if v.Character and v.Character:findFirstChild("Torso") then
+				local PTorso = v.Character.Torso
+				if ((PTorso.Position - Pos).magnitude + 2) <= Radius then --If the distance between the explosion and the player is less than the radius...
+					local HitHumanoid = v.Character:findFirstChild("Humanoid")
+					if HitHumanoid then
+						local CreatorTag = Instance.new("ObjectValue")
+						CreatorTag.Name = "creator"
+						CreatorTag.Value = Player
+						CreatorTag.Parent = HitHumanoid
+						delay(0.1,function() CreatorTag:Destroy() end)
+					end
+				end
+			end
+		end
+	end))
+end
+
+function IsIgnored(Obj)
+	for _,v in pairs(IgnoreTable) do
+		if v == Obj then
+			return true
+		end
+	end
+	return false
+end
+
+--FE Weapons Controller--
+local rs = game.ReplicatedStorage
+
+
+--New Functions--
+--Gun Fire--
+e1 = rs:FindFirstChild("A10GunFireFEJD")
+if e1 == nil then
+e1 = Instance.new("RemoteEvent")
+e1.Parent = rs
+e1.Name = "A10GunFireFEJD"
+end
+
+function u1(p,GunParent)
+if p ~= Player then return end
+FiringGun = true
+	repeat
+		for _,v in pairs(GunParent:GetChildren()) do --This is what allow you to put as many MachineGuns as you want in the Guns folder
+			if v:IsA("BasePart") then
+				if v.Name == "MachineGun" then
+					Engine.Fire:Play()
+					local Part1 = Instance.new("Part")
+					Part1.BrickColor = BrickColor.new("Bright yellow")
+					Part1.Name = "Bullet"
+					Part1.CanCollide = false
+					Part1.FormFactor = "Symmetric"
+					Part1.Transparency = 1
+					Part1.Size = Vector3.new(0.4,0.4,3)
+					Part1.BottomSurface = "Smooth"
+					Part1.TopSurface = "Smooth"
+					Part1.Material = "Neon"
+					local Attachment1 = Instance.new('Attachment')
+					Attachment1.Parent = Part1
+                    Attachment1.Position = Vector3.new(-0.2,0,0)
+                    local Attachment2 = Instance.new('Attachment')
+                    Attachment2.Position = Vector3.new(0.2,0,0)
+                    Attachment2.Parent = Part1
+                    local Tracer = Instance.new('Trail')
+                    Tracer.Parent = Part1
+                    Tracer.Attachment0 = Attachment1
+                    Tracer.Attachment1 = Attachment2
+					Tracer.Enabled = true
+					Tracer.Lifetime = NumberRange.new(3)
+					Tracer.Transparency = NumberSequence.new(0)
+					Tracer.LightEmission = 1
+					Tracer.Color = ColorSequence.new(Color3.fromRGB(255,0,0))
+					local BV = Instance.new("BodyVelocity")
+					BV.Parent = Part1
+					BV.maxForce = HugeVector
+					local PlaneTag = Instance.new("ObjectValue")
+					PlaneTag.Parent = Part1
+					PlaneTag.Name = "PlaneTag"
+					PlaneTag.Value = Plane
+					Part1.Touched:connect(function(Object) --This lets me call the "Touched" function, which means I don't need an external script
+						if IsIgnored(Object) then return end
+						if (not Object:IsDescendantOf(Character)) then
+							local HitHumanoid = Object.Parent:findFirstChild("Humanoid")
+							if HitHumanoid then
+								HitHumanoid:TakeDamage(100) --This only damges the player if they don't have a forcefield
+								local CreatorTag = Instance.new("ObjectValue")
+								CreatorTag.Name = "creator"
+								CreatorTag.Value = Player
+								CreatorTag.Parent = HitHumanoid
+								delay(0.1,function() CreatorTag:Destroy() end)
+							elseif (not HitHumanoid) then
+								Object:BreakJoints()
+							end
+							CreateShockwave(Part1.Position,5)
+						end
+					end)
+					Part1.Parent = game.Workspace
+					Part1.CFrame = v.CFrame + v.CFrame.lookVector * 10
+					BV.velocity = (v.Velocity) + (Part1.CFrame.lookVector * 2e3) + (Vector3.new(0,0.15,0))
+					delay(2,function() Part1:Destroy() end)
+					table.insert(IgnoreTable,Part1)
+				end
+			end
+		end
+		wait(GunTime2)
+			until FiringGun == false
+			Engine.Fire:Stop()
+	
+end e1.OnServerEvent:connect(u1)
+
+
+--Missile Fire--
+e2 = rs:FindFirstChild("A10RocketFireFEJD")
+if e2 == nil then
+e2 = Instance.new("RemoteEvent")
+e2.Parent = rs
+e2.Name = "A10RocketFireFEJD"
+end
+
+function u2(p,GunParent)
+if p ~= Player then return end
+for _,v in pairs(GunParent:GetChildren()) do --This allows you to put as many RocketSpawns as you want in the Rockets folder
+		if v:IsA("BasePart") then
+			if v.Name == "RocketSpawn" then
+				Engine.Rocket:Play()
+				local Exploded = false
+				local Part1 = Instance.new("Part")
+				Part1.BrickColor = BrickColor.new("White")
+				Part1.Name = "Missile"
+				Part1.CanCollide = false
+				Part1.FormFactor = "Symmetric"
+				Part1.Size = Vector3.new(1,1,5)
+				Part1.BottomSurface = "Smooth"
+				Part1.TopSurface = "Smooth"
+				local Sound = Instance.new("Sound")
+				Sound.Parent = Part1
+				Sound.SoundId = "rbxassetid://652803422"
+				Sound.Volume = 2
+				Sound.Playing = true
+				Sound.Looped = true
+				local Explo = Instance.new("Sound")
+				local ExploSound = {873196821,873196918,873196759,873196944}
+				Explo.Volume = 2.5
+				Explo.SoundId = "rbxassetid://"..ExploSound[math.random(1,#ExploSound)]
+				Explo.Parent = Part1
+				Explo.PlayOnRemove = true
+				local Mesh = Instance.new("SpecialMesh")
+				Mesh.Parent = Part1
+				Mesh.MeshId = "http://www.roblox.com/asset/?id=2251534"
+				Mesh.MeshType = "FileMesh"
+				Mesh.Scale = Vector3.new(0.5,0.5,0.5)
+				local Part2 = Instance.new("Part")
+				Part2.Parent = Part1
+				Part2.Transparency = 1
+				Part2.Name = "Visual"
+				Part2.CanCollide = false
+				Part2.FormFactor = "Symmetric"
+				Part2.Size = Vector3.new(1,1,1)
+				Part2.BottomSurface = "Smooth"
+				Part2.TopSurface = "Smooth"
+				local Weld = Instance.new("Weld")
+				Weld.Parent = Part1
+				Weld.Part0 = Part1
+				Weld.Part1 = Part2
+				Weld.C0 = CFrame.new(0,0,4) * CFrame.Angles(math.rad(90),0,0)
+				local BV = Instance.new("BodyVelocity")
+				BV.Parent = Part1
+				BV.maxForce = HugeVector
+				local BG = Instance.new("BodyGyro")
+				BG.Parent = Part
+				BG.maxTorque = HugeVector
+				BG.cframe = v.CFrame
+				local Flame = Instance.new("ParticleEmitter")
+				Flame.Parent = Part2
+				Flame.LightEmission = 10
+				Flame.Lifetime = NumberRange.new(0.1)
+				Flame.Color = ColorSequence.new(Color3.fromRGB(236, 139, 70))
+				Flame.Texture = "rbxassetid://244359832"
+				Flame.Rate = "5000"
+				Flame.Enabled = true
+				local Smoke = Instance.new("Smoke")
+				local PlaneTag = Instance.new("ObjectValue")
+				PlaneTag.Parent = Part
+				PlaneTag.Name = "PlaneTag"
+				PlaneTag.Value = Plane
+				Part1.Touched:connect(function(Object)
+					if IsIgnored(Object) then return end
+					if (not Exploded) then
+						if (not Object:IsDescendantOf(Character)) then
+							if Object.Name ~= "Missile" then
+								Exploded = true
+								local Explosion = Instance.new("Explosion",game.Workspace)
+								Explosion.Position = Part1.Position
+								Explosion.BlastPressure = 100000
+								Explosion.BlastRadius = 10
+								ScanPlayers(Part1.Position,10)
+								CreateShockwave(Part1.Position,10)
+								Explosion.Parent = game.Workspace
+								Part1:Destroy()
+							end
+						end
+					end
+				end)
+				Part1.Parent = game.Workspace
+				Part1.CFrame = v.CFrame + v.CFrame.lookVector * 10
+				BV.velocity = Part1.CFrame.lookVector * 1250 + Vector3.new(0,0.15,0)
+				delay(5,function() Part1:Destroy() end)
+				table.insert(IgnoreTable,Part1)
+			end
+		end
+	end
+end e2.OnServerEvent:connect(u2)
+
+--Flares--
+e3 = rs:FindFirstChild("A10FlareFireFEJD")
+if e3 == nil then
+e3 = Instance.new("RemoteEvent")
+e3.Parent = rs
+e3.Name = "A10FlareFireFEJD"
+end
+
+function u3(p,GunParent)
+if p ~= Player then return end
+for _,v in pairs(GunParent:GetChildren()) do
+		if v:IsA("BasePart") then
+			if v.Name == "FlareSpawn" then
+				Engine.Flare:Play()
+				local RandomFactor = 90
+				local RandomX = math.rad(math.random(-RandomFactor,RandomFactor))
+				local RandomY = math.rad(math.random(-RandomFactor,RandomFactor))
+				local Part = Instance.new("Part")
+				Part.Transparency = 0.2
+				Part.Name = "Flare"
+				Part.CanCollide = false
+				Part.FormFactor = "Symmetric"
+				Part.Size = Vector3.new(1,1,1)
+				Part.BottomSurface = "Smooth"
+				Part.TopSurface = "Smooth"
+				Part.Material = "Neon"
+				Part.Color = Color3.new(1,1,0)
+				local Sound = Instance.new("Sound")
+				Sound.Parent = Part
+				Sound.SoundId = "http://www.roblox.com/asset/?id=835453268"
+				Sound.Volume = 1
+				Sound.Playing = true
+				Sound.Looped = false
+				local Trail = Instance.new("ParticleEmitter")
+				Trail.Parent = Part
+				Trail.Texture = "rbxassetid://688705835"
+				Trail.Enabled = true
+				Trail.Rate = "60"
+				local BG = Instance.new("BillboardGui")
+				BG.Parent = Part
+				BG.Size = UDim2.new(10,0,10,0)
+				local IL = Instance.new("ImageLabel")
+				IL.Parent = BG
+				IL.BackgroundTransparency = 1
+				IL.Image = "168123595"
+				IL.Size = UDim2.new(1,0,1,0)
+				local PL = Instance.new("PointLight")
+				PL.Parent = Part
+				PL.Brightness = 10
+				PL.Color = Color3.new(1,1,0)
+				PL.Range = 20
+				Part.Parent = game.Workspace
+				Part.CFrame = (v.CFrame + v.CFrame.lookVector * 0) * CFrame.Angles(1,0,0)
+				Part.Velocity = Part.CFrame.lookVector * 450
+				delay(10,function() Part:Destroy() end)
+				table.insert(IgnoreTable,Part)
+			end
+		end
+	end
+end e3.OnServerEvent:connect(u3)
+
+--Bomb Fire--
+e4 = rs:FindFirstChild("A10BombFireFEJD")
+if e4 == nil then
+e4 = Instance.new("RemoteEvent")
+e4.Parent = rs
+e4.Name = "A10BombFireFEJD"
+end
+
+function u4(p,GunParent)
+if p ~= Player then return end
+for _,v in pairs(GunParent:GetChildren()) do
+			if v:IsA("BasePart") then
+				if v.Name == "BombSpawn" then
+					local Exploded = false
+					local Part = Instance.new("Part")
+					Part.Name = "Bomb"
+					Part.CanCollide = false
+					Part.FormFactor = "Symmetric"
+					Part.Size = Vector3.new(2,2,9)
+					Part.BottomSurface = "Smooth"
+					Part.TopSurface = "Smooth"
+					local Sound = Instance.new("Sound")
+					Sound.Parent = Part
+					Sound.SoundId = "rbxassetid://145610529"
+					Sound.Volume = 1.5
+					Sound.Playing = true
+					Sound.Looped = false
+					local Explo = Instance.new("Sound")
+					local ExploSound = {873196821,873196918,873196759,873196944}
+					Explo.Volume = 2.5
+					Explo.SoundId = "rbxassetid://"..ExploSound[math.random(1,#ExploSound)]
+					Explo.Parent = Part
+					Explo.PlayOnRemove = true
+					local Mesh = Instance.new("SpecialMesh")
+					Mesh.Parent = Part
+					Mesh.MeshId = "http://www.roblox.com/asset/?id=88782666"
+					Mesh.MeshType = "FileMesh"
+					Mesh.Scale = Vector3.new(4,4,4)
+					Mesh.TextureId = "http://www.roblox.com/asset/?id=88782631"
+					local BG = Instance.new("BodyGyro")
+					BG.Parent = Part
+					BG.maxTorque = HugeVector
+					BG.cframe = v.CFrame * CFrame.Angles(math.rad(90),0,0)
+					local PlaneTag = Instance.new("ObjectValue")
+					PlaneTag.Parent = Part
+					PlaneTag.Name = "PlaneTag"
+					PlaneTag.Value = Plane
+					Part.Touched:connect(function(Object)
+						if IsIgnored(Object) then return end
+						if (not Exploded) then
+							if (not Object:IsDescendantOf(Character)) and Object.Name ~= "Bomb" then
+								Exploded = true
+								local Explosion = Instance.new("Explosion")
+								Explosion.Position = Part.Position
+								Explosion.BlastPressure = 5e5
+								Explosion.BlastRadius = 100
+								ScanPlayers(Part.Position,100)
+								CreateShockwave(Part.Position,75)
+								Explosion.Parent = game.Workspace
+								Part:Destroy()
+							end
+						end
+					end)
+					Part.Parent = game.Workspace
+					Part.CFrame = (v.CFrame * CFrame.Angles(math.rad(90),0,0)) + v.CFrame.lookVector * 3
+					Part.Velocity = (Part.CFrame.lookVector * (TrueAirSpeed * 0.75))
+					delay(7,function() Part:Destroy() end)
+					table.insert(IgnoreTable,Part)
+				end
+			end
+		end
+end e4.OnServerEvent:connect(u4)
+
+--Guided Bomb Fire--
+e5 = rs:FindFirstChild("A10GBFireFEJD")
+if e5 == nil then
+e5 = Instance.new("RemoteEvent")
+e5.Parent = rs
+e5.Name = "A10GBFireFEJD"
+end
+
+function u5(p,Gun,TargetPlayer)
+if p ~= Player then return end
+local Exploded = false
+		local Part = Instance.new("Part")
+		Part.Name = "Bomb"
+		Part.CanCollide = false
+		Part.FormFactor = "Symmetric"
+		Part.Size = Vector3.new(2,2,9)
+		Part.BottomSurface = "Smooth"
+		Part.TopSurface = "Smooth"
+		local Mesh = Instance.new("SpecialMesh")
+		Mesh.Parent = Part
+		Mesh.MeshId = "http://www.roblox.com/asset/?id=88782666"
+		Mesh.MeshType = "FileMesh"
+		Mesh.Scale = Vector3.new(4,4,4)
+		Mesh.TextureId = "http://www.roblox.com/asset/?id=88782631"
+		local OV = Instance.new("ObjectValue")
+		OV.Parent = Part
+		OV.Name = "Target"
+		OV.Value = TargetPlayer.Character
+		local Explo = Instance.new("Sound")
+		local ExploSound = {873196821,873196918,873196759,873196944}
+		Explo.Volume = 2.5
+		Explo.SoundId = "rbxassetid://"..ExploSound[math.random(1,#ExploSound)]
+		Explo.Parent = Part
+		local NV = Instance.new("NumberValue")
+		NV.Parent = Part
+		NV.Name = "PlaneSpd"
+		NV.Value = TrueAirSpeed * 0.9 --This makes the bombs travel speed 9/10 of the plane's speed
+		local BG = Instance.new("BodyGyro")
+		BG.Parent = Part
+		BG.maxTorque = HugeVector
+		BG.P = 2e3
+		local BV = Instance.new("BodyVelocity")
+		BV.Parent = Part
+		BV.maxForce = Vector3.new(math.huge,6e3,math.huge)
+		BV.velocity = Vector3.new(0,0,0)
+		local Script = BombM:clone()
+		Script.Parent = Part
+		local PlaneTag = Instance.new("ObjectValue")
+		PlaneTag.Parent = Part
+		PlaneTag.Name = "PlaneTag"
+		PlaneTag.Value = Plane
+		Part.Touched:connect(function(Object)
+			if IsIgnored(Object) then return end
+			if (not Exploded) then
+				if (not Object:IsDescendantOf(Character)) and Object.Name ~= "Bomb" then
+					Exploded = true
+					local Explosion = Instance.new("Explosion")
+					Explosion.Position = Part.Position
+					Explosion.BlastPressure = 5e5
+					Explosion.BlastRadius = 100
+					ScanPlayers(Part.Position,100)
+					CreateShockwave(Part.Position,75)
+					Explosion.Parent = game.Workspace
+					Part:Destroy()
+				end
+			end
+		end)
+		Part.Parent = game.Workspace
+		Part.CFrame = (Gun.CFrame * CFrame.Angles(math.rad(90),0,0)) + Gun.CFrame.lookVector * 10
+		Script.Disabled = false
+		table.insert(IgnoreTable,Part)
+end e5.OnServerEvent:connect(u5)
+
+--Missile Fire--
+e6 = rs:FindFirstChild("A10MissileFireFEJD")
+if e6 == nil then
+e6 = Instance.new("RemoteEvent")
+e6.Parent = rs
+e6.Name = "A10MissileFireFEJD"
+end
+
+function u6(p,Gun)
+if p ~= Player then return end
+		Engine.Missile:Play()
+		local Exploded = false
+		local Part1 = Instance.new("Part")
+		Part1.Name = "Missile"
+		Part1.CanCollide = false
+		Part1.FormFactor = "Symmetric"
+		Part1.Size = Vector3.new(1,1,13)
+		Part1.BottomSurface = "Smooth"
+		Part1.TopSurface = "Smooth"
+		local Sound = Instance.new("Sound")
+		Sound.Parent = Part1
+		Sound.SoundId = "rbxassetid://652803422"
+		Sound.Volume = 2
+		Sound.Playing = true
+		Sound.Looped = true
+		local Explo = Instance.new("Sound")
+		local ExploSound = {873196821,873196918,873196759,873196944}
+		Explo.Volume = 2.5
+		Explo.SoundId = "rbxassetid://"..ExploSound[math.random(1,#ExploSound)]
+		Explo.Parent = Part1
+		Explo.PlayOnRemove = true
+		local Mesh = Instance.new("SpecialMesh")
+		Mesh.Parent = Part1
+		Mesh.MeshId = "rbxassetid://1331225904"
+		Mesh.MeshType = "FileMesh"
+		Mesh.TextureId = "http://www.roblox.com/asset/?id=1331225908"
+		Mesh.Scale = Vector3.new(0.08,0.08,0.08)
+		local Part2 = Instance.new("Part")
+		Part2.Parent = Part1
+		Part2.Name = "Visual"
+		Part2.Transparency = 1
+		Part2.CanCollide = false
+		Part2.FormFactor = "Symmetric"
+		Part2.Size = Vector3.new(1,1,1)
+		Part2.BottomSurface = "Smooth"
+		Part2.TopSurface = "Smooth"
+		local Weld = Instance.new("Weld")
+		Weld.Parent = Part1
+		Weld.Part0 = Part1
+		Weld.Part1 = Part2
+		Weld.C0 = CFrame.new(0,0,5) * CFrame.Angles(math.rad(90),0,0)
+		local BV = Instance.new("BodyVelocity")
+		BV.Parent = Part1
+		BV.maxForce = HugeVector
+		local BG = Instance.new("BodyGyro")
+		BG.Parent = Part1
+		BG.maxTorque = HugeVector
+		BG.cframe = Gun.CFrame * CFrame.Angles(math.rad(90),0,0)
+		local Flame = Instance.new("ParticleEmitter")
+		Flame.Parent = Part2
+		Flame.LightEmission = 10
+		Flame.Lifetime = NumberRange.new(0.1)
+		Flame.Color = ColorSequence.new(Color3.fromRGB(236, 139, 70))
+		Flame.Texture = "rbxassetid://244359832"
+		Flame.Rate = "5000"
+		Flame.Enabled = true
+		local Smoke = Instance.new("Smoke")
+		local Smoke = Instance.new("Smoke")
+		local PlaneTag = Instance.new("ObjectValue")
+		PlaneTag.Parent = Part
+		PlaneTag.Name = "PlaneTag"
+		PlaneTag.Value = Plane
+		Part1.Touched:connect(function(Object)
+			if IsIgnored(Object) then return end
+			if (not Exploded) then
+				if (not Object:IsDescendantOf(Character)) and Object.Name ~= "Missile" then
+					Exploded = true
+					local Explosion = Instance.new("Explosion")
+					Explosion.Position = Part1.Position
+					Explosion.BlastPressure = 5e5
+					Explosion.BlastRadius = 50
+					ScanPlayers(Part1.Position,50)
+					CreateShockwave(Part1.Position,50)
+					Explosion.Parent = game.Workspace
+					Part1:Destroy()
+				end
+			end
+		end)
+		Part1.Parent = game.Workspace
+		Part1.CFrame = (Gun.CFrame * CFrame.Angles(math.rad(90),0,0)) + Gun.CFrame.lookVector * 15
+		BV.velocity = Part1.CFrame.lookVector * Engine.Velocity.magnitude
+		delay(0.4,function()
+			BV.velocity = (Part1.CFrame.lookVector * 1500) + Vector3.new(0,0.15,0)
+			
+		end)
+		delay(5,function() Part1:Destroy() end)
+		table.insert(IgnoreTable,Part1)
+end e6.OnServerEvent:connect(u6)
+
+--Guided Missile Fire--
+e7 = rs:FindFirstChild("A10GMFireFEJD")
+if e7 == nil then
+e7 = Instance.new("RemoteEvent")
+e7.Parent = rs
+e7.Name = "A10GMFireFEJD"
+end
+
+function u7(p,Gun,TargetPlayer)
+if p ~= Player then return end
+			Engine.Missile:Play()
+			local Exploded = false
+			local Part1 = Instance.new("Part")
+			Part1.Name = "Missile"
+			Part1.CanCollide = false
+			Part1.FormFactor = "Symmetric"
+			Part1.Size = Vector3.new(1,1,13)
+			Part1.BottomSurface = "Smooth"
+			Part1.TopSurface = "Smooth"
+			local Sound = Instance.new("Sound")
+			Sound.Parent = Part1
+			Sound.SoundId = "rbxassetid://652803422"
+			Sound.Volume = 2
+			Sound.Playing = true
+			Sound.Looped = true
+			local Explo = Instance.new("Sound")
+			local ExploSound = {873196821,873196918,873196759,873196944}
+			Explo.Volume = 2.5
+			Explo.SoundId = "rbxassetid://"..ExploSound[math.random(1,#ExploSound)]
+			Explo.Parent = Part1
+			Explo.PlayOnRemove = true
+			local Mesh = Instance.new("SpecialMesh")
+			Mesh.Parent = Part1
+			Mesh.MeshId = "http://www.roblox.com/asset/?id=1331225904"
+			Mesh.MeshType = "FileMesh"
+			Mesh.TextureId = "http://www.roblox.com/asset/?id=1331225908"
+		    Mesh.Scale = Vector3.new(0.08,0.08,0.08)
+			local Part2 = Instance.new("Part")
+			Part2.Parent = Part1
+			Part2.Transparency = 1
+			Part2.Name = "Visual"
+			Part2.CanCollide = false
+			Part2.FormFactor = "Symmetric"
+			Part2.Size = Vector3.new(1,1,1)
+			Part2.BottomSurface = "Smooth"
+			Part2.TopSurface = "Smooth"
+			local Weld = Instance.new("Weld")
+			Weld.Parent = Part1
+			Weld.Part0 = Part1
+			Weld.Part1 = Part2
+			Weld.C0 = CFrame.new(0,0,5) * CFrame.Angles(math.rad(90),0,0)
+			local OV = Instance.new("ObjectValue")
+			OV.Parent = Part1
+			OV.Name = "Target"
+			OV.Value = TargetPlayer.Character
+			local BV = Instance.new("BodyVelocity")
+			BV.Parent = Part1
+			BV.maxForce = HugeVector
+			--[[local BG = Instance.new("BodyGyro")
+			BG.Parent = Part1
+			BG.maxTorque = HugeVector
+			BG.P = 1e6]]
+			local Script = MissileM:clone()
+			Script.Parent = Part1
+			local Flame = Instance.new("ParticleEmitter")
+			Flame.Parent = Part2
+			Flame.LightEmission = 10
+			Flame.Lifetime = NumberRange.new(0.1)
+			Flame.Color = ColorSequence.new(Color3.fromRGB(236, 139, 70))
+			Flame.Texture = "rbxassetid://244359832"
+			Flame.Rate = "5000"
+			Flame.Enabled = true
+			local Smoke = Instance.new("Smoke")
+			local PlaneTag = Instance.new("ObjectValue")
+			PlaneTag.Parent = Part
+			PlaneTag.Name = "PlaneTag"
+			PlaneTag.Value = Plane
+			Part1.Touched:connect(function(Object)
+				if IsIgnored(Object) then return end
+				if (not Exploded) then
+					if (not Object:IsDescendantOf(Character)) and Object.Name ~= "Missile" then
+						Exploded = true
+						local Explosion = Instance.new("Explosion")
+						Explosion.Position = Part1.Position
+						Explosion.BlastPressure = 5e4
+						Explosion.BlastRadius = 50
+						ScanPlayers(Part1.Position,50)
+						CreateShockwave(Part1.Position,50)
+						Explosion.Parent = game.Workspace
+						Part1:Destroy()
+					end
+				end
+			end)
+			Part1.Parent = game.Workspace
+			Part1.CFrame = (Gun.CFrame * CFrame.Angles(math.rad(90),0,0)) + Gun.CFrame.lookVector * 15
+			--BG.cframe = CFrame.new(Part1.CFrame.p,Part1.CFrame.p + Part1.CFrame.lookVector)
+			delay(0.4,function()
+				Script.Disabled = false
+				Fire.Enabled = true
+				Smoke.Enabled = true
+			end)
+			delay(7,function() Part1:Destroy() end)
+			table.insert(IgnoreTable,Part1)
+end e7.OnServerEvent:connect(u7)
+
+--Landing Gear--
+e8 = rs:FindFirstChild("A10LandingGearJD")
+if e8 == nil then
+e8 = Instance.new("RemoteEvent")
+e8.Parent = rs
+e8.Name = "A10LandingGearJD"
+end
+
+function u8(p,LandingGear)
+if p ~= Player then return end
+local gear = Plane.MainParts.Gear:GetChildren()
+	for i = 1, #gear do
+		if gear[i].CanCollide == true then
+		gear[i].Transparency = 1
+		gear[i].CanCollide = false
+		elseif gear[i].CanCollide == false then
+		gear[i].Transparency = 0
+		gear[i].CanCollide = true
+		end
+	end
+end e8.OnServerEvent:connect(u8)
+
+--Stop Gunfire--
+e9 = rs:FindFirstChild("A10GunFireStopFEJD")
+if e9 == nil then
+e9 = Instance.new("RemoteEvent")
+e9.Parent = rs
+e9.Name = "A10GunFireStopFEJD"
+end
+
+function u9(p,GunParent)
+if p ~= Player then return end
+FiringGun = false
+end e9.OnServerEvent:connect(u9)
+
+--Get Gear--
+e10 = rs:FindFirstChild("A10GetGearFEJD")
+if e10 == nil then
+e10 = Instance.new("RemoteEvent")
+e10.Parent = rs
+e10.Name = "A10GetGearFEJD"
+end
+
+function u10(p,Parent)
+if p ~= Player then return end
+GetGear(Parent)
+end e10.OnServerEvent:connect(u10)
+
+function GetGear(Parent) --This function gets all the parts in the Gear folder
+	for _,v in pairs(Parent:GetChildren()) do
+		if (v:IsA("BasePart")) then
+			if (not v:findFirstChild("GearProp")) then
+				local GearProp = Instance.new("StringValue")
+				GearProp.Name = "GearProp"
+				GearProp.Value = v.Transparency..","..tostring(v.CanCollide)
+				GearProp.Parent = v
+			end
+			table.insert(LandingGear,v) --This inserts a table with the gear's properties into the LandingGear table
+		end
+		GetGear(v)
+	end
+end
+
+
+end
+}
+local ScriptIndex = 0
+local Scripts,ModuleScripts,ModuleCache = {},{},{}
+local _require = require
+function require(obj,...)
+	local index = ModuleScripts[obj]
+	if not index then
+		local a,b = pcall(_require,obj,...)
+		return not a and error(b,2) or b
+	end
+	
+	local res = ModuleCache[index]
+	if res then return res end
+	res = ScriptFunctions[index](obj,require)
+	if res==nil then error("Module code did not return exactly one value",2) end
+	ModuleCache[index] = res
+	return res
+end
+local function Script(obj,ismodule)
+	ScriptIndex = ScriptIndex + 1
+	local t = ismodule and ModuleScripts or Scripts
+	t[obj] = ScriptIndex
+end
+function RunScripts()
+	for script, index in pairs(Scripts) do
+		coroutine.wrap(function()
+			ScriptFunctions[index](script, require)
+		end)()
+	end
 end
 
 local function Decode(str)
@@ -290,157 +3290,159 @@ local function Decode(str)
 end
 
 
-local Objects = Decode('AEBBBCEFTW9kZWwhCldvcmxkUGl2b3QE+gP7A/wDBPoD/QP+AyEEUGFydCEIQW5jaG9yZWQiIQ1Cb3R0b21TdXJmYWNlAwAAAAAAAAAAIQpCcmlja0NvbG9yB8cAIQZDRnJhbWUEFQD/AwAEIQVDb2xvcgZjX2IhCE1hdGVyaWFsAwAAAAAAgIlAIQtPcmllbnRhdGlvbgoAAAAAAAA0ww'
-..'AANMMhCFBvc2l0aW9uCrktw0K48ARBuzUkwyEIUm90YXRpb24KAAA0wwAAAAAAAAAAIQRTaXplCmdmZkDNzEw+0MxMPyEKVG9wU3VyZmFjZQQfAAEEAgQhCkNhbkNvbGxpZGUCCgAAAAAAAHBBAAAAAAqo9shC3EKDQWdaKMMKZ2bmP83MzD7+/38/IQROYW1lIQhFbmdpbmUgMSELUHJp'
-..'bWFyeVBhcnQEJQADBAQECpRpWEJ83ehATIvuwgrNzMw+9v9/P8jMjEAhC1NwZWNpYWxNZXNoIQhNZXNoVHlwZQMAAAAAAAAAQCEOVW5pb25PcGVyYXRpb24ELQAFBAYECgAAAAAAAAAAAACWwgrzxW1CvUcuQXRyBsMKzsxMPs/MDEDOzExAIQxVc2VQYXJ0Q29sb3IhCVdlZGdlUGFydA'
-..'rNzEw+zcwMQM3MTEAKAACAPwAAgD8AAIA/CgAAAAAAAAAAAAAAAAQ2AAcECAQKAAAAAAAAtMIAALRCClQsWEK8e1FBRUv0wgoAALTCAAC0wgAAAAAKzMxMP87MjEABAABACs3MTD/OzIxAAAAAQAMAAAAAAAAIQAQ8AAcECAQKUzFYQj4vGEG8qAjDCjQzE0H00VI/OQoTQQpLkA9BZmaG'
-..'QGxYA0EKMyxYQk/dF0HwWAnDCgAAAAAAALTCAAA0QwMAAAAAAAAQQAr+/39BNDOLQQAAkEEKG0RRQqo1QUGnfv7CCgAAAAAAALTCAAAAAAo0MxNBamZmQDkKE0EKCRZYQv3tF0FWPwjDBEkAAwQJBAoAAAAAAAA0wwAANEMKUyxYQv7cF0E7PwHDCv3/D0EDABBBAgBgQQqBX1FCmHZBQT'
-..'Q/EcMKhF9RQo92QUFofuLCCgEAEEEAABxC/P8PQQpSLFhC/twXQQKMBcMKm5kJQWZmGkKWmQlBCkIuWEI0yxdBTrgFwwRSAAMECQQKVCxYQv7fF0EtGPPCCpuZuUCbmblAIQAQQQrlTlFCfB1CQdkL2MIK4k5RQoQdQkHuBQfDCpqZuUAzM5tBmpm5QAq0G1hC7IMYQRc/+cIKzsysQP//'
-..'l0HNzKxACpEpWEKG0hdBCTj5wgRcAAoECwQKAAAAAAAAAAAAAJZCCnOSQkL+RS5BcHIGwwReAAcECAQKlCxYQvwktkBdS/TCBGEADAQNBAoAALTCAAA0wwAAAAAKVCxYQrzhV0EUGOzCCgAAtMIAAAAAAAA0wwqunhk/NjPzQV2buUAKmpkZP2ZmFkFmZqZAClgsWELwFFNBEBjXwgqamb'
-..'lAmpkZP2dmhkEKTyxYQr3hV0FLS/HCCgAAAAAAADTDAAC0QgqamRk/ZmaGQGZmJkAKWCxYQkx7cUGmJQPDCgAAtEIAADTDAAAAAARJAAcECAQKaGYWQRkAYEFiZhZBCihFWEJirBdBTIMFwwqGX1FCmHZBQVJ+4sIKZ2YWQZqZHUJiZhZBClIsWEL/3BdB9osFwwqAX1FClXZBQSo/EcME'
-..'dAADBAQECso0hEJ03ehATIvywgR2AAUEBgQK+uKOQrtHLkF0cgjDBHgABwQIBAoqFoRCuntRQUZL+MIEegAHBAgECqoYhEI6LxhBvagKwwoaFoRCS90XQfFYC8MKDqKAQqY1QUFVPwHDCgULhEL57RdBVz8KwwR/AAMECQQKKhaEQvrcF0E8PwPDCsGvgEKUdkFBNT8TwwrDr4BCi3ZBQW'
-..'p+5sIKKhaEQvrcF0EDjAfDCiEXhEIwyxdBT7gHwwSFAAMECQQKKhaEQvrfF0EuGPfCCnOngEJ4HUJB2gvcwgpxp4BCgB1CQe8FCcMK2g2EQuiDGEEYP/3CCskUhEKC0hdBCjj9wgSLAAoECwQKk5JyQv1FLkFwcgjDBI0ABwQIBApKFoRC9CS2QF5L+MIEjwAMBA0ECioWhEK64VdBFBjw'
-..'wgosFoRC7hRTQRAY28IKJxaEQrvhV0FLS/XCCiwWhEJKe3FBpiUFwwR/AAcECAQKlSKEQl6sF0FNgwfDCsOvgEKUdkFBVH7mwgopFoRC+9wXQfeLB8MKwK+AQpF2QUEqPxPDBJkAAwQEBAplGgJDZN3oQECL8sIEmwAFBAYECn1xB0OxRy5BbnIIwwSdAAcECAQKHQsCQ/F7UUE6S/jCBJ'
-..'8ABwQIBApVDAJDMi8YQbeoCsMKDQsCQ0PdF0HrWAvDCgZRAEOeNUFBTz8BwwqCBQJD8e0XQVE/CsMEpAADBAkEChULAkMS3RdBOj8DwwrhVwBDrHZBQTM/E8MK4VcAQ6N2QUFmfubCChULAkMS3RdBAYwHwwqRCwJDSMsXQU24B8MEqgADBAkECh0LAkPy3xdBKhj3wgrBUwBDcB1CQdYL'
-..'3MIKwVMAQ3gdQkHtBQnDCvUGAkPggxhBFD/9wgpsCgJDetIXQQY4/cIEsAAKBAsECkpJ+ULzRS5BbnIIwwSyAAcECAQKJQsCQ2QltkBaS/jCBLQADAQNBAoVCwJDseFXQRAY8MIKFgsCQ+UUU0EMGNvCChQLAkOy4VdBR0v1wgoWCwJDQXtxQaQlBcMEpAAHBAgECkoRAkN2rBdBS4MHww'
-..'riVwBDrHZBQVB+5sIKFQsCQxPdF0H1iwfDCuBXAEOpdkFBKD8TwwS/AP0D/gMKAAAAAAAAAAAAALTCCsX3DUNw+XZBX37wwgohnJlABgCWQvr/P0IKmZmZQGRmekKZmQFCCpjEB0Mq+XZB/QsAwwrOzJhCmpmZQJmZfUIKKu4OQ027T0HbJuvCCmZmFkB7FLTCKVw/wAqZmZlAYWZGQTQz'
-..'00AKlEQtQ8b5dkHyF9nCCv7/90GZmZlAMTPTQApYkRdDufl2QfYX2cIKAAAAAAAANMMAAAAACpmZmUDKzPxBNDPTQAojifBCOPl2QfgX2cIKAAAAAAAANMMAALTCCpmZmUCYmS1CAAAQQQqTxB1Df/l2QVh+ycIE0QADBAQECmUaEENc3ehAP4vuwgTTAAUEBgQKfXEVQ69HLkFtcgbDBN'
-..'UABwQIBAodCxBD73tRQTdL9MIE1wAHBAgEClUMEEMuLxhBtqgIwwoNCxBDP90XQepYCcMKBlEOQ5o1QUGbfv7CCoIFEEPt7RdBUD8IwwTcAAMECQQKFQsQQw7dF0E4PwHDCuFXDkOodkFBMT8RwwrhVw5Dn3ZBQWJ+4sIKFQsQQw7dF0H/iwXDCpELEENEyxdBS7gFwwTiAAMECQQKHQsQ'
-..'Q+7fF0EnGPPCCsFTDkNsHUJB0wvYwgrBUw5DdB1CQewFB8MK9QYQQ9yDGEERP/nCCmwKEEN20hdBAzj5wgToAAoECwQKpaQKQ/FFLkFtcgbDBOoABwQIBAolCxBDXCW2QFdL9MIE7AAMBA0EChULEEOv4VdBDxjswgoWCxBD4xRTQQsY18IKFAsQQ7DhV0FGS/HCChYLEEM/e3FBpCUDww'
-..'TcAAcECAQKShEQQ3KsF0FJgwXDCuJXDkOodkFBTH7iwgoVCxBDD90XQfOLBcMK4FcOQ6V2QUEmPxHDIQlMZWZ0IFdpbmcE+AAOBA8ECgAAAAAAAAAAAAC0QgrUXz9CfoiJQWV+7MIKhCxYQqKIiUH/F/zCCkCGO0KQJ51B4SbnwgpmZhbAexS0Qo8CMUMKMVmEQVOIiUH+F9XCCov5GEJZ'
-..'iIlB/hfVwgpUFotCmYiJQfsX1cIKoCwAQnWIiUFifsXCB+sDBAUBEAQRBAYREREDAAAAAACAmEAKPQoHQc1M+cKPgglDCrgXxkK8WKxBAD8qwyELUmVmbGVjdGFuY2UDAAAAQDMz0z8KSGElQwrXWcKF61nCCs3MTD7OzAxAMzOzPyEMVHJhbnNwYXJlbmN5AwAAAAAAAOA/IQlCbG9ja0'
-..'1lc2ghBVNjYWxlCs3MzD0AAIA/AACAPwQRARIEEwQKAACWwgAANMMAALTCCqjWwEIceZJBKtEswwoAANLCAAAAAAAAtEIKzcxMPpuZmT+ZmZk/BBYB/wMUBAoAALTCAAAAAAAAAAAKCKa5QjxEj0HSUCzDCpqZGT+3zMw+mpkZPwQZAf8DAAQKiS3DQlgkSEEbnCbDBBwB/wMVBAoAAJbC'
-..'AAAAAAAAAAAKmGC/Qlxin0HqiSzDCnj4JEFRiFpAltExQAqamblAmpmZQJmZuUAK2nS5QjkdpUFoTi7DChSuZ8EAgCRDXA+swgpmZo5BAACAP2ZmxkAKcw6/Qthhl0GPwyvDCgUAoEHNzAxAAQCwQQriTb5CnF/VQV0FJcMKrkfNwTMz1EKPwgbCCl5m3kHc/z9AX2YWQQrJcbxC7UybQU'
-..'aLJcMKXmbeQcXMPEFgZo5BCgJyykLZTJtBq/EowwpeZt5BYmaOQcbMPEEKkj6zQuBMm0Gv8SjDCl5m3kFfZhZBzP8/QArJPsFC7UybQUSLJcMKKzO7QfD/f0BeZt5BCjDYvkLyTJtBRgsiwwoAALRCAAAAAAAAAAAK//+3QTEzO0L//7dBCvvnvkIhUm9BC3EbwwoBAChCZmZiQpeZ6UEK'
-..'lhW9QpPMfkENSP7CCi3PnUE33wpAHJetQQoUO6tCDn/JQRQKIcMKuB5VQACAJcMUrs3BCsda20HbXj1AL1cUQQrpMqpCnI+bQUqqHMMKAADwwQAAAAAAALRCCsha20H+NjpBPXOMQQr1faNCduJ/QQ2lIsMKAAAAAAAAtEIAAHBCCsda20E9c4xB/TY6QQrvfaNCirWtQWu8GMMKyFrbQT'
-..'JXFEHOXj1ACuwyqkJBF5JBLbcewwr8orhBm358QMVa20EKYBqxQqDTlkGwsB3DCgAAcEIAAAAAAAC0wgoJe7VBDaM4Qgx7tUEKiyC+QkqGcEH9hBvDCgAA0EHNzEw+0MxMQAqiJb1CiStVQePtJ8MKAADQQZyZGT/QzExACqIlvUKLKzVB4+0nwwoAANBBzszMPwEAMEEKoSW9QhXFRkFJ'
-..'1CvDCgEA0EEAAKBAzcxMPgqhJb1CeStVQXwHLMMKAQDQQZqZmT+YmRk/CqElvUJzKzVBFyEqwwrPzMxBmZkpQpeZ6UEKR9bAQsrEfkEC1yvDCsP1s0IpXI9AFK6vQgpmZo5BMzOzQGZmxkAKcw6/QqUikEEXYijDCuN0xUI5HaVBaE4uwyEIUGxhdGZvcm0EWgEWBBcECgrXI7wK1yM8AA'
-..'AAAAoJ07dC7PbVQJg7DcMKNzPzQM3MTD5cjzJBBF4B/wMYBAqF6ylBAAAAAAAAAAAKmDXFQpyyi0G3/CnDCmdm5j81MzNAzczMPgRiAf8DGQQKAABwQQAANMMAADTDCtg/xUKcNodBnhEswwoAACVDAAAAAAAAAAAKz8xMPmdm5j/NzEw+BGYB/wMaBAr4m7lCrEKDQSb4KsMEaAH/AxgE'
-..'ChicuUJ8sItBr/wpwwRrARsEHAQKAAAAADMzKEMAAAAACiWKBEPYFolBMPLmwgoAADTDzcw8QQAANEMKmZllQgAAgD/+/38/BHAB/wMdBAoAAHDBAAA0wwAANMMKWJC5QvzbmkHmDizDCgAAJcMAAAAAAAAAAAr9/38/mpmZP83MTD4KAACAPwAAgD/NzMw9BHUBFgQXBAoZ07dC7P7VQM'
-..'luGMMEdwH/AxQECsg/xUJ8RY9B1lAswwR5ARIEEwQK2Am+Qnx7kkEm0SzDBHwBHgQfBAoAAAAAAABwwQAAAAAKuHS1QpxCg0FjWijDBH8BHgQgBAqF6ylBAABwwQAAAAAKmPC0Qnyoi0G/YyfDCgrXL0EK12vBuB41QASCARIEEwQK+DzFQly0kUGOyizDCs3MTD6bmZk///9/PwSGAQEE'
-..'IQQKhespQQAAcEEAAAAACmhdyUKcQI9BZ5onwwoK1y9BCtdrQbgeNcAKZ2bmP2dmZkDNzEw+BIsBIgQjBAoK1yO8cf0zwwAAAAAKCi7HQmj/1UAvZ9fCCnH9M8MK1yO8AAA0QwSOARIEEwQKOKO5Qjy2kUF+yizDBJABHgQgBAroDbVC3ECPQWeaJ8MEkgEBBAIECsgDyUK4UntBp0Eoww'
-..'pnZuY//v9/P5uZmT8ElQEWBBcEChrTt0Ks9dVAWggCwwSXAf8DGgQKmDXFQsxEg0Ea+CrDBJoBJAQlBAoAALTCAACWQgAAAAAKqN3AQrhBOUHKLSvDCgAAtMIAAAAAAACWQgpvFYlB5nWFQTdoaEEKycwMQMnMHEHKzAxACoy5r0KidoJBSVAuwwoAAAAAAADSwgAAcMEKycwMQMnMHEHL'
-..'zAxACi6hzkLwdoJBQlAuwwoAAAAAAACWwgAAcEEKZGaOQcvMLEIxM5tBCs9tv0L3UkxBh5EewwoBN71CszOWQYMhEMMKAAAAAAAAtMIAADTCCjU3y0KUb6lBC7oNwwoAADRCAAA0QwAAtMIKxQO0QmdvqUEPug3DCgEEwkK1M5ZBgyEQwwpsnb9CKmeCQRSbEsMKAAA0wgAANMMAADRDCj'
-..'6tv0K2gmxBsWwawwSwAf8DJgQKAADwwQAAAAAAAAAACrhgv0JYCHFBHuUqwwrcm6FBpEPsQKUuTEEKLc+dQT/fCkASl61BCv6m1kKJPd9BCqcrwwquR4nAAICXwrgeVUAK0VrbQdRePUAvVxRBCo1m30LXhblBsVUowwquR83BMzPUQnE9YUIK01rbQf42OkE3c4xBCgdx00KfBK9BVbQj'
-..'wwoAAPBBAAA0wwAAcEIK0VrbQThzjEH7NjpBCk1C50JAp9ZBlZAmwwrTWttBMVcUQchePUAKx0zbQkRSsUEtvifDCvuiuEGRfnxAz1rbQQrAWd1CUp2nQUcHK8MKKVxCQqRwREIpHAvDChJ7tUEFozhCDXu1QQojseFCkjFmQfzBLsMKAQAoQmZmFkKXmelBCpIJvEIcxH5Baz0uwwoAAH'
-..'DCAAA0wwAAtMIKNDPTQc3MTD4AAJBBCnL6v0K8uXFBJZwswwpnZmZAZ2YWQZqZ2UAKgS3DQltTK0H1aCTDBM0BJwQoBAoAAJbCAAC0wgAAtEIKeAK/QnwCnkGOyivDCgAAtMIAAHDBAAAAAAqL9P1ADUECQIYFdUAKZmbmP5qZmUAAAABBCgRWxUJSOJhBOAoswwoUrmfBrgcwwwAA08IK'
-..'mJm5QJqZuUCZmblAChoJv0JNyplBCFcuwwqxTb5CE2HVQVsFJcMKnnG8QmJOm0FFiyXDCtZxykJvTptBqvEowwpmPrNCTE6bQa3xKMMKnj7BQmtOm0FDiyXDCgXYvkJlTptBRQsiwwrW575C61RvQQxxG8MKdhW9Qt7OfkEPSP7CCuQ6q0JcgMlBEgohwwrHWttB2l49QC9XFEEKvzKqQt'
-..'6Qm0FKqhzDCs19o0L75H9BDaUiwwrHWttBPHOMQfw2OkEKxX2jQre2rUFpvBjDCsha20ExVxRBzl49QArDMqpChxiSQS23HsMK+6K4QZp+fEDFWttBCjcasULx1JZBsLAdwwoJe7VBDKM4Qg17tUEKZiC+QhGJcEH/hBvDCnslvUKBLlVB5e0nwwp9Jb1Cgy41QeXtJ8MKeyW9Qh7IRkFL'
-..'1CvDCnolvUKCLlVBfgcswwp9Jb1CdS41QRkhKsMKHtbAQt/HfkED1yvDCsP1s0JcD7JC9ugswwpnZoZAZmbmQJmZuUAKWBbMQodYlkEF1yrDCjMzsz+amZlAzMzsQAof/7hCyFCWQTgKLMMKFK5nQa4HMMMAAJXCCpqZmUABAOBAmZm5QAoXNbJCXveWQZ3wKsME+AH/AxgECrg1xUKcQI'
-..'9BaDEqwwT7ASkEKgQKexTuQKTwJkOa2RbDCqtFvkL2pkBB1J/Bwgq4XixDMzNPQcP19kEKkA6sQdgpgUEzYBZBCr8TsD8IO8lAhmJiQgoa/OBCJJ8AQZShgcIK9igXQh/FKMMAAN/CCrcTsD8IgKNAm8geQgpIavNCUBGMP8rNo8IKrkc1wcM1GkMU7jLDCknR60E7ERpBgNqaQgrc/edC'
-..'mppJQYwslsIKexSQQSncMUMUbgXDChbLtEHIRg5CGcu0QQrfGsFCjtmCQcXVoMIKAABwQgAAtMIAAHBBCs3MtEHMzGxC/f+3QQpfir9Cv0RtQal2/sIKMzOzP83MzEBmZmZCCjXB1EIS+mBB4eBrwgrXoxXCCte4wsP18kEKNDOzP2hmpkCbmSFCCpsgrUIh4XdBfthQwgpmZrRBCtevws'
-..'3M4MEK///vQc3MHEGamZ1CCsMpwELTHwRB4rxzwgoUrmfBpPC7wgAAeEEKAAC4QczMEEL9/7dBCuqKv0LidG1B3Xmhwgr6/+9B/v/fQGZmKkIKaELBQq/HLkEW+JLCCvr/70ExM9NAMTNzQApeQsFCjMcuQevEwcIK+v/vQTEz00CZmUlCCnBCwUKi9YNA4sSawgr6/+9BAACAQczMpkIK'
-..'XELBQutjs0G8iXPCBCECKwQsBAquRznBAAA4QT1KCEMKDDGtQvZ2fkFgoI/CCsP1PMHsUTRBSKEKQwp01Uw++8yMQM/MlEEKzcxMPjMzM0D9//8/CkLpqEKovlpBLx2fwgqamUlBMzMzQM3MTD4Kf8OrQoEwckEzGZHCCqRwKkKuR7VChSskQwrNzEw+AACAQM3MjEAKSguwQmX0ikFjnI'
-..'HCCuxRNMJSuOJC4fqSQgQtAi0ELgQKC3C/QnRecEFoyarCCv7/t0HsMrtBH5aEQgr6/+9B/f/fQGVmhkAKFw++QurELkF5K+nCCjMzY0E0MzNBAQAwQgrxXL9C/u08QRUFrcIKuROwPxM7yUCGYmJCCir44EKcmwBBGgipwgq4HhdCH8UowwAA38IKuBOwPwWAo0CdyB5CClZm80Jg8os/'
-..'TzTLwgpB0etBPxEaQX/amkIK9vnnQvCWSUEQk73CChjLtEHGRg5CGMu0QQoAF8FCLtiCQU08yMIKkYa/QkNCbUGY7hLDCky91ELI9mBB9VadwgqyHK1CuN53QcjSj8IK0SXAQgAdBEH4RKHCCgmHv0Itcm1BY+DIwgqN781BT8UTQY17jUEKZtm1QhJn6ECh4YvCCo/vzUE0OMk/jnuNQQ'
-..'ocmshC8uwAQcvYjcIKj8J1QPYoaEEfBdHCCoXvzUFLxRNBi3uNQQpl2bVCQGfoQBaam8IKAAAAAAAAtEIAADTDCn/ItEG5RA5CfMi0QQoYQbdCQN5eQgPMk8IKsvLuQbHLVUB+781BCm3ZtUIi+r5BmD6rwgoAAHDBAAAAAAAA0sIKt/LuQa/LVUB8781BCnDZtUIA+r5B3/N4wgoAAHBB'
-..'AAAAAAAAlsIK5lq2QbTLVUB8781BCnDZtUIuHBRBCU+EwgoAAPBBAAAAAAAAcMIKFF7XQaNWikB/781BCm7ZtUJUhy5Bdi2mwgoAAPDBAAAAAAAA8MIK6M3rQThfYkFM2JpCCkIkpkIg8ulBM0SUwgqPwnXA9ihoQeH6lsIKJze+QVypjkKEyLRBCvUMt0IhqPlBZ6iTwgq4pDxAe8epQH'
-..'OhG0IK8rS3QqqqokHRqYDCCo/C9T/herTBzcztwgpIhvs/MDjJQFBfYkIK2XK1QhLe20EJJ6nCCo/C9b+PwhVCZmZ0wgqYmdFBZWYWQf//j0EKQFu3Qii6YUGdfnLCCsP1s0IfhQjDXI87QgqamdFBx8zMPwAAkEEKYFu5Qpc1vUF0u3XCChSuZ8FcD6zCAAB4wQpQW8dCJ7phQZp+csIK'
-..'w/Wzwq5HNUKPQgNDCr5pv0L8Km1BZ+Hbwgo0M/NBmplZQJqZ0UEKGEfXQnK6YUGtDpvCCmitp0J9umFBsA6bwgqamblBmplZQJqZ0UEKKqavQna6YUEbnXrCCgAAAAAAAHDCAADwQQozM9tBzcyMQJqZ0UEK3h7SQm26YUH0qoDCCgAAAAAAAPDCAADwwQr//+9BZmZmQZqZnUIKCeS/Qk'
-..'ypw0Cg/aXCCpmZwUEyM5FC//+3QQp5Rb9CcYJrQQX9qcIK/f8/QMjMrEBiZh5CClvwq0I82nBBntqTwgr6//8/xszMQF5mZkIKAybVQjh3XkGQaKLCBH4CLwQwBAquRzlBAIAoQ4XrBEMKTLfRQhmUgEFeRJDCCqQwKEPsUTRBw/UywgoS00w+EACAQAYAmEEKDd3OQv5MjEFhQILCCmgD'
-..'00IX5nZBKTySwgopXDfCKVy1QgAAhsEKp93VQld0X0EmQKDCCq5HOcEAADjBhesEwwSHAv8DAAQKSX6uQnhfGEGK4iDDCsLUnkASAOBADmaGQAr0/09BZmb+QWZmFkIK+0HMQnhfSEEk/CDDCnrbvkIH5tVBziklwwph/7xCWdObQbivJcMKmv/KQkvTm0EdFinDCirMs0JT05tBIRYpww'
-..'phzMFCWdObQbavJcMKyGW/QlfTm0G4LyLDCpN1v0LRXnBBf5Ubwwouo71Cz9h/QfWQ/sIKLM+dQTbfCkAcl61BCqzIq0JzBcpBhi4hwwqCwKpC+BWcQb7OHMMKyFrbQf02OkE9c4xBCo0LpEKkd4BBgskiwwrHWttBPXOMQfs2OkEKiAukQt07rkHe4BjDCoXAqkKhnZJBodsewwr7orhB'
-..'m358QMVa20EK+aexQv5Zl0Ek1R3DCgp7tUENozhCC3u1QQojrr5C+pJxQXKpG8MK9P9PQTEz00AxM3NACvNBskJ6XxhBjOIgwwr0/09BMTPTQGZmFkIK80GyQn5KLkAl/CDDCvT/T0H//99AzcyEQQr0QbJCdV8YQSN8FsMK9P9PQWZmdkFmZhZCCvNBskJgyaVBJfwgwwr0/09B/f/fQM'
-..'3MhEEK8kGyQn1fGEHxSCvDBKoC/wMABArbb79CtsIuQdzEwcIKJnG2QVAz00DwMnNACvr/70ExM9NAMzODQgoAQsFCwMIuQaiVA8MKvxOwPwY7yUCIYmJCCrH74EJZmQBBi6GBwgq4E7A/CYCjQJvIHkIK2mnzQkjgiz/AzaPCCkfR60E6ERpBgdqaQgp8/edCspRJQYEslsIKF8u0QchG'
-..'DkIXy7RBCogawUIS14JBwNWgwgoVir9CGUBtQaN2/sIK1MDUQon0YEHO4GvCCjogrUJ23HdBdthQwgpZKcBCxhoEQda8c8IKkIq/QvZvbUHWeaHCCvr/70HMzIxBmZmPQgoIQsFCELiWv5+RgsIKCULBQqzCLkHUvHjCCghCwUIuLrhBoJGCwgTAAv8DAAQKGGq/Qri4KUGSDCvDCo1Up0'
-..'HUzAxBNw9uQQpnZmZAzswMQZqZ2UAK4ZO7QqyFJkHoaCTDCkIww0J1UitBaGkkwwotz51BQN8KQBGXrUEKdKzWQkYz30GcqSvDCq5HicAAgJfCj8JVQArNWttB1V49QC9XFEEKBGzfQph7uUFCWCjDCs9a20H9NjpBOHOMQQp+dtNCZvquQee2I8MKzVrbQTlzjEH8NjpBCsRH50IEndZB'
-..'KJMmwwrPWttBMVcUQclePUAKPlLbQgVIsUG/wCfDCvuiuEGSfnxAy1rbQQo3X91CD5OnQdgJK8MKDnu1QQejOEIMe7VBCpm24UIDHWZBjMQuwwoID7xCkK9+Qfs/LsMKNDPTQc3MDEEAAJBBCuj/v0IypSlBtZ4swwTYAiIEIwQKKS7HQmz91UBtgBjDBNoC/wMABAqJ+slCu0OXQWNPI8'
-..'MKnJkZQAEA4ECamRk/CpqZGUAAAOBAmZkZPwTeAv8DGQQK+CzFQlzJg0EOuSzDCsrMTD8EAEBAwMxMPwrGzEw/AQBAQLzMTD8E4gL/AwAECgmUu0J4uilBz7UnwwrQzExAAgAAQc3MTD4KzcxMQAEAAEHNzEw+BOYCHgQfBApoZ7VCOFF7QbNBKMME6AL/AwAEChgqxULc6ZZBPpwswwrN'
-..'zEw+z8xMPs7MTD8E6wL/AwAECslgv0LcSaJBX88kwwq6G6BBd4AiQaqZGUAKa2ZmQGdmZkGYmdlACk8ww0KihjZBlwIlwwr+//8/ZmZmQP7//z8Kr5a8QnZ2nkGQAiXDCoGs1kIWR99BSq4rwwrOWttB1l49QC9XFEEKEWzfQmmPuUHwXCjDCs9a20H9NjpBOXOMQQqLdtNCOA6vQZW7I8'
-..'MKzlrbQTlzjEH8NjpBCtFH50LWsNZB1pcmwwrPWttBMVcUQcpePUAKS1LbQtdbsUFtxSfDCvuiuEGUfnxAzFrbQQpEX91C4aanQYYOK8MKD3u1QQijOEIMe7VBCqa24UKkRGZBOskuwwoVD7xCMdd+QalELsMKyszsQZmZGUD7/7dBCsbMxELbzHFBl9YkwwrNzBBCmplZQZiZ2UAKzmDL'
-..'QpqGBkGXAiXDBAQD/wMABAqZLcNCeCEgQfdoJcMKbmZmQDUz80B5mZlACmdmZkA0M/NAzMxMPwqZLcNCeCEgQfdoJ8MKZ2ZmQGdmxkDMzEw/Cpktw0JE7hRBKJwmwwpnZmZAmpmZQMzMTD8KmS3DQg+7CUFczyXDCmdmZkCamVlAzMxMPwqZLcNCtg/9QI8CJcMKZ2ZmQAAAAEDMzEw/Cp'
-..'ktw0JMqeZAwzUkwwpnZmZAmpkZP8zMTD8KmS3DQuRC0ED3aCPDBBMD/wMZBApIk7lC/MqDQQ65LMMEFgP/AzEECgAAcMEAAAAAAAAAAAp4YL9CnCKTQVagLMMK6LsUQenc7EBrZEFBCpqZOUHQzMw+ZmbmPwpm+b1CQqqXQTfjLcMKmpk5QdDMzD7NzEw+Cmf5vUJRvJlB8OsswwqamTlB'
-..'NDOzP2Zm5j8KZvm9Qty1kEGVpy3DCjQzc0CamRk/HoWzQArHX79C72GtQSM+LMMKmplZQM3MTD49CrdACsdfv0LMZ6pBCBYswwo0M3NAmpmZP87MDEAKx1+/QkJfukGJFSnDCgAANEIAADTDAAA0wwqamVlAzsxMPs7MDEAKx1+/QopptkHSlijDCi3PnUE+3wpAE5etQQq5ptZCeD3fQQ'
-..'KnK8MK0lrbQdJePUAvVxRBCklm30LHhblBqFUowwrUWttB/jY6QTZzjEEKw3DTQpEEr0FNtCPDCtJa20E2c4xB/TY6QQoJQudCMafWQY6QJsMK1FrbQTJXFEHFXj1ACoNM20I0UrFBJb4nwwr9orhBjn58QNFa20EKfFndQkKdp0E/ByvDChN7tUEEozhCDXu1QQrfsOFCcDFmQfPBLsMK'
-..'Tgm8QvnDfkFiPS7DCmZmJkDNzMw/MjMDQQrOX79CFhCAQVJPLsMKZmYmQJuZWT+WmblACs5fv0Lk3IlBhYIvwwQ7A/8DAAQKymC/Qmw/0EDGcQHDCoJmdkG400w+HFinQgplZnZBzcxMPmhmvkIKyWC/Qm0/0EBbNQfDCszMtEGYmTlCzMy0QQo/cL9CyDMKQi4hLcMKAAAAAAAAtMIAAL'
-..'TCCrwJwkKWw35B1zcuwwREA/8DAAQKqXC/QnhUc0GaAiLDCnrgrUF/zcw+AgAAQAoAALBBzczMPgAAAEAKBJS/QndUc0GaAiLDCi3PnUE93wpAE5etQQoPp9ZCCD7fQRunK8MK0lrbQdNePUAvVxRBCp5m30JchrlBwFUowwrTWttB/TY6QTdzjEEKGHHTQioFr0FltCPDCtJa20E3c4xB'
-..'/DY6QQpeQudCx6fWQaaQJsMK01rbQTFXFEHGXj1ACthM20LKUrFBPb4nwwr7orhBj358QNBa20EK0VndQtSdp0FWByvDChJ7tUECozhCDHu1QQo0seFCjTJmQQrCLsMKowm8QhfFfkF5PS7DBFgD/wMABAo5cL9CeCltQVcgJ8MK+f+3Qfj/t0Hx/bpBCvT/T0H9/99AZWaGQArTDqtCnF'
-..'wYQX7iIMMKEP2vQgd2gkFlZi7DCrHkzkIGdoJBY2YuwwrNzAxBmpmZP8rMzD4KZITKQhv7rEGtpyvDCgAAAAAAABZDAAAAAArJzAxBmJmZP5aZGT8KZATLQhr7rEGHFizDCgAAAAAAAPDBAAA0Qwqst7NCHfusQbMsLMMKAAAAAAAA8EEAAAAACqw3tEIc+6xB2b0rwwoAAAAAAAAWwwAA'
-..'NMMKRJi+QthA1UG0LiXDCiq8vEIpLptBnrQlwwpkvMpCGy6bQQMbKcMK9IizQiMum0EGGynDCiuJwUIpLptBnLQlwwqRIr9CJy6bQZ40IsMKWzK/Qm4Ub0FlmhvDCvJfvUJ1jn5BwZr+wgoAAAAAAAA0QwAAtMIKLc+dQT/fCkAQl61BCnSFq0JIYMlBajMhwwrLWttB1149QC9XFEEKSH'
-..'2qQstwm0Gi0xzDCsxa20H+NjpBOnOMQQpVyKNC66R/QWXOIsMKy1rbQTpzjEH7NjpBCk/Io0Kzlq1BwuUYwwrMWttBMVcUQctePUAKTH2qQnT4kUGF4B7DCvuiuEGWfnxAyVrbQQq/ZLFC0LSWQQnaHcMKDXu1QQmjOEINe7VBCupqvkKYSHBBV64bwwpRa8hCVCSUQVnULcMKUWvIQlMk'
-..'pEFZ1C3DCoWewEKIV5tBWdQtwwofOMBCViSUQVnULcMKAAC0wgAAtEIAAAAACukExEJcJKRBWdQtwwoAALRCAAC0wgAAAAAEiAMyBDMECgAAAAAAADRDAAA0Qwo7I79CLfcbQt5Xk8IKAAA0QwAAAAAAAAAACl7YXEDQzNxB/DLBQQrbzFxAoszcQa7M3EAK7SK/QkL3G0LhF4LCCtvMXE'
-..'CizNxB7/+JQQpfI79CI/cbQkI+msIEkAP/AxQECipwv0IWKm1BtEf+wgr+/7dBZmZiQv7/t0EKMnC/QhUqbUG0R//CCgAAuEFmZmJC/f+3QQoqcL9CFSptQbRH/sIElgMWBBcECgrTt0Lo9tVAx0PXwgSYAzQENQQK6xXtQpgilEGWV5zCCgAANEMAAAAAAAC0QgrbzFxAoszcQZPM3EAK'
-..'7xXtQlQjlEGbF4vCCtvMXECizNxB3v+JQQrpFe1COiKUQfk9o8IEnwP/AwAECtktw0IYUxtBlwIlwwSiAzYENwQKAAAAAAAANEMAALRCCttJkEJch4hBqlecwgoAADTDAAAAAAAAtMIK1UmQQqCGiEGvF4vCCt5JkEK5h4hBDT6jwgSnAzgEOQQKOHC/QtwwhEF2gyvDCgAAtMIAAAAAAA'
-..'C0QgozM7M/zcwMQMzMTD8hDEN5bGluZGVyTWVzaASsA/8DAAQKuS3DQvi6MUFTzyXDBK4DFgQXBAoa07dCbPjVQDqq7cIEsAMiBCMECgkux0Ls99VAQE0NwwSyAyIEIwQKCi7HQmz+1UAOGgLDBLQD/wMaBAqYNcVCeFJ7QYreKsMEtgP/AwAECqktw0I4hl5B+2gnwwS4A/8DAAQKWJC5'
-..'QtzplkEynCzDBLoD/wMABAoJPb9COAdtQWNPI8MKLbqoQboaq0HZmRk/CjMzs0ABAOBA//9/PwrZYNJCAEOXQf3oIsMKmZkZQAEA4EAzM7M/CpMFykL+QpdBMhwjwwoAAABAAAAAQAAAAEAKRaq8Qh12nkH/aCPDCmZm5kCamQlBzcxMQAqn6M5CjB8oQTKcIsMKwba7QvaFJkEAaSTDCs'
-..'xRw0LAUitBAGkkwwqqzNZCeUjfQYqpK8MKOozfQsuQuUEwWCjDCrSW00KaD69B1bYjwwr6Z+dCOLLWQRaTJsMKdHLbQjldsUGtwCfDCm1/3UJDqKdBxgkrwwrP1uFCaUdmQXrELsMKPi+8QvfZfkHpPy7DCs3M7EGamRk//f+3QQrv7MRCos9xQdVRI8MKScesQgRDl0H/6CLDBNID/wMd'
-..'BAoYKsVC/NuaQeYOLMME1AP/AwAECtktw0JwDt1A+2gjwwTWA/8DGQQK2D/FQjjIeEHatCvDCpqZGT///38/mpkZPwTZA/8DGAQK6Ju5Qnw+j0FoMSrDBNsDAQQhBAroeslCnKqLQbdjJ8ME3QP/AxoECsibuUJ4VHtBht4qwwTfA/8DGQQKOKa5Qnw3h0GiESzDBOED/wMZBAoIprlCeM'
-..'h4Qdq0K8ME4wMiBCMECioux0Ls9dVAos3twgfsAwToAzoEOwQG/wAAAwAAAAAAAHJACtedbUJ8F5ZB+0+Hwgq4HgU/uB4FP7geBT8hBVNoYXBlBOwDOgQ7BArmjQND9yuiQReshsIE7gM8BD0ECj3MMkP1941BqrbRwgTwAzwEPQQK0FEvQUIje0FVJ87CBPMDPgQ/BAoAAAAAcT3YwQrX'
-..'BsIK6Pi2QvhKdEE2Ly3DCnA9akAAAFBA16MwQAT3A0AEQQQKhevJQRSuO8JcTwLDCkjgx0K4zHdBBkktwwqkcApCZmYlwpqZ08IK9SiMQAAAUEDXozBACrrPvUJbKNBBPtzpwgr+/5czAACAvwwAwDIKAACAP/7/l7MEAIA0Cv7/YzQAAIC/GQCQMwoAAIA//v9jtBIAQDUKAQCAPwGRY7'
-..'QRwos1Chd0XTQOAIC/PgBgMwr3Rnc/iUcjN3yDhL4KId8Ptw4AgD8eQOo2CgMAgD8WMOwyFtBHNQqGdum0BQCAPy0AgLMKI4WEPstGd78+ANI2CshGdz8YhYQ+NONfNwoH7VK0BQCAPxkAgLMKEDwktRQAgDMXAIC/CoZ26TQFAIC/LQCAMwrCgoQ+GUd3P/Cl1rYKGUd3v8+ChD4LxbS2'
-..'CgMAgL8WMOyyFtBHtQoIkAg1BAC9NRUAgD8KBgBmtAQAgD8mADCzCgQAgL8HAGY0EgAgtQob6Kw+pQwrP8e3Kb8KvTXyPi66Or/uAP2+CpEhmbVyhIS+EUd3vwoBAIC/HAV3tQNQAbUKC46FtRAA4rQbAIC/CtsNhLV/g4Q+MEd3vwoAAIA/b88zN+xp/7gKiq46tw4AgD8uQuC4Cmbr0b'
-..'KqnXs/brU8PgrBF+s0Dkd3v9GDhD4KF3RdtA4AgD8+AGCzCsGXer8f1Sy3vFpRvgoAQDi3AACAPwv8pzMKvwqEsx9Hd79Og4S+CgVHdz8mSDY3q4OEPgrB7iC3DgCAPySAArcKH2lDvZqdez/lRzY+CrtTQz2gnXs/wUg2PgoAAIC/Q5Yzt1RZ/TgKzzU6tw4AgD8uyuQ4CkaEhD4bSQc1'
-..'B0d3vwrkRne/Jcght6eEhL4K+vsttQa0XT/r//++Cs9Gdz/ZhIQ+FrTjtAoHACq2KADiNBwAgL8KjyZWPxhF9771g4Q+ChP+/757tF2/SlGGNgqtZjy/pU8tP5i+BjwKNvMlv0VFNb/TWo8+CgEAgD8BdF20EtCPNQoXdF00DwCAvzoAQDMKiFUyP1GnNz+nqwa8CkK5MD+9yCq/MFuPPg'
-..'rBF+u0Dkd3P9GDhL4KAACAPy/IvTYTe/U3ChVHxzYAAIC/QmCaNgo+b1Q0AACAvy0EfTUKAACAv4NvVLQMQoq1CrxuVLQAAIA/KwRhNQoAAIA/fW5UNBVCjTUKCfqVtRGAvbUaAIC/CgEAgL8Bymc0D8aDtQoKAIA/KZEntBkAIDUKzW5UtAoAgD89BGE1ChMAgD8WABi0JAAgNQoiAGS0'
-..'FACAPysAkLMKk7Q9P9IPDr+Lj8E+CkgX/T5A91Q/Bh6BPgpGQVG+R5Qwv2rRMb8Ka+04P4nKFb+Pr7w+lQEAAAEAAgADAAEAAQEAAgAEAAEAAgEAAgAEAAUAAwsABgAHAAgACQAKAAsADAANAA4ADwAQABEAEgATABQAFQAWABcAGAAZABoACQAFAAMMAAYABwAIAAkACgALAAwAGwAcAB'
-..'0ADgAPABAAEQASAB4AFAAfABYAHgAYACAAGgAJAAEAAwIAIQAiAAIAJAAFAAYKAAYABwAIAAkACgALAAwAJAAcAB0ADgAPABAAEQAUACUAGAAmABoACQAnAAcBACgAKQAqAEABATAAMQAtACwAKQAyADMABgoABgAHAAoACwAMACsADgAPABAAEQASACwAFAAtABYALAAYAC4ALwAHACoA'
-..'QAEBBQA5ADYANQA6ADIAMwAGCgAGAAcACgALAAwANAAOAA8AEAARABIANQAUADYAFgA3ABgAOAAvAAcAKgBAAoEFAD4APwBAAEEAMgAzAEACgAUAQgBDAEQAAQUARQBGADUAOgAyADMABgkABgAHAAoACwAMADsADgAPABAAEQASADUAFAA8ABYANwAYAD0AKgBAAkADgAUAQgBLAEQAgA'
-..'UAQgBMAEQAAQUATQBOADUAOgAyADMAgQUATwBQAEAAOgAyADMABgoABgAHAAoACwAMAEcADgAPABAAEQASAEgAFABJABYAFwAYAEoALwAHACoAQAJAA4AFAEIAVABEAIAFAEIAVQBEAAEFAFYAVwA1ADoAMgAzAIEFAFgAWQBAADoAMgAzAAYJAAYABwAKAAsADABRAA4ADwAQABEAEgBI'
-..'ABQAUgAWABcAGABTACoAQAEBMAAxAFwAWwApADIAMwAGCgAGAAcACgALAAwAWgAOAA8AEAARABIAWwAUAFwAFgBbABgALgAvAAcAKgBAAQEFADkAXgA1ADoAMgAzAAYKAAYABwAKAAsADABdAA4ADwAQABEAEgA1ABQAXgAWADcAGAA4AC8ABwAqAEADATAAZABlAGAAKQAyADMAAAUAZg'
-..'BnAGgAATAAaQBqAGsAKQAyADMABgoABgAHAAoACwAMAF8ADgAPABAAEQASAGAAFABhABYAYgAYAGMALwAHACoAQAKBBQBNAG4AQAA6ADIAMwBAA4AFAEIAbwBEAAEFAHAAcQA1ADoAMgAzAIAFAEIAcgBEAAYKAAYABwAKAAsADABsAA4ADwAQABEAEgA1ABQASQAWADcAGABtAC8ABwAB'
-..'AAMCACEAIgACAHMABQASCgAGAAcACAAJAAoACwAMAHMAHAAdAA4ADwAQABEAFAB0ABgAJgAaAAkAJwATAQAoACkAKgBAAQEwADEAdgAsACkAMgAzABIKAAYABwAKAAsADAB1AA4ADwAQABEAEgAsABQAdgAWACwAGAAuAC8ABwAqAEABAQUAOQB4ADUAOgAyADMAEgoABgAHAAoACwAMAH'
-..'cADgAPABAAEQASADUAFAB4ABYANwAYADgALwAHACoAQAKBBQA+AHsAQABBADIAMwBAAoAFAEIAfABEAAEFAEUAfQA1ADoAMgAzABIJAAYABwAKAAsADAB5AA4ADwAQABEAEgA1ABQAegAWADcAGAA9ACoAQAJAA4AFAEIAgABEAIAFAEIAgQBEAAEFAE0AggA1ADoAMgAzAIEFAE8AgwBA'
-..'ADoAMgAzABIKAAYABwAKAAsADAB+AA4ADwAQABEAEgBIABQAfwAWABcAGABKAC8ABwAqAEACQAOABQBCAIYARACABQBCAIcARAABBQBWAIgANQA6ADIAMwCBBQBYAIkAQAA6ADIAMwASCQAGAAcACgALAAwAhAAOAA8AEAARABIASAAUAIUAFgAXABgAUwAqAEABATAAMQCLAFsAKQAyAD'
-..'MAEgoABgAHAAoACwAMAIoADgAPABAAEQASAFsAFACLABYAWwAYAC4ALwAHACoAQAEBBQA5AI0ANQA6ADIAMwASCgAGAAcACgALAAwAjAAOAA8AEAARABIANQAUAI0AFgA3ABgAOAAvAAcAKgBAAwEwAGQAkABgACkAMgAzAAAFAGYAkQBoAAEwAGkAkgBrACkAMgAzABIKAAYABwAKAAsA'
-..'DACOAA4ADwAQABEAEgBgABQAjwAWAGIAGABjAC8ABwAqAEACgQUATQCUAEAAOgAyADMAQAOABQBCAJUARAABBQBwAJYANQA6ADIAMwCABQBCAJcARAASCgAGAAcACgALAAwAkwAOAA8AEAARABIANQAUAH8AFgA3ABgAbQAvAAcAAQADAgAhACIAAgCYAAUAHgoABgAHAAgACQAKAAsADA'
-..'CYABwAHQAOAA8AEAARABQAmQAYACYAGgAJACcAHwEAKAApACoAQAEBMAAxAJsALAApADIAMwAeCgAGAAcACgALAAwAmgAOAA8AEAARABIALAAUAJsAFgAsABgALgAvAAcAKgBAAQEFADkAnQA1ADoAMgAzAB4KAAYABwAKAAsADACcAA4ADwAQABEAEgA1ABQAnQAWADcAGAA4AC8ABwAq'
-..'AEACgQUAPgCgAEAAQQAyADMAQAKABQBCAKEARAABBQBFAKIANQA6ADIAMwAeCQAGAAcACgALAAwAngAOAA8AEAARABIANQAUAJ8AFgA3ABgAPQAqAEACQAOABQBCAKUARACABQBCAKYARAABBQBNAKcANQA6ADIAMwCBBQBPAKgAQAA6ADIAMwAeCgAGAAcACgALAAwAowAOAA8AEAARAB'
-..'IASAAUAKQAFgAXABgASgAvAAcAKgBAAkADgAUAQgCrAEQAgAUAQgCsAEQAAQUAVgCtADUAOgAyADMAgQUAWACuAEAAOgAyADMAHgkABgAHAAoACwAMAKkADgAPABAAEQASAEgAFACqABYAFwAYAFMAKgBAAQEwADEAsABbACkAMgAzAB4KAAYABwAKAAsADACvAA4ADwAQABEAEgBbABQA'
-..'sAAWAFsAGAAuAC8ABwAqAEABAQUAOQCyADUAOgAyADMAHgoABgAHAAoACwAMALEADgAPABAAEQASADUAFACyABYANwAYADgALwAHACoAQAMBMABkALUAYAApADIAMwAABQBmALYAaAABMABpALcAawApADIAMwAeCgAGAAcACgALAAwAswAOAA8AEAARABIAYAAUALQAFgBiABgAYwAvAA'
-..'cAKgBAAoEFAE0AuQBAADoAMgAzAEADgAUAQgC6AEQAAQUAcAC7ADUAOgAyADMAgAUAQgC8AEQAHgoABgAHAAoACwAMALgADgAPABAAEQASADUAFACkABYANwAYAG0ALwAHACoAQAYBMADBAMIAvgApADIAMwCABQDDAMQAxQABMADGAMcAvgApADIAMwAABQDIAMkAygABMADLAMwAzQAp'
-..'ADIAMwABMADOAM8AzQApADIAMwADCgAGAAcACgALAAwAvQAOAA8AEAARABIAvgAUAL8AFgC+ABgAwAAvAAcAAQADAgAhACIAAgDQAAUAKwoABgAHAAgACQAKAAsADADQABwAHQAOAA8AEAARABQA0QAYACYAGgAJACcALAEAKAApACoAQAEBMAAxANMALAApADIAMwArCgAGAAcACgALAA'
-..'wA0gAOAA8AEAARABIALAAUANMAFgAsABgALgAvAAcAKgBAAQEFADkA1QA1ADoAMgAzACsKAAYABwAKAAsADADUAA4ADwAQABEAEgA1ABQA1QAWADcAGAA4AC8ABwAqAEACgQUAPgDYAEAAQQAyADMAQAKABQBCANkARAABBQBFANoANQA6ADIAMwArCQAGAAcACgALAAwA1gAOAA8AEAAR'
-..'ABIANQAUANcAFgA3ABgAPQAqAEACQAOABQBCAN0ARACABQBCAN4ARAABBQBNAN8ANQA6ADIAMwCBBQBPAOAAQAA6ADIAMwArCgAGAAcACgALAAwA2wAOAA8AEAARABIASAAUANwAFgAXABgASgAvAAcAKgBAAkADgAUAQgDjAEQAgAUAQgDkAEQAAQUAVgDlADUAOgAyADMAgQUAWADmAE'
-..'AAOgAyADMAKwkABgAHAAoACwAMAOEADgAPABAAEQASAEgAFADiABYAFwAYAFMAKgBAAQEwADEA6ABbACkAMgAzACsKAAYABwAKAAsADADnAA4ADwAQABEAEgBbABQA6AAWAFsAGAAuAC8ABwAqAEABAQUAOQDqADUAOgAyADMAKwoABgAHAAoACwAMAOkADgAPABAAEQASADUAFADqABYA'
-..'NwAYADgALwAHACoAQAMBMABkAO0AYAApADIAMwAABQBmAO4AaAABMABpAO8AawApADIAMwArCgAGAAcACgALAAwA6wAOAA8AEAARABIAYAAUAOwAFgBiABgAYwAvAAcAKgBAAoEFAE0A8QBAADoAMgAzAEADgAUAQgDyAEQAAQUAcADzADUAOgAyADMAgAUAQgD0AEQAKwoABgAHAAoACw'
-..'AMAPAADgAPABAAEQASADUAFADcABYANwAYAG0ALwAHACoAQAYBMADBAPkA9wApADIAMwCABQDDAPoA+wABMADGAPwA9wApADIAMwAABQDIAP0ASAABMADLAP4AaAApADIAMwABMADOAP8AaAApADIAMwADCwAhAPUABgAHAAoACwAMAPYADgAPABAAEQASAPcAFAD4ABYA9wAYAMAALwAH'
-..'AAUAAw4ABgAHAAgACQAKAAABDAABARwAHQAOAAIBEAADARIABAEUAAUBBgEHARYACAEYAAkBGgAJAAoBCwEMATgBAA0BDgEFAAMMAAYABwAIAAkACgALAAwADwEcAB0ADgAPABAAEQASABABFAARARYAEgEYABMBGgAJAAUAAwsABgAHAAgACQAKAAsADAAUAQ4ADwAQABEAEgAVARQAFg'
-..'EWABUBGAAXARoACQAFAAMLAAYABwAIAAkACgALAAwAGAEOAA8AEAARABIAEwAUABkBFgAXABgAGQAaAAkAKgBABYAFAB4BHwEgAYAFACEBIgEgAUACQAJAAkACgAUAIwEkASUBQALABQEwACYBJwE1ACkAMgAzAAEwACgBKQH3ACkAMgAzAAEwACoBKwE1ACkAMgAzAAEwACwBLQH3ACkA'
-..'MgAzAAAFAC4BLwEwAQEFADEBMgE1ADoAMgAzAIAFADMBNAHNAMACgAUANQE2ATcBQALABQEwADgBOQE6ASkAMgAzAAEwADsBPAE9ASkAMgAzAAEwAD4BPwE6ASkAMgAzAAEwAEABQQE9ASkAMgAzAAAFAEIBQwFEAQEFAEUBRgE6AToAMgAzAMACwAUABQBHAUgBEwAABQBJAUoBEwAABQ'
-..'BLAUwBEwABMABNAU4BawApADIAMwABMABPAVABFQEpADIAMwAABQBRAVIBUwGABQBUAVUBIAGABQAeAVYBIAEDCgAGAAcACgALAAwAGgEOAA8AEAARABIAGwEUABwBFgAbARgAHQEvAAcABQADDAAhAFcBBgAHAAgACQAKAAsADABYAQ4ADwAQABEAEgBZARQAWgEWAFkBGABbARoACQAM'
-..'AT4AAAUAAwwABgAHAAgACQAKAAsADABcARwAHQAOAA8AEAARABIAXQEUAF4BFgBdARgAXwEaAAkABQADCwAGAAcACAAJAAoACwAMAGABDgAPABAAEQASAGEBFABiARYAYwEYAGQBGgAJAAUAAwoABgAHAAgACQAKAAsADABlARwAHQAOAA8AEAARABQAZgEYACAAGgAJAAUAAwwABgAHAA'
-..'gACQAKAAsADABnARwAHQAOAA8AEAARABIAXQEUAGgBFgBdARgAXwEaAAkAMAADCgAGAAcACAAJAAoACwAMAGkBDgAPABAAEQASAGoBFABrARYAbAEYAG0BJwBEAQAoACkABQADDQAGAAcACAAJAAoACwAMAG4BHAAdAA4ADwAQABEAEgBvARQAcAEWAHEBGAByARoACQAKAQsBDAFGAQAN'
-..'AXMBBQADDAAhAFcBBgAHAAgACQAKAAsADAB0AQ4ADwAQABEAEgBZARQAdQEWAFkBGABbARoACQAMAUgAAAUAAwsABgAHAAgACQAKAAsADAB2AQ4ADwAQABEAEgAVARQAdwEWABUBGAAXARoACQAFAAMMAAYABwAIAAkACgALAAwAeAEcAB0ADgAPABAAEQASABABFAB5ARYAEgEYABMBGg'
-..'AJAAUAAwwABgAHAAgACQAKAAsADAB6ARwAHQAOAA8AEAARABIAewEUAHwBFgB7ARgAIAAaAAkABQADDAAGAAcACAAJAAoACwAMAH0BHAAdAA4ADwAQABEAEgB+ARQAfwEWAIABGABfARoACQAFAAMMAAYABwAIAAkACgALAAwAgQEcAB0ADgAPABAAEQASABABFACCARYAEgEYAIMBGgAJ'
-..'AAUAAwwABgAHAAgACQAKAAsADACEARwAHQAOAA8AEAARABIAhQEUAIYBFgCHARgAiAEaAAkABQADDAAhAFcBBgAHAAgACQAKAAsADACJAQ4ADwAQABEAEgCKARQAiwEWAIwBGABbARoACQAMAVAAAAUAAwwABgAHAAgACQAKAAsADACNARwAHQAOAA8AEAARABIAEAEUAI4BFgASARgAgw'
-..'EaAAkABQADDAAGAAcACAAJAAoACwAMAI8BHAAdAA4ADwAQABEAEgB+ARQAkAEWAIABGACIARoACQAFAAMMAAYABwAIAAkACgALAAwAkQEcAB0ADgAPABAAEQASAB4AFACSARYAHgAYAJMBGgAJAAUAAwwAIQBXAQYABwAIAAkACgALAAwAlAEOAA8AEAARABIAWQEUAJUBFgBZARgAWwEa'
-..'AAkADAFVAAAFAAMKAAYABwAIAAkACgALAAwAlgEcAB0ADgAPABAAEQAUAJcBGAAgABoACQAqAEADgAUAnQGeAZ8BgAUAoAGhAaIBQAIBBQCjAaQBNQA6ADIAMwDAAsAFATAAJgGlAaYBKQAyADMAATAAKAGnAagBKQAyADMAATAAKgGpAaYBKQAyADMAATAALAGqAagBKQAyADMAAAUALg'
-..'GrAawBAQUAMQGtAaYBOgAyADMAAwoABgAHAAoACwAMAJgBDgAPABAAEQASAJkBFACaARYAmwEYAJwBLwAHACoAQAJAAsACwAKABQCyAbMBtAFAAsAFATAAtQG2AbcBKQAyADMAATAAuAG5AboBKQAyADMAATAAuwG8AbcBKQAyADMAATAAvQG+AboBKQAyADMAAAUAvwHAAcEBAQUAwgHD'
-..'AbcBOgAyADMAAAUAxAHFAcYBAAUAxwHIARMAgAUAyQHKAUQAAwkABgAHAAoACwAMAK4BDgAPABAAEQASAK8BFACwARYArwEYALEBKgBABoAFANAB0QHSAYAFANMB1AFEAEACQAJAAkACgAUAIwHVASUBQALABQEwACYB1gE1ACkAMgAzAAEwACgB1wH3ACkAMgAzAAEwACoB2AE1ACkAMg'
-..'AzAAEwACwB2QH3ACkAMgAzAAAFAC4B2gEwAQEFADEB2wE1ADoAMgAzAIAFADMB3AHNAMACgAUANQHdATcBQALABQEwAN4B3wE6ASkAMgAzAAEwADsB4AE9ASkAMgAzAAEwAOEB4gE6ASkAMgAzAAEwAOMB5AE9ASkAMgAzAAAFAOUB5gFEAQEFAOcB6AE6AToAMgAzAMACwAUABQBHAekB'
-..'SAAABQBJAeoBSAAABQBLAesBSAABMABNAewBawApADIAMwABMABPAe0BFQEpADIAMwAABQBRAe4B7wGABQDwAfEB0gGABQDyAfMB9AGABQD1AfYB9AEDCgAGAAcACgALAAwAywEOAA8AEAARABIAzAEUAM0BFgDOARgAzwEvAAcABQADDAAGAAcACAAJAAoACwAMAPcBHAAdAA4ADwAQAB'
-..'EAEgBdARQA+AEWAF0BGACIARoACQAqAEAFQALAAoAFAP4B/wEAAkACgAUAAQICAgMCQAKABQAEAgUCBgIBBQAHAggCCQJBADIAMwBAAoEFAAoCCwLNAEEAMgAzAEACgAUADAINAg4CQAKABQAPAhACEQJAAoAFABICEwIUAgEFABUCFgIVAUEAMgAzAIAFABcCGAJEAIAFABkCGgJEAIAF'
-..'ABsCHAJEAIAFAB0CHgJEAAMLAAYABwAKAAsADAD5ARwAHQAOAA8AEAARABIA+gEUAPsBFgD8ARgA/QEvAAcAKgBAAwEwACQCJQIgAikAMgAzAAAFACYCJwIoAgEwACkCKgIrAikAMgAzAAMKAAYABwAKAAsADAAfAg4ADwAQABEAEgAgAhQAIQIWACICGAAjAi8ABwAqAEACgAUALwIwAk'
-..'QAQAOABQAxAjICRABAAsACgAUAMwI0AjUCQAKABQA2AjcCAwJAAoAFADgCOQIGAgEFADoCOwIJAkEAMgAzAEACgQUACgI8As0AQQAyADMAQAKABQAMAj0CDgJAAoAFAA8CPgIRAkACgAUAEgI/AhQCAQUAFQJAAhUBQQAyADMAQALABIEwAEECQgJEACkAMgAzAIEwAEMCRAJFAikAMgAz'
-..'AIEwAEYCRwJIAikAMgAzAEADQAKBBQBJAkoCYABBADIAMwBABYAFAEsCTAJNAoAFAE4CTwJQAoAFAFECUgJTAoAFAFQCVQJWAkACgAUAVwJYAlkCAQUAWgJbAjMAOgAyADMAgAUAXAJdAl4CgAUAXwJgAmECQASBMABiAmMCZAIpADIAMwCBMABlAmYCZwIpADIAMwCBMABiAmgCaQIpAD'
-..'IAMwBAA0ACgQUAFQJqAs0AQQAyADMAQAWABQBrAmwCnwGABQBrAm0CogGABQBuAm8CcAKABQBxAnICcwJAAoAFAHQCdQIUAgEFAHYCdwI1ADoAMgAzAIAFAHgCeQIRAoAFAHoCewIOAgMKAAYABwAKAAsADAAsAg4ADwAQABEAEgATABQALQIWABcAGAAuAi8ABwAqAEADATAAKQKBAn0C'
-..'KQAyADMAAAUAJgKCAoMCATAAJAKEAoUCKQAyADMAAwoABgAHAAoACwAMAHwCDgAPABAAEQASAH0CFAB+AhYAfwIYAIACLwAHACoAQAeABQCJAooCRABAAkACQAKABQAjAYsCJQFAAsAFATAAJgGMAjUAKQAyADMAATAAKAGNAvcAKQAyADMAATAAKgGOAjUAKQAyADMAATAALAGPAvcAKQ'
-..'AyADMAAAUALgGQAjABAQUAMQGRAjUAOgAyADMAgAUAMwGSAs0AwAKABQCTApQCNwFAAsAFATAAOAGVAjoBKQAyADMAATAAlgKXAj0BKQAyADMAATAAmAKZAjoBKQAyADMAATAA4wGaAj0BKQAyADMAAAUAmwKcAkQBAQUAnQKeAjoBOgAyADMAgAUAnwKgAkQAgAUAoQKiAkQAgAUAowKk'
-..'AkQAgAUApQKmAkQAgAUApwKoAkQAAwoABgAHAAoACwAMAIYCDgAPABAAEQASABMAFACHAhYAFwAYAIgCLwAHACoAQAWABQCsAq0CRABAAsACgAUArgKvAjUCQAKABQCwArECAwJAAoAFALICswIGAgEFALQCtQIJAkEAMgAzAEACgQUACgK2As0AQQAyADMAQAKABQAMArcCDgJAAoAFAA'
-..'8CuAIRAkACgAUAEgK5AhQCAQUAFQK6AhUBQQAyADMAgAUAuwK8AkQAgAUArAK9AkQAgAUAuwK+AkQAAwsABgAHAAoACwAMAKkCHAAdAA4ADwAQABEAEgATABQAqgIWABcAGACrAi8ABwAqAEACgAUAwgLDAkQAQAKABQDJAcQCRABAAsACwAKABQDFAsYCxwJAAsAFATAAyALJArcBKQAy'
-..'ADMAATAAygLLAroBKQAyADMAATAAzALNArcBKQAyADMAATAAzgLPAroBKQAyADMAAAUA0ALRAsEBAQUA0gLTArcBOgAyADMAAAUAxAHUAsYBAAUA1QLWAhMAAwkABgAHAAoACwAMAL8CDgAPABAAEQASABMAFADAAhYAFwAYAMECBQADDAAhAFcBBgAHAAgACQAKAAsADADXAg4ADwAQAB'
-..'EAEgCKARQA2AIWAIwBGABbARoACQAMAWMAACoAQAEABQDcAtoCEwADCwAGAAcACgALAAwA2QIcAB0ADgAPABAAEQASABMAFADaAhYAFwAYANsCLwAHACoAQAEABQDgAt4CYQEDCQAGAAcACgALAAwA3QIOAA8AEAARABIAYQEUAN4CFgBjARgA3wIqAEABAAUA5ALiAhMAAwsABgAHAAoA'
-..'CwAMAOECHAAdAA4ADwAQABEAEgATABQA4gIWABcAGADjAi8ABwAFAAMMAAYABwAIAAkACgALAAwA5QIcAB0ADgAPABAAEQASAHsBFADmAhYAewEYAJMBGgAJAAUAAwwABgAHAAgACQAKAAsADADnAhwAHQAOAA8AEAARABIAEwAUAOgCFgAXABgA6QIaAAkAKgBAAkADgAUA7QLuAkQAgQ'
-..'UA7wLwAkAAQQAyADMAQALAAsACgAUAxQLxAscCQALABQEwAPIC8wK3ASkAMgAzAAEwAPQC9QK6ASkAMgAzAAEwAPYC9wK3ASkAMgAzAAEwAPgC+QK6ASkAMgAzAAAFAPoC+wLBAQEFAPwC/QK3AToAMgAzAAAFAMQB/gLGAQAFAP8CAAMVAYAFAAEDAgNEAAMJAAYABwAKAAsADADqAg4A'
-..'DwAQABEAEgATABQA6wIWABcAGADsAioAQAYABQAGAwcDEwAABQAIAwkDEwAABQAKAwsDEwAABQAMAw0DEwAABQAOAw8DEwAABQAQAxEDEwADCQAGAAcACgALAAwAAwMOAA8AEAARABIAEwAUAAQDFgAXABgABQMqAEABAAUA4AITA2EBAwkABgAHAAoACwAMABIDDgAPABAAEQASAGEBFA'
-..'ATAxYAYwEYAN8CKgBACgEFABgDGQMVAykAMgAzAAAFABoDGwNhAQAFABwDHQNhAQAFAB4DHwNhAQAFACADIQNhAQAFACIDIwMkAwAFACUDJgMkA8ACwAKABQAnAygDtAFAAsAFATAAKQMqA7cBKQAyADMAATAAKwMsA7oBKQAyADMAATAALQMuA7cBKQAyADMAATAALwMwA7oBKQAyADMA'
-..'AAUAMQMyA8EBAQUAMwM0A7cBOgAyADMAAAUAxAE1A8YBAAUANgM3AxMAAAUAOAM5AxMAAwsABgAHAAoACwAMABQDHAAdAA4ADwAQABEAEgAVAxQAFgMWABUDGAAXAy8ABwAqAEACAAUAPQM+AxMAwAKBBQA/A0ADQQM6ADIAMwAABQDEAUIDEwADCQAGAAcACgALAAwAOgMOAA8AEAARAB'
-..'IAEwAUADsDFgAXABgAPAMqAEACAAUARgNHAxMAwALAAoAFAEgDSQPHAkACwAUBMABKA0sDtwEpADIAMwABMABMA00DugEpADIAMwABMABOA08DtwEpADIAMwABMABQA1EDugEpADIAMwAABQBSA1MDwQEBBQBUA1UDtwE6ADIAMwAABQDEAVYDxgEDCgAGAAcACgALAAwAQwMcAB0ADgAP'
-..'ABAAEQASABMAFABEAxYAFwAYAEUDKgBAAoAFAFoDWwNEAEADgAUAoAFcA58BgAUAoAFdA6IBQAPAAgEwAF4DXwNgAykAMgAzAAAFAGEDYgNjA8ACATAAXgNkA2UDKQAyADMAAAUAYQNmA2cDQAJAAkACQAKABQAjAWgDJQFAAsAFATAAJgFpAzUAKQAyADMAATAAKAFqA/cAKQAyADMAAT'
-..'AAKgFrAzUAKQAyADMAATAALAFsA/cAKQAyADMAAAUALgFtAzABAQUAMQFuAzUAOgAyADMAgAUAMwFvA3ADwAKABQBxA3IDNwFAAsAFATAAcwN0AzoBKQAyADMAATAAdQN2Az0BKQAyADMAATAAdwN4AzoBKQAyADMAATAAeQN6Az0BKQAyADMAAAUAewN8A0QBAQUAfQN+AzoBOgAyADMA'
-..'wAUABQBHAX8DRAAABQBJAYADRAAABQBLAYEDRAABMABNAYIDgwMpADIAMwABMABPAYQDhQMpADIAMwADCgAGAAcACgALAAwAVwMOAA8AEAARABIAEwAUAFgDFgAXABgAWQMvAAcAKgBAAgEwAIsDjAOHAykAMgAzAAEwAI0DjgMzACkAMgAzAAMKAAYABwAKAAsADACGAw4ADwAQABEAEg'
-..'CHAxQAiAMWAIkDGACKAy8ABwAqAEACgQUACgKSA80AQQAyADMAAQUAkwOUAxUBQQAyADMAAwoABgAHAAoACwAMAI8DDgAPABAAEQASABUBFACQAxYAFQEYAJEDLwAHAAUAAwwAIQBXAQYABwAIAAkACgALAAwAlQMOAA8AEAARABIAWQEUAJYDFgBZARgAWwEaAAkADAFzAAAqAEACATAA'
-..'mgObA3ADKQAyADMAATAAnAOdA74AKQAyADMAAwoABgAHAAoACwAMAJcDDgAPABAAEQASAHADFACYAxYAmQMYAIoDLwAHAAUAAwsABgAHAAgACQAKAAsADACeAw4ADwAQABEAEgATABQAnwMWABcAGAAZABoACQAqAEACATAAmgOkA6EDKQAyADMAATAAnAOlA/cAKQAyADMAAwoABgAHAA'
-..'oACwAMAKADDgAPABAAEQASAKEDFACiAxYAowMYAIoDLwAHAAUAAwwABgAHAAgACQAKAAsADACmAxwAHQAOAA8AEAARABIAgwMUAKcDFgCoAxgAqQMaAAkAqgN4AAAFAAMLAAYABwAIAAkACgALAAwAqwMOAA8AEAARABIAEwAUAKwDFgAXABgAGQAaAAkABQADDAAhAFcBBgAHAAgACQAK'
-..'AAsADACtAw4ADwAQABEAEgBZARQArgMWAFkBGABbARoACQAMAXsAAAUAAwwAIQBXAQYABwAIAAkACgALAAwArwMOAA8AEAARABIAigEUALADFgCMARgAWwEaAAkADAF9AAAFAAMMACEAVwEGAAcACAAJAAoACwAMALEDDgAPABAAEQASAIoBFACyAxYAjAEYAFsBGgAJAAwBfwAABQADCg'
-..'AGAAcACAAJAAoACwAMALMDHAAdAA4ADwAQABEAFAC0AxgAkwEaAAkABQADCwAGAAcACAAJAAoACwAMALUDDgAPABAAEQASABMAFAC2AxYAFwAYABkAGgAJAAUAAwwABgAHAAgACQAKAAsADAC3AxwAHQAOAA8AEAARABIAEwAUALgDFgAXABgA6QIaAAkAKgBAA4AFALwDvQNEAEACgAUA'
-..'vgO/A0QAQAKBBQDAA8EDQABBADIAMwBAAoAFAMIDwwNEAEACgAUAwgLEA0QAQAKABQDJAcUDRABAAsACwAKABQDFAsYDxwJAAsAFATAA8gLHA7cBKQAyADMAATAA9ALIA7oBKQAyADMAATAA9gLJA7cBKQAyADMAATAA+ALKA7oBKQAyADMAAAUA+gLLA8EBAQUA/ALMA7cBOgAyADMAAA'
-..'UAxAHNA8YBAAUAzgPPAxUBgAUAvAPQA0QAAwkABgAHAAoACwAMALkDDgAPABAAEQASABMAFAC6AxYAFwAYALsDBQADDQAGAAcACAAJAAoACwAMANEDHAAdAA4ADwAQABEAEgBvARQA0gMWAHEBGAByARoACQAKAQsBDAGFAQANAXMBBQADCwAGAAcACAAJAAoACwAMANMDDgAPABAAEQAS'
-..'ABMAFADUAxYAFwAYABkAGgAJAAUAAwsABgAHAAgACQAKAAsADADVAw4ADwAQABEAEgBhARQA1gMWAGMBGADXAxoACQAFAAMMAAYABwAIAAkACgALAAwA2AMcAB0ADgAPABAAEQASAF0BFADZAxYAXQEYAIgBGgAJAAUAAwwABgAHAAgACQAKAAsADADaAxwAHQAOAA8AEAARABIAhQEUAN'
-..'sDFgCHARgAXwEaAAkABQADCgAGAAcACAAJAAoACwAMANwDHAAdAA4ADwAQABEAFADdAxgAkwEaAAkABQADCwAGAAcACAAJAAoACwAMAN4DDgAPABAAEQASAGEBFADfAxYAYwEYAGQBGgAJAAUAAwsABgAHAAgACQAKAAsADADgAw4ADwAQABEAEgBhARQA4QMWAGMBGADXAxoACQAFAAMM'
-..'ACEAVwEGAAcACAAJAAoACwAMAOIDDgAPABAAEQASAIoBFADjAxYAjAEYAFsBGgAJAAwBjgAABQACCgAGAAcACAAJAAoA5AMMAOUDDgDmAxAA5wMUAOgDGADpAxoACQDqAwkABQACCgAGAAcACAAJAAoA5AMMAOsDDgDmAxAA5wMUAOwDGADpAxoACQDqAwkABQACCgAGAAcACAAJAAoA5A'
-..'MMAO0DDgDmAxAA5wMUAO4DGADpAxoACQDqAwkABQACCgAGAAcACAAJAAoA5AMMAO8DDgDmAxAA5wMUAPADGADpAxoACQDqAwkABQABCwAGAAcACAAJAAoACwAMAPEDDgAPABAAEQASAPIDFADzAxYA8gMYAPQDGgAJAAUAAQsABgAHAAgACQAKAAsADAD1Aw4ADwAQABEAEgD2AxQA9wMW'
-..'APgDGAD5AxoACQAEBiMABxIjABMeIwAfKyMALA==')
+local Objects = Decode('AFBqAyEFTW9kZWwhBE5hbWUhJE1jRG9ubmVsbC1Eb3VnbGFzIEYtMTVFIFN0cmlrZSBFYWdsZSEKV29ybGRQaXZvdAQ4AzkDOgMhClBsYW5la2l0VjIhBlNjcmlwdCEKUmVnZW5lcmF0ZSEJU2NyZWVuR3VpIQhSZWdlbkd1aSEFRnJhbWUhCFBvc2l0aW9uDAAAAD8G/wAAAD/n/yEEU2l6ZQwAAAAA9AEAAAAAMg'
+..'AhBVN0eWxlAwAAAAAAAAhAIQlUZXh0TGFiZWwhFkJhY2tncm91bmRUcmFuc3BhcmVuY3kDAAAAAAAA8D8MAACAPwAAAACAPwAAIQRGb250IQRUZXh0IRVSZWdlbmVyYXRpbmcgUGxhbmUuLi4hClRleHRDb2xvcjMG////IQhUZXh0U2l6ZQMAAAAAAABCQCEWVGV4dFN0cm9rZVRyYW5zcGFyZW5jeQMAAAAAAAAA'
+..'ACEFUGxhbmUhBFdlbGQhDUNvbmZpZ3VyYXRpb24hCUN1c3RvbWl6ZSELT2JqZWN0VmFsdWUhC1JlbG9hZFRpbWVzIQtOdW1iZXJWYWx1ZSEFQm9tYnMhBVZhbHVlIQZGbGFyZXMDAAAAAAAA4D8hBEd1bnMDmpmZmZmZqT8hB1JvY2tldHMhCE1pc3NpbGVzAwAAAAAAABBAIQlCb29sVmFsdWUhB1dlYXBvbnMiIQ'
+..'tTdHJpbmdWYWx1ZSEJUGxhbmVOYW1lISNNY0RvbmVsbC1Eb3VnbGFzIEYtMTVFIFN0cmlrZSBFYWdsZSEOVGFyZ2V0Q29udHJvbHMhCFVuVGFyZ2V0IQFlIQVNb2RlcyEBdiEKVGFyZ2V0YWJsZSENR3JvdXBTcGVjaWZpYyEISW50VmFsdWUhB0dyb3VwSUQhC0tpbGxPbkVudGVyIQhDYW5DcmFzaCEFRm9yY2UD'
+..'AAAAAADAYkAhEEFsdGl0dWRlUmVzdHJpY3QhC01pbkFsdGl0dWRlIQtNYXhBbHRpdHVkZQMAAAAAAEzNQCEORmxpZ2h0Q29udHJvbHMhB1NwZWVkVXAhAXchCFNsb3dEb3duIQFzIQlUb2dnbGVIVUQhAXghBEdlYXIhAWchBkVuZ2luZSEBeSEFRWplY3QhAXohCkNhbWVyYVR5cGUhBkF0dGFjaCELVGhyb3R0bG'
+..'VJbmMDexSuR+F6lD8hDEFjY2VsZXJhdGlvbgMAAAAAAMCCQCEKLS1SRUFETUUtLSEIRGlzYWJsZWQhCUVqZWN0YWJsZSEOU2ltdWxhdGlvbk1vZGUhCVJvbGxTcGVlZAMAAAAAAAAuQCEKUGl0Y2hTcGVlZAMAAAAAAAAUQCEITWF4U3BlZWQDAAAAAACIk0AhB01heEJhbmsDAAAAAAAAVEAhClN0YWxsU3BlZWQD'
+..'AAAAAABAYEAhB0NhbUxvY2shCVR1cm5TcGVlZAMAAAAAAIijQCEOV2VhcG9uQ29udHJvbHMhC0ZpcmVSb2NrZXRzIQFyIQtGaXJlTWlzc2lsZSEBZiEIRmlyZUd1bnMhAWMhCURyb3BCb21icyEBYiEMRGVwbG95RmxhcmVzIQFxIQlBdXRvQ3Jhc2ghB0JvZHlraXQEOwM5AzoDBDwDOQM6AyEITWVzaFBhcnQhCE'
+..'FuY2hvcmVkIQZDRnJhbWUEgwA5AzoDIQpDYW5Db2xsaWRlAiEITWF0ZXJpYWwDAAAAAACAiUAhC09yaWVudGF0aW9uCgAAAAAAADRDAAAAAAoyDYVDS/mFworGWsMhCFJvdGF0aW9uCgAANEMAAAAAAAA0QwpXO1JC4buPQcDtmEIhBk1lc2hJZCEXcmJ4YXNzZXRpZDovLzE2NTc4MDAwMjkhCE1lc2hTaXplCrxD'
+..'EkMAAEhCUstUQyEJVGV4dHVyZUlEIRdyYnhhc3NldGlkOi8vMTY1Nzc4NjM4MQSOADkDOgMKTBOFQ1+BkMJ6zHrDCnWdGUH+JopAUqRUQCEXcmJ4YXNzZXRpZDovLzE2NTc4MDUzMDQKFMQXQ6rFhkIAAEhCBJMAPQM6AwpuEIVDRieOwuHDb8MKsT81Qpyg2j4yHKdAIRdyYnhhc3NldGlkOi8vMTY1NzgxMzIxOA'
+..'oxMYxE4O4/QXzQ/kIEmAA5AzoDCk8QhUOWgJDCyrp8wwp8HghCxa8UP89bQUEhF3JieGFzc2V0aWQ6Ly8xNjU3ODIwMTk0Cj57VkQQEmRBf6ulQwSdADkDOgMK5wyFQwvxhcKaunvDCjdSZkHaAcBAJJhkQCEXcmJ4YXNzZXRpZDovLzE2NTc4MjU1NTQKhdhMQ3HBqEIAAEhCBKIAOQM6Awq+CYVD2gSRwhENY8MK'
+..'BxTTQUaUGUDGRp9BIRdyYnhhc3NldGlkOi8vMTY1NzgzMjYxNwoZegVEAABIQmY4xkMEpwA5AzoDCrYshUPZPpbCuUxkwwpNrolBf4t6QMy40kEhF3JieGFzc2V0aWQ6Ly8xNjU3ODQwMjE4CoTLnkMCAEhCgTr9QwSsAD4DPwMKWguFQx/IlcL6aErDCoh0sj8Fqo0+k0sIQSEXcmJ4YXNzZXRpZDovLzE2NTc4OT'
+..'Y5MDEKQPcHQgDn/kDogVJDBLEAOQM6AwqKDYVD2xOXwt0qYcMKX/guQUVoHD8iCfBAIRdyYnhhc3NldGlkOi8vMTY1NzkwNzExNgoAsYdD4DycQU00OUMEtgA5AzoDCqIPhUPc54rCqq5ewwpdUotA1gTNPyssUkEhF3JieGFzc2V0aWQ6Ly8xNjU3OTMwMzEyCoFC20I0jiBCya2iQyEHZ2xhc3NlcyEKQnJpY2tD'
+..'b2xvcgeUAATBADkDOgMhBUNvbG9yBllZWQMAAAAAAICYQAqCD4VDEUmHwv3zScMKM5x4QH1+ZEAyKYJBIQxUcmFuc3BhcmVuY3kDAAAAoJmZ2T8hF3JieGFzc2V0aWQ6Ly8xNjU3OTQ0MDc5CmAkX0L+/0dCPv9nQwRAA0EDQgMEyQBBA0IDCioNhUPAE4rCRmJKwwqKtZVA/czEQKBwiUEhF3JieGFzc2V0aWQ6Ly'
+..'8xMzI4MzU1MzQyCgAASEJUcYJCXL8zQyEXcmJ4YXNzZXRpZDovLzEzMjUwNjEzMTIEzwBBA0IDCqIMhUN6uIjCxahFwwpYSYBAaxspQNTvhz8hF3JieGFzc2V0aWQ6Ly8xMzI4MzY1MzY2CtDOSkIYNwBCYOdhQQTUAEEDQgMKegeFQ5FIisJlB0XDClekUUDCiQJAaE11PyEXcmJ4YXNzZXRpZDovLzEzMjgzODUz'
+..'MzcKsC7SQqtLgEJQbxpCB8cABNwAQQNCAwZjX2IDAAAAAAAAkUAKRhSFQ+O5i8LlekfDCo07GkD+MqdAw5loQCEXcmJ4YXNzZXRpZDovLzEzMjgzOTk1MTEKAABIQoaD8UJAWaBCIRdyYnhhc3NldGlkOi8vMTI3ODMzNjczNwTiAEEDQgMKRhSFQ+O5i8JaJE7DBzgBBOcAQwNEAwZZIlkKAAAAAAAANMMAAAAACt'
+..'sNhUP+vIfC7uNEwyELUmVmbGVjdGFuY2UKDkCYP9djWD92hOY+AwAAAGBmZuY/IRdyYnhhc3NldGlkOi8vMTMyODQwNDQzNQqgzOtBMFyoQaBJLEEhCk1hbnVhbFdlbGQhIU1lc2hQYXJ0LXRvLU1lc2hQYXJ0IFN0cm9uZyBKb2ludCECQzAERQNGA0cDIQJDMQRIA0kDSgMhBVBhcnQwIQVQYXJ0MQT3AEsDTAMK'
+..'AABwwgAAAAAAAAAACt4NhUMAvYfC8eNEwyEGU1AgTVNMBE0DOQNOAwT8ADkDTgMKuB6VwAAANEMAAAAACrK9gUPHwpjC1VZrwwoKVy/DAAAAAAAANEMKvrbAP/j/wT+UcGdBIRdyYnhhc3NldGlkOi8vMTY1ODAxNjQyNArYdBhCSnkZQq4Xt0MhF3JieGFzc2V0aWQ6Ly8xMzQyOTgwNTEwBAMBOQNOAwquoYhDx8'
+..'KYwtRWa8MEBgE5A08DCrgeRb8AADRDAAAAAAquoYhDqkKawtYzXMMK4TozwwAAAAAAADRDBAkBOQNPAwoWwoFDqkKawtYzXMMhBFNURE0EUANRA1IDIQ9TdGFuZGFyZE1pc3NpbGUEDwFTA1QDCsP1aMDNzMy9uB6nQQoEpXxD8rqRwhc4XsMKw/VowM3MzL09CqdBCoc19z/W9yZAHAdKQSEXcmJ4YXNzZXRpZDov'
+..'LzExMTMwMjU3MzIKAFovQnrebEKeTY9DIRdyYnhhc3NldGlkOi8vMTExMzA0MDY2NgQXAVUDVgMKmplZwAAAwD/D9WTBCvT3f0PyupHCFjhewwqamVnAAADAPx+FY8EEGgFTA1QDCmIRikPxupHCFjhewwQdAVEDUgMKexTuv+xRSMBIYZ1CCtKxi0PxupHCFjhewwp7FO6/7FFIwBQunUIhCmZ1ZWwgdGFua3MEVw'
+..'NLAzoDBzcBBCQBSwM6AwafoawKJvKKQxkplcKxGmPDCnRoP0CoTj5A8OHVQSEXcmJ4YXNzZXRpZDovLzE2NjE1NjYxODQKKChJQv//R0I82K9DIRdyYnhhc3NldGlkOi8vMTY2MTU2NjI3NAQqAUsDOgMKJEx+QxoplcKyGmPDIQRQYXJ0IQFsIQ1Cb3R0b21TdXJmYWNlB/wDBDMBWANZAwYA/wADAAAAAAAAcUAK'
+..'AAAAAAAAtMIK16M+CvNyiEPLJGzCkk9+wwoK16O+AAC0wgAAAAAKqyJkPqsiZD6rImQ+IQpUb3BTdXJmYWNlIQVTaGFwZSEKUG9pbnRMaWdodCEKQnJpZ2h0bmVzcwMAAADgehT+PyEFUmFuZ2UDAAAAAAAAIkAhDEJpbGxib2FyZEd1aSEEQmx1ZSEGQWN0aXZlDAAA4EAAAAAA4EAAACEKSW1hZ2VMYWJlbCEFTG'
+..'lnaHQhEEJhY2tncm91bmRDb2xvcjMGwcDDDAAAgD4AAAAAgD4AAAwAAAA/AAAAAAA/AAAhBUltYWdlIRZyYnhhc3NldGlkOi8vMTQ1ODIwMTc1BE0BWgNbAyEYQ3VzdG9tUGh5c2ljYWxQcm9wZXJ0aWVzEM3MzD3NzMw+AACAPgAAgD8AAIA/CgAAgEAAAAAAAAAAAApTnoFDUaBuwmYnfsMKrcBcP63AXD+twFw/'
+..'Bv8AACELSW1hZ2VDb2xvcjMEUgFaA1sDCmIakkP4CY/CR+trwwpBhaM+QYWjPkGFoz4EVQFaA1sDCg0OcEOPH4/CIOxrwwYAVf8hCUNPTlRSQUlMUwRcA10DXgMEWwFdA14DCgrXozyPwrNCSGG0QgrnyYNDZViQwg/CgcMKMzMXQY/Cs0LheqFCCgAAgD8AAIA/AACAPyEPUGFydGljbGVFbWl0dGVyIQhDb250cm'
+..'FpbCEHRW5hYmxlZCEITGlmZXRpbWURAAAgQQAAIEEhBFJhdGUDAAAAAAAAREAhCFJvdFNwZWVkEQAAoEEAAKBBKQMAAAAAAAAAAAAAAADhoMQ9AADoQAAAAAAAAIA/AAAgQQAAAAAhBVNwZWVkEQAASMMAAEjDIQtTcHJlYWRBbmdsZQvNzMw9zczMPSEHVGV4dHVyZSEpaHR0cDovL3d3dy5yb2Jsb3guY29tL2Fz'
+..'c2V0Lz9pZD0yNDI0NDUxMDQpAgAAAAAAAAA/AAAAAAAAgD8AAAA/AAAAAARwAV0DXgMK22GGQ1JZkMKrwIHDIQtCYWNrU3VyZmFjZQMAAAAAAAAkQAfpAwR4AV8DYAMG+Pj4IQxGcm9udFN1cmZhY2UhC0xlZnRTdXJmYWNlCsomkkPcs4/CfFttwyEMUmlnaHRTdXJmYWNlCpqZGT4AAIA/AACAPyEKQXR0YWNobW'
+..'VudCELQXR0YWNobWVudDAEfwFHA2EDCgAAAAAAAAAAAAC0QgqUmZm9AQAAPwAAAAAhC0F0dGFjaG1lbnQxBIIBRwNhAwqUmZk9AQAAPwAAAAAhBVRyYWlsIQtUZXh0dXJlTW9kZQSGAV8DYAMKzelvQ92zj8LiWm3DIQlNYWluUGFydHMEYgM5AzoDIQRTZWF0AwAAAAAAAABAB+sDBI8BOQNjAwYREREKhesdQQAA'
+..'NEMAAAAACnYPhUNrk47CQWtHwwpIISpDAAAAAAAANEMKeKrmP9IlgD6mnr4/IQlCbG9ja01lc2ghBUdpdmVyIQlIb3BwZXJCaW4hCURlc2VsZWN0MCELRW5naW5lc291bmQhCEZpcmVNYWluIQVCb21iTSEITWlzc2lsZU0hClRvb2xTZWxlY3QhC0xvY2FsU2NyaXB0IQdFamVjdG9yIQdHdWlNYWluIQhQbGFuZU'
+..'d1aSEETWFpbgwAAAA/av8AAAAACgAMAAAAACwBAAAAAHgAIQdWaXNpYmxlIQVUaXRsZSEPQm9yZGVyU2l6ZVBpeGVsDAAAgD8AAAAAAAAPAAMAAAAAAAAoQAMAAAAAAAAyQCEETGluZQYAAAAhDEJvcmRlckNvbG9yMwwAAAAAAAAAAIA/AwAMAACAPwAAAAAAAAIAIQAMAAAAAP//AAAAABQADAAAAD8AAAAAAAAP'
+..'ACEIU3BlZWQ6IDADAAAAAAAALEAhCEFsdGl0dWRlDAAAAD8BAAAAAAAUACELQWx0aXR1ZGU6IDAhBE1vZGUMAAAAAP//AAAAACgAIQtGbHlpbmcgTW9kZQwAAAA/AQAAAAAAKAAhCUdlYXIgRG93biEKVGV4dEJ1dHRvbiEJQ29udHJvbHNBDAAAAD8AAAAAAABQAAwAAAA/AAAAAAAAFAAhD0ZsaWdodCBDb250cm'
+..'9scwwAAAAAAAAAAAAAeAAMAACAPwAAAAAAACgAIQpFbmdpbmUgT2ZmAwAAAAAAADhAIQhUaHJvdHRsZQwAAAAAAAAAAAAAPAAMAAAAADwAAACAPwAAIQlUaHJvdHRsZTohA0JhcgwAAAAAPAAAAAA//P8MAAAAAFAAAAAAAAkAIQRUcmF5BgCqAAwAAAAAAAAAAIA/AAAhCVN0YWxsTGluZSEHUGVyY2VudAwAAAAA'
+..'yAAAAAAAAAAMAAAAACgAAACAPwAAIQQxMDAlIQVTdGFsbAwAAAAATP8AAAAAAAAMAAAAAKAAAAAAAFoAIQ1TVEFMTCBXQVJOSU5HIQtUZXh0V3JhcHBlZCEEVGF4aQwAAAAALAEAAAAAAAAhB1RBWElJTkchCUNvbnRyb2xzQgwAAAAAAAAAAAAAUAAhD1dlYXBvbiBDb250cm9scyEGRnJhbWVCDAAAAABq/wAAAA'
+..'CqAAwAAIA/AAAAAAAAggAhAkMyDAAAAAAAAAAAAAAoAAwAAAA/AAAAAAAACgAhDEZpcmUgUm9ja2V0cyEOVGV4dFhBbGlnbm1lbnQhA0tleQwAAIA/AAAAAAAAAAAhBEtleTohAkM0IQpEcm9wIEJvbWJzIQJDMyEQRmlyZSBNYWNoaW5lIEd1bgwAAAAAAAAAAAAAFAAhDUZpcmUgTWlzc2lsZXMhAkM1DAAAAAAA'
+..'AAAAAABkACENRGVwbG95IEZsYXJlcwwAAIA/AAAAAAAACgAGVf8ADAAAAD/6/wAAgD8FAAwAAAAAAgAAAAAAZAAhBlB1bGxVcCEHUHVsbCBVcCEGRnJhbWVBDAAAAACWAAAAAACqAAwAAIA/AAAAAAAAqgAhCkFjY2VsZXJhdGUhDExhbmRpbmcgR2VhciEKRGVjZWxlcmF0ZQwAAAAAAgAAAAAAjAAhDENoYW5nZS'
+..'BNb2RlcyECQzYhAkM3DAAAAAAAAAAAAACMACEKVG9nZ2xlIEhVRCEHVmVyc2lvbgwAAIA/CgAAAAAAAAAMAAAAADIAAAAAAA8AIQZ2MC4xLjMhA1RhZwwAAIA/dP8AAIA/zv8MAAAAAIIAAAAAACgAIQZUYXJnZXQMAAAAAAoAAACAPy7/DAAAAAAsAQAAAADIACEITG9ja05hbWUMAACAPwAAAAAAABQAIQxUYXJn'
+..'ZXQ6IE5vbmUhClRleHRTY2FsZWQhBERpc3QhDURpc3RhbmNlOiBOL0EhClNwZWVkOiBOL0EhDUFsdGl0dWRlOiBOL0EhA0hVRCEGT3JpZW50DAAAAD/Y/wAAAD/2/wwAAAAAUAAAAAAAFAAhBlpJbmRleAYAyAAMAAAAAAAAAAAAP/7/DAAAAAAZAAAAAAAEACEFQXJyb3cMAAAAP/H/AAAAP/b/DAAAAAAeAAAAAA'
+..'AUACEpaHR0cDovL3d3dy5yb2Jsb3guY29tL2Fzc2V0Lz9pZD0xNDA4NDY2NTIMAACAP+f/AAAAP/7/IQRSb2xsIQVQaXRjaAwAAAAAOP8AAAAADP4MAAAAAJABAAAAAOgDIQdBbmdsZTAwDAAAgD8AAAAAAAAEAAwAAAAAlgAAAAAABAAMAACAP2r/AAAAAAAAIQdBbmdsZTEwDAAAAAAAAAAAAD/M/wwAAAAASwAA'
+..'AAAAAAAMAAAAAEsAAAAAAAQADAAAAABHAAAAAAAAAAwAAAAABAAAAAAADwAMAACAP7X/AAAAAAAADAAAAAAyAAAAAAAAAAwAAAAADwAAAAAADwAhAjEwDAAAgD+//wAAAAAAACEHQW5nbGUyMAwAAAAAAAAAAAA/mv8hAjIwIQdBbmdsZTMwDAAAAAAAAAAAAD9o/yECMzAhB0FuZ2xlNDAMAAAAAAAAAAAAPzb/IQ'
+..'I0MCEHQW5nbGU1MAwAAAAAAAAAAAA/BP8hAjUwIQdBbmdsZTYwDAAAAAAAAAAAAD/S/iECNjAhB0FuZ2xlNzAMAAAAAAAAAAAAP6D+IQI3MCEHQW5nbGU4MAwAAAAAAAAAAAA/bv4hAjgwIQdBbmdsZTkwDAAAAAAAAAAAAD88/iECOTAhCEFuZ2xlLTEwDAAAAAAAAAAAAD8wACEDLTEwIQhBbmdsZS0yMAwAAAAA'
+..'AAAAAAA/YgAhAy0yMCEIQW5nbGUtMzAMAAAAAAAAAAAAP5QAIQMtMzAhCEFuZ2xlLTQwDAAAAAAAAAAAAD/GACEDLTQwIQhBbmdsZS01MAwAAAAAAAAAAAA/+AAhAy01MCEIQW5nbGUtNjAMAAAAAAAAAAAAPyoBIQMtNjAhCEFuZ2xlLTcwDAAAAAAAAAAAAD9cASEDLTcwIQhBbmdsZS04MAwAAAAAAAAAAAA/jg'
+..'EhAy04MCEIQW5nbGUtOTAMAAAAAAAAAAAAP8ABIQMtOTAhEENsaXBzRGVzY2VuZGFudHMMAAAAPz7+AAAAPwb/DAAAAACWAAAAAAD0AQwAAAAAAAAAAAA/AAAhB1NwZWVkLTAMAAAAAAAAAAAAALD/DAAAgD8AAAAAAABLAAwAAIA/3f8AAIA//P8MAAAAACMAAAAAAAQADAAAgD/J/wAAgD/2/yEBMAwAAIA/7P8A'
+..'AIA/7f8MAAAAABQAAAAAAAQADAAAgD/s/wAAgD/e/wwAAIA/7P8AAIA/z/8MAACAP+z/AACAP8D/IQREaXNwDAAAAAAAAAAAAD/v/wwAAAAAZAAAAAAAFAAMAACAP+z/AAAAAAAAAwAAAAAAgFZADAAAAAASAAAAAAAUAAYAoAAMAAAAAAAAAAAAAAEADAAAAABRAAAAAAACAAwAAAAAAAAAAIA//f8MAAAAAAIAAA'
+..'CAP/3/DAAAAABRAAAAAAAUAAwAAIA/AAAAAAAAAwAMAACAP/3/AAAAAAAADAAAAAADAAAAgD8AAAwAAAAAAAAAAAA/2P8hCEFpclNwZWVkDAAAAD8sAQAAAD8G/yEKQWx0aXR1ZGUtMAwAAAAAAAAAAIA//P8MAAAAACgAAACAP/b/DAAAAAAAAAAAgD/t/wwAAAAAAAAAAIA/3v8MAAAAAAAAAACAP8//DAAAAAAA'
+..'AAAAgD/A/wwAAIA/nP8AAAA/7/8DAAAAAACAVsAMAACAP6//AAAAAAEADAAAgD+v/wAAgD/9/wwAAIA//v8AAAAAAQAMAACAP6//AAAAAAAADAAAgD+v/wAAAD/Y/yEKR2VhclN0YXR1cwwAAAA/Pv4AAAA//wAMAAAAAJYAAAAAABQAIQlDbGltYlJhdGUMAAAAPywBAAAAP/8AIQZWU0k6IDAhCVN0YWxsV2Fybg'
+..'wAAAA/nP8AAAA/1P4MAAAAAMgAAAAAACgAIQ1TdGFsbCBXYXJuaW5nIQpUYXhpU3RhdHVzDAAAAD8sAQAAAD/e/gwAAAAAlgAAAAAAIwAhB1RheGlpbmchDEVuZ2luZVN0YXR1cwwAAAA/Pv4AAAA/6P4MAAAAP97+AAAAPwb/DAAAAAA8AAAAAAD0AQwAAAAAAAAAAIA/8f8hAjAlDAAAAD/2/wAAAAAUAAwAAAAA'
+..'FAAAAIA/2P8MAAAAP5z/AAAAPwb/DAAAAD/A/gAAAABkAAwAAAAALAEAAAAAqgAMAAAAPxQAAAAAAGQADAAAAD+WAAAAAAAyAAwAAAA/Bv8AAAAAMgAEtQI5AzoDCsoChUMgrZHC5SNhwwrNzEw9kLVSPc3MTD0hCEJvZHlHeXJvIQlEaXJlY3Rpb24hCU1heFRvcnF1ZQoAAAAAAAAAAAAAAAAhDEJvZHlWZWxvY2'
+..'l0eSEGVGhydXN0IQhNYXhGb3JjZSEBUCEIVmVsb2NpdHkhBVNvdW5kIQZMb29wZWQhElJvbGxPZmZNaW5EaXN0YW5jZQMAAAAAAABJQCEHU291bmRJZCEWcmJ4YXNzZXRpZDovLzMzNjQyMTE1OSEGVm9sdW1lIQRGaXJlIRZyYnhhc3NldGlkOi8vNTcxOTExODU0IQVGbGFyZSEWcmJ4YXNzZXRpZDovLzE3Mzk2'
+..'NjU0NSEGTG9ja09uIRZyYnhhc3NldGlkOi8vMTAzODc5NzczIQdMb2NraW5nIRZyYnhhc3NldGlkOi8vMTAzODI1OTMyIQdNaXNzaWxlIRZyYnhhc3NldGlkOi8vMTc5NTM2MDU2IQZSb2NrZXQhFnJieGFzc2V0aWQ6Ly8xMzI0NTYxODcEZAM5AzoDBNUCOQM6AwqCDIVDShWawhbQV8MKesZHQQGWE0ECdOJBIR'
+..'dyYnhhc3NldGlkOi8vMTY1Nzg2MDI0Mwph7YxCAABIQuA5I0ME2gI5AzoDCkYMhUMp/5rCRV1jwwqa4+BA68JrQOHPZ0AhF3JieGFzc2V0aWQ6Ly8xNjU3ODcwNTIxCrheJUMAAEhCiDCoQgTfAjkDOgMKMg2FQ3u6mMIWJkvDCokirT/wVltA+YkfQSEXcmJ4YXNzZXRpZDovLzE2NTc4ODQ5MzkKUA4IQsvVqUKg'
+..'23ZDIQlHZW5lcmF0b3IEZQNLAzoDIQJHMQToAksDZgMKAAC0wgAAAAAAAAAAChe+g0POt5DC5Mp1wwrwozA/8KMwP/CjMD8hCVNvbWV0aGluZygEAAAAAP8tAy0O8D6qVX+GSQ0/qlV/AACAP1UA/xFmZuY+ZmbmPiENTGlnaHRFbWlzc2lvbiEMTG9ja2VkVG9QYXJ0AwAAAAAAQI9AEQAAekQAAHpEEQBQw0cAUM'
+..'NHKQIAAAAAHcexPwAAAAAAAIA/AACgPgAAAAARAADwQQAA8EEhFnJieGFzc2V0aWQ6Ly8yNDIxMDIxNDchDVBsYXliYWNrU3BlZWQDAAAAIFyP+j8hFnJieGFzc2V0aWQ6Ly8yMDE5NzgyNTchAkcyBPoCSwNmAwrvcoZDzreQwuTKdcMhBldlbGRlZCEGT3JpZ2luIQdFamVjdGVkBGcDOQNoAyEMTWlzc2lsZVNw'
+..'YXduBAIDOQNoAwoAALTCAAA0QwAAAAAKROl6QzCrlsILjV3DCgAAtMIAAAAAAAA0QwpEL6A/Ri8gQEMvoD8hC1JvY2tldFNwYXduBAcDOQM6AwoGFYJD4UmewggdW8MKRC+gP0YvoD9DLyBAIQpNYWNoaW5lR3VuBAsDOQM6AwoGZoFDrsaNwiKeT8MhFnJieGFzc2V0aWQ6Ly8xMzE1NDA1MTAhB1JlbW92ZXIhCU'
+..'JvbWJTcGF3bgeNAAQSAzkDaAMGJ0YtCkYRgkMsKJ/CjiVqwwQUAzkDaAMKjhKIQywon8KNJWrDBBYDOQNoAwrWh4xDL6uWwgmNXcMEGAM5AzoDCjZIiEPhSZ7CCB1bwyEKRmxhcmVTcGF3bgfxAwQeAzkDaQMG//8ACgAAqsIAAAAAAAA0wwq6BYVDIp6SwpXTbsMKAACqwgAAAAAAADRDCuX0kD/o9JA/3vSQPyEH'
+..'Q3Jhc2hlZCEFQ3Jhc2ghCkZFIEVuYWJsZXIhCUZFIFVwZGF0ZSEMRW50ZXJPblNwYXduIQZCdXR0b24EagNmAzoDBwcEBCwDZgM6AwZiJdEKAAAAAAAAtEIAAAAAChLpikN9GKHC8whIwwpELyBA0iWAPkMvIEAhDEN5bGluZGVyTWVzaAwAAKBACgAAAKBACgAhC1N0dWRzT2Zmc2V0CgAAAAAAAIBAAAAAACEEQm'
+..'FzZQcaAAQ2A2YDOgMGGyo1ChLpikO3uKHC8whIwwrnRnBAujjAPuVGcEAKMg2FQzyoi8L0R1zDCgAAgL8BAGa0/dYjtQoGAGa0BACAPyYAMLMKMg2FQyX9h8L0R1zDCjINhUMl/YfCYahbwwr+/3+///9ltPzWI7UKAACAvwLAW7QLrvW0CgDAW7QAAIA/DABwswoqDYVDanCKwkZiSsMKFACAvyWAYLQW1xC1CirA'
+..'arQYAIA/QwAwswoUAIC/JEAttAihcDQKLIA3tBgAgD+u//ezCg5AGL/XY9i+doRmPgoAAIA/AAAAAAAAAAAKAAAAAAAAgD8AAAAACgCyGr8AX4w9gDULvwoAAIA/2v9MM1L/TLUKyv9MswAAgD+L/58zCgAAgD8BAGY0/dYjNQppR+I0BwAAP96zXb8KsC+FQ10ImcLiu2PDCnA9jbRrJ38/GWCmPQpozW60Gfp/P8'
+..'yTXDwKu9qEQ8RCksKJMl7DChdCSj415no/eearvArzkHq/1qxIPpefdb0KzC5vP+Mxtj595au8Ck6Ctr6xsG4/Op91vQqLEng/5Z58viFZL7wKw3B7Poifdz+I1IK9ChwMhUMaKZXCsRpjwwqulAa4bYW4O/7+fz8K0j9BtP7+fz9uhbi7CgAAgD8GwBg0eygOtQohbeGzZWB/P9Xbjj0K4RWFQ9xYkMJdwYHDCjpB'
+..'szmr/38/H2BZOwoqYAm7+lNZu4f/fz8KAACAP3//ZTQMLzq4CqjbZrQEAIA/ulaXtwoAAIC/AAAAAAAAAAAKggyFQ8uwmMJ+Jl7DCg1u5LNWNXw/dJcvvgqCDIVDShWawo4QVsMKMHkQwkBoo8JQao7BCgLXIzUBADCzBACAvwo8/oRDbXeWwjHnXsMKAtcjtQEAMDMEAIA/Cnc0HrXVfrK9pQZ/PwoS6YpDn3ihwv'
+..'MISMPYAQEAAAACAAIAAwAEAAUAAQABAAIAAgAGAAQABQAHAAIAAQACAAgACQADAAEAAgAKAAsABAADAAwADQAOAA8AEAARABIABQAHABMAFAAOABUAFgAUABcAGAAZABoAGwAcAB0AHgABAAIAAgACAB8ABAAFAAcABwABAAIAIAAhAAcAAQACACIAIwAJAAEAAgAkACUACgACAAIAJgAnABEAJQAKAAIAAgAoACcA'
+..'KQAlAAoAAgACACoAJwArACUACgACAAIALAAnACkAJQAKAAIAAgAtACcALgAvAAkAAgACADAAJwAxAC8AEAACAAIAKAAnADEALwAQAAIAAgAmACcAMQAvABAAAgACACwAJwAxAC8AEAACAAIAKgAnADEALwAQAAIAAgAtACcAMQAyAAkAAgACADMAJwA0ACMACQABAAIANQAyABcAAgACADYAJwA3ADIAFwACAAIAOA'
+..'AnADkALwAJAAIAAgA6ACcAMQAvAAkAAQACADsAPAAbAAEAAgA9AC8AGwABAAIAPgAvAAkAAgACAD8AJwAxADwAHgACAAIAQAAnAEEALwAJAAIAAgBCACcAMQAlACAAAQACAEMAJQAgAAIAAgBEACcARQAjAAkAAQACAEYAMgAjAAIAAgBHACcASAAyACMAAgACAEkAJwBKADIAIwACAAIASwAnAEwAMgAjAAIAAgBN'
+..'ACcATgAyACMAAgACAE8AJwBQADIAIwACAAIAUQAnAFIAMgAJAAIAAgBTACcAVAAlAAkAAgACAFUAJwBWACUACQACAAIAVwAnAFgABwAJAAIAAgBZAFoAMQAvAAkAAgACAFsAJwAxAC8ACQACAAIAXAAnADEAPAAvAAIAAgBdACcAXgA8AC8AAgACAF8AJwBgADwACQACAAIAYQAnAGIAPAAJAAIAAgBjACcAZAA8AA'
+..'kAAgACAGUAJwBmAC8ACQACAAIAZwAnADEAJQAJAAIAAgBoACcAaQAjAAkAAQACAGoAMgA3AAIAAgBrACcAbAAyADcAAgACAG0AJwBuADIANwACAAIAbwAnAHAAMgA3AAIAAgBxACcAcgAyADcAAgACAHMAJwB0AC8ABwABAAIAdQABAAcAAgACAHYABAB3AAEAPgABAAQAeAB5AD8ACwB6ADEAewB8AH0AfgB/AIAA'
+..'gQCCAAwAgwCEAIUADgCGAIcAiACJAIoAiwCMAHkAPwAKAHoAMQB7AI0AfwCAAIEAggAMAI4AhACFAA4AjwCHAJAAiQCRAIsAjAB5AD8ACgB6ADEAewCSAH8AgACBAIIADACTAIQAhQAOAJQAhwCVAIkAlgCLAIwAeQA/AAoAegAxAHsAlwB/AIAAgQCCAAwAmACEAIUADgCZAIcAmgCJAJsAiwCMAHkAPwAKAHoAMQ'
+..'B7AJwAfwCAAIEAggAMAJ0AhACFAA4AngCHAJ8AiQCgAIsAjAB5AD8ACgB6ADEAewChAH8AgACBAIIADACiAIQAhQAOAKMAhwCkAIkApQCLAIwAeQA/AAkAewCmAH8AgACBAIIADACnAIQAhQAOAKgAhwCpAIkAqgCLAIwAeQA/AAkAewCrAH8AgACBAIIADACsAIQAhQAOAK0AhwCuAIkArwCLAIwAeQA/AAkAewCw'
+..'AH8AgACBAIIADACxAIQAhQAOALIAhwCzAIkAtACLAIwAeQA/AAkAewC1AH8AgACBAIIADAC2AIQAhQAOALcAhwC4AIkAuQCLAIwAeQA/AA0AAgC6ALsAvAB7AL0AfQB+AL4AvwB/AMAAgQCCAAwAwQCEAIUADgDCAMMAxACHAMUAiQDGAAEAPwABAAQAxwB5AEsACgB7AMgAfQB+AH8AgACBAIIADADJAIQAhQAOAM'
+..'oAhwDLAIkAzACLAM0AeQBLAAoAewDOAH0AfgB/AIAAgQCCAAwAzwCEAIUADgDQAIcA0QCJANIAiwDNAHkASwAKAHsA0wB9AH4AfwCAAIEAggAMANQAhACFAA4A1QCHANYAiQDXAIsAzQB5AEsADAC7ANgAewDZAH0AfgC+ANoAfwDbAIEAggAMANwAhACFAA4A3QCHAN4AiQDfAIsA4AB5AEsADAC7ANgAewDhAH0A'
+..'fgC+ANoAfwDbAIEAggAMAOIAhACFAA4A3QCHAN4AiQDfAIsA4AB5AEsADQC7AOMAewDkAH0AfgC+AOUAfwDAAIEA5gAMAOcA6AApAIQAhQAOAOkAwwDqAIcA6wCJAOwA7QBRAAMAAgDuAO8A8ADxAPIAeQBLAA0AuwDjAHsA9QB9AH4AvgDlAH8AwACBAPYADAD3AOgAKQCEAPYADgDpAMMA6gCHAOsAiQDsAAEAPw'
+..'ACAAIA+AAEAPkAeQBUAAkAewD6AH8AgACBAPsADAD8AIQA/QAOAP4AhwD/AIkAAAGLAAEBeQBUAAkAewACAX8AgACBAPsADAADAYQA/QAOAP4AhwD/AIkAAAGLAAEBeQBUAAkAewAEAX8AgACBAAUBDAAGAYQABwEOAP4AhwD/AIkAAAGLAAEBeQBUAAkAewAIAX8AgACBAAUBDAAJAYQABwEOAP4AhwD/AIkAAAGL'
+..'AAEBAQA/AAIAAgAKAQQACwF5AFkACwACAAwBegAxAHsADQF/AIAAgQAOAQwADwGEABABDgARAYcAEgGJABMBiwAUAXkAWQALAAIADAF6ADEAewAVAX8AgACBABYBDAAXAYQAGAEOABEBhwASAYkAEwGLABQBeQBZAAsAAgAMAXoAMQB7ABkBfwCAAIEADgEMABoBhAAQAQ4AEQGHABIBiQATAYsAFAF5AFkACwACAA'
+..'wBegAxAHsAGwF/AIAAgQAcAQwAHQGEAB4BDgARAYcAEgGJABMBiwAUAQEAPwACAAIAHwEEACABeQBeAAoAegAxALsAIQF7ACIBvgAjAX8AgAAMACQBDgAlAYcAJgGJACcBiwAoAXkAXgAKAHoAMQC7ACEBewApAb4AIwF/AIAADAAqAQ4AJQGHACYBiQAnAYsAKAErAT4ADwACACwBegAxAC0BHgC7AC4BewAvAX0A'
+..'fgC+ADABfwAxAYEAMgEMADMBhAA0AQ4ANQE2AR4AwwAUADcBHgA4AWEAAgA5AToBOwE8AT0BYQADAAIAPgE/ATEADgBAAUEBYwAHAAIAQgE/ATEAQwFEARMAFAAMAEUBDgBGAUcBSAEHAGEAAAArAT4ACQACACwBegAxAHsASQFKAUsBgQBMAQwATQGEAEwBDgBOAcMAFAA4AWYAAwA5AToBvgBPATsBPAE9AWYAAw'
+..'ACAD4BPwExAA4AQAFBAWgACAACAEIBPwExAEMBRAETABQADABFAQ4ARgFHAUgBUAFPAQcAZgAAACsBPgAJAAIALAF6ADEAewBRAUoBSwGBAEwBDABSAYQATAEOAFMBwwAUADgBawADADkBOgG+AE8BOwE8AQcAawAAAD0BawADAAIAPgE/ATEADgBAAUEBbgAIAAIAQgE/ATEAQwFEARMAFAAMAEUBDgBGAUcBSAFQ'
+..'AU8BKwE+AAkAAgAsAXoAMQB7AFQBSgFLAYEATAEMAFUBhABMAQ4AUwHDABQAOAFwAAMAOQE6Ab4AVgE7ATwBBwBwAAAAPQFwAAMAAgA+AT8BMQAOAEABQQFzAAgAAgBCAT8BMQBDAUQBEwAUAAwARQEOAEYBRwFIAVABVgEBAD4AAgACAFcBBABYASsBdQALAHoAMQAtAR4AewBZAX0AfgB/ADEBgQBaAQwAWwGEAF'
+..'wBDgBdATYBHgDDABQAXgF2AAoAAgBfAWABfgBhAWIBYwFkAWUBZgEOAGcBaAFpAWoBawFsAW0BwwBuAQcAdgAAACsBdQALAHoAMQAtAR4AewBvAX0AfgB/ADEBgQBaAQwAcAGEAFwBDgBdATYBHgDDABQAXgF5AAoAAgBfAWABfgBhAWIBYwFkAWUBZgEOAGcBaAFpAWoBawFsAW0BwwBuAQcAeQAAACsBPgANAHEB'
+..'cgEtAXIBuwBzAXsAdAG+AHUBdgFyAXcBcgF/ADEBDAB4AXkBcgEOAHoBNgFyAcMAFAB7AXwABAACAHwBewB9AYEAfgEMAH8BewF8AAQAAgCAAXsAgQGBAH4BDACCAYMBfAABAIQBFAAHAHwAAAArAT4ADQBxAXIBLQFyAbsAcwF7AIUBvgB1AXYBcgF3AXIBfwAxAQwAhgF5AXIBDgB6ATYBcgHDABQAewGBAAQAAg'
+..'B8AXsAfQGBAH4BDAB/AXsBgQAEAAIAgAF7AIEBgQB+AQwAggGDAYEAAQCEARQABwCBAAAAAQAHAAIAAgCHAQQAiAGJAYYAEAB6ADEAcQGKAS0BigG7AIsBewCMAX0AfgC+AI0BdgGKAXcBigGBAI4BDACPAXkBigGEAJABDgCRATYBigHDABQAkgGHAAAABwCHAAEAAgCTAZQBhwABAAIAHwAvAIoAAQACAJUBIwCK'
+..'AAEAAgCWASMAigABAAIAlwEHAI0AAgACAJgBWgAxAAcAjQACAAIAmQFaADEALwCKAAEAAgCaAZsBigACAAIAnAFaADEAnQGKAAEAAgCeAQsAkgAFAAIAnwEMAKABDgChAaIBfgAQABEAEgCTAAgAAgCjARMAFACkAR4ADgClARYApgEXAAIAGQAaABsApwESAJQABwACAKgBQwGpAaoBqQGkAR4ADACrAQ4ArAEXAK'
+..'0BEgCTAAkAAgBoARMAFACqAakBDACuAQ4ArwEWAKYBFwCwARkAGgAbALEBEgCTAAkAAgCyARMAFACkAR4ADACzAQ4ArwEWAKYBFwC0ARkAGgAbALEBEgCTAAkAAgC1ARMAFACkAR4ADAC2AQ4ArwEWAKYBFwC3ARkAGgAbALEBEgCTAAkAAgBNABMAFACkAR4ADAC4AQ4ArwEWAKYBFwC5ARkAGgAbALEBugGTAAgA'
+..'AgC7AQwAvAEOAL0BEAAUABYApgEXAL4BGQAaABsAsQELAJMABAACAE8ADAC/AQ4AwAEQAGAAEgCbAAcAAgAXABMAFAAOABUAFgCmARcAwQEZABoAGwDCAQsAkwAEAAIAwwETABQADADEAQ4ApQESAJ0ABwACABcAEwAUAA4AxQEWAKYBFwDGARkAGgAbALEBCwCdAAQAAgDHAUMBGgAMAMgBDgDJAQsAnwAEAAIAyg'
+..'FDAcsBpAEeAA4AzAELAJ8ABAACAM0BQwGpAaoBqQEOAMwBEgCdAAgAAgDOARMAFAAMAM8BDgDQARYApgEXANEBGQAaABsAsQELAJMABQACANIBDADTAQ4A1AGiAX4AEABgABIAowAIAAIAFwATABQADgAVABYApgEXANUBGQAaABsAwgHWATEACwCTAAUAAgDXAQwA2AEOANQBogF+ABAALgASAKUABwACABcAEwAU'
+..'AA4AFQAWAKYBFwDZARkAGgAbAMIBugGTAAgAAgDaAQwA2wEOAL0BEAAUABYApgEXANwBGQAaABsAsQELAJMABAACAN0BDADeAQ4A3wEQABEAEgCoAAoAAgDgARMAFAAMAOEBDgDiARYApgEXAOMBGQAaABsAsQEdAB4A5AEeABIAqQAKAAIA5QETABQADADmAQ4AFQAWAIoBFwDnARkAGgAbALEBHQAeAOQBHgASAK'
+..'gACgACAOgBEwAUAAwA2wEOAOIBFgCmARcA6QEZABoAGwCxAR0AHgDkAR4AEgCrAAoAAgDlARMAFAAMAOYBDgAVABYAigEXAOcBGQAaABsAsQEdAB4A5AEeABIAqAAKAAIA6gETABQADADEAQ4A4gEWAKYBFwDrARkAGgAbALEBHQAeAOQBHgASAK0ACgACAOUBEwAUAAwA5gEOABUAFgCKARcA5wEZABoAGwCxAR0A'
+..'HgDkAR4AEgCoAAoAAgDxABMAFAAMAOwBDgDiARYApgEXAO0BGQAaABsAsQEdAB4A5AEeABIArwAKAAIA5QETABQADADmAQ4AFQAWAIoBFwDnARkAGgAbALEBHQAeAOQBHgASAKgACgACAO4BEwAUAAwA7wEOAOIBFgCmARcA8AEZABoAGwCxAR0AHgDkAR4AEgCxAAoAAgDlARMAFAAMAOYBDgAVABYAigEXAOcBGQ'
+..'AaABsAsQEdAB4A5AEeABIAqAAIAAIAowETABQADgDxARYApgEXANwBGQBPARsApwEdAB4AEgCzAAgAAgCoAUMB8gGqAakBpAEeAAwA8wEOAPQBFwCtARkAqQELAJMABQACAPUBDAC/AQ4AwAGiAX4AEABgABIAtQAHAAIAFwATABQADgAVABYApgEXAPYBGQAaABsAwgELAJMABAACAPcBDAD4AQ4A+QEQABEAEgC3'
+..'AAoAAgDgARMAFAAMAOEBDgDiARYApgEXAPoBGQAaABsAsQEdAB4A5AEeABIAuAAKAAIA5QETABQADADmAQ4AFQAWAIoBFwDnARkAGgAbALEBHQAeAOQBHgASALcACgACAOgBEwAUAAwA2wEOAOIBFgCmARcA+wEZABoAGwCxAR0AHgDkAR4AEgC6AAoAAgDlARMAFAAMAOYBDgAVABYAigEXAOcBGQAaABsAsQEdAB'
+..'4A5AEeABIAtwAKAAIA6gETABQADADEAQ4A4gEWAKYBFwD8ARkAGgAbALEBHQAeAOQBHgASALwACgACAOUBEwAUAAwA5gEOABUAFgCKARcA5wEZABoAGwCxAR0AHgDkAR4AEgC3AAoAAgDxABMAFAAMAOwBDgDiARYApgEXAE8AGQAaABsAsQEdAB4A5AEeABIAvgAKAAIA5QETABQADADmAQ4AFQAWAIoBFwDnARkA'
+..'GgAbALEBHQAeAOQBHgASALcACAACAKMBEwAUAA4A8QEWAKYBFwC+ARkATwEbAKcBHQAeABIAwAAIAAIAqAFDAfIBqgGpAaQBHgAMAPMBDgD9ARcArQEZAKkBEgC3AAoAAgDuARMAFAAMAO8BDgDiARYApgEXAP4BGQAaABsAsQEdAB4A5AEeABIAwgAKAAIA5QETABQADADmAQ4AFQAWAIoBFwDnARkAGgAbALEBHQ'
+..'AeAOQBHgASALcACgACAP8BEwAUAAwAvwEOAOIBFgCmARcAUQAZABoAGwCxAR0AHgDkAR4AEgDEAAoAAgDlARMAFAAMAOYBDgAVABYAigEXAOcBGQAaABsAsQEdAB4A5AEeABIAtwAKAAIAAAITABQADAABAg4A4gEWAKYBFwACAhkAGgAbALEBHQAeAOQBHgASAMYACgACAOUBEwAUAAwA5gEOABUAFgCKARcA5wEZ'
+..'ABoAGwCxAR0AHgDkAR4AEgCTAAkAAgADAhMAFACkAR4ADAAEAg4ABQIWAKYBFwAGAhkAGgAbAKcBCwCTAAUAAgAHAkMBGgATABQADAAIAg4ACQILAJIABQACAAoCDAALAg4ADAKiAX4AEAARABIAygAMAAIADQITABQApAEeAAwA7AEOAA4CFgCmARcADwIZAE8BEAIxABsApwHWATEA5AEeABIAygAMAAIAEQITAB'
+..'QApAEeAAwAxAEOAA4CFgCmARcAEgIZAE8BEAIxABsApwHWATEA5AEeABIAygAMAAIAaAETABQApAEeAAwA7wEOAA4CFgCmARcAEwIZAE8BEAIxABsApwHWATEA5AEeABIAygAMAAIAsgETABQApAEeAAwAAQIOAA4CFgCmARcAFAIZAE8BEAIxABsApwHWATEA5AEeAAsAkgAFAAIAFQJDARoAEwAUAA4AFQCiAX4A'
+..'CwDPAAYAAgAWAkMBGgATABQADAAXAg4AGAIZAooBEgDQAAkAAgCoAUMBGgKkAR4ADAAbAg4AHAIZAooBFgCmARcArQEbALEBQQHQAAcAAgAdAkMBGgATABQADAAeAg4AHwIZAooBRwEgAhIA0AAJAAIAqAFDARoCpAEeAAwAIQIOABwCGQKKARYApgEXAK0BGwCxAQsAzwAEAAIAIgJDARoApAEeAAwARgELANQABQ'
+..'ACACMCQwEaABMAFAAMACQCDgAlAgsA1QAFAAIAJgJDARoAEwAUAAwAGwIOACcCEgDWAAgAAgCoAUMBGgKkAR4ADgAoAhkCigEWAKYBFwCtARsAsQESANYACQACAKgBQwEaAqQBHgAMACkCDgAoAhkCigEWAKYBFwCtARsAsQELANUABQACACoCQwEaABMAFAAMACsCDgClARIA2QAJAAIAqAFDARoCpAEeAAwALAIO'
+..'AC0CGQKKARYApgEXAK0BGwCxARIA2QAJAAIAqAFDARoCpAEeAAwAKQIOAC0CGQKKARYApgEXAK0BGwCxARIA2QAJAAIAqAFDARoCpAEeAAwALgIOAC8CGQKKARYApgEXAK0BGwCxARIA2QAJAAIAqAFDARoCpAEeAAwAMAIOAC8CGQKKARYApgEXAK0BGwCxARIA2QALAAIAFwBDARoAEwAUAKQBHgAMADECDgAyAh'
+..'kCigEWAKYBFwAzAhkAGgIbALEBEgDZAAsAAgAXAEMBGgATABQApAEeAAwANAIOADICGQKKARYApgEXADMCGQAaAhsAsQELANUABQACADUCQwEaABMAFAAMADYCDgClARIA4AAJAAIAqAFDARoCpAEeAAwALAIOAC0CGQKKARYApgEXAK0BGwCxARIA4AAJAAIAqAFDARoCpAEeAAwAKQIOAC0CGQKKARYApgEXAK0B'
+..'GwCxARIA4AAJAAIAqAFDARoCpAEeAAwALgIOAC8CGQKKARYApgEXAK0BGwCxARIA4AAJAAIAqAFDARoCpAEeAAwAMAIOAC8CGQKKARYApgEXAK0BGwCxARIA4AALAAIAFwBDARoAEwAUAKQBHgAMADECDgAyAhkCigEWAKYBFwA3AhkAGgIbALEBEgDgAAsAAgAXAEMBGgATABQApAEeAAwANAIOADICGQKKARYApg'
+..'EXADcCGQAaAhsAsQELANUABQACADgCQwEaABMAFAAMADkCDgClARIA5wAJAAIAqAFDARoCpAEeAAwALAIOAC0CGQKKARYApgEXAK0BGwCxARIA5wAJAAIAqAFDARoCpAEeAAwAKQIOAC0CGQKKARYApgEXAK0BGwCxARIA5wAJAAIAqAFDARoCpAEeAAwALgIOAC8CGQKKARYApgEXAK0BGwCxARIA5wAJAAIAqAFD'
+..'ARoCpAEeAAwAMAIOAC8CGQKKARYApgEXAK0BGwCxARIA5wALAAIAFwBDARoAEwAUAKQBHgAMADECDgAyAhkCigEWAKYBFwA6AhkAGgIbALEBEgDnAAsAAgAXAEMBGgATABQApAEeAAwANAIOADICGQKKARYApgEXADoCGQAaAhsAsQELANUABQACADsCQwEaABMAFAAMADwCDgClARIA7gAJAAIAqAFDARoCpAEeAA'
+..'wALAIOAC0CGQKKARYApgEXAK0BGwCxARIA7gAJAAIAqAFDARoCpAEeAAwAKQIOAC0CGQKKARYApgEXAK0BGwCxARIA7gAJAAIAqAFDARoCpAEeAAwALgIOAC8CGQKKARYApgEXAK0BGwCxARIA7gAJAAIAqAFDARoCpAEeAAwAMAIOAC8CGQKKARYApgEXAK0BGwCxARIA7gALAAIAFwBDARoAEwAUAKQBHgAMADEC'
+..'DgAyAhkCigEWAKYBFwA9AhkAGgIbALEBEgDuAAsAAgAXAEMBGgATABQApAEeAAwANAIOADICGQKKARYApgEXAD0CGQAaAhsAsQELANUABQACAD4CQwEaABMAFAAMAD8CDgClARIA9QAJAAIAqAFDARoCpAEeAAwALAIOAC0CGQKKARYApgEXAK0BGwCxARIA9QAJAAIAqAFDARoCpAEeAAwAKQIOAC0CGQKKARYApg'
+..'EXAK0BGwCxARIA9QAJAAIAqAFDARoCpAEeAAwALgIOAC8CGQKKARYApgEXAK0BGwCxARIA9QAJAAIAqAFDARoCpAEeAAwAMAIOAC8CGQKKARYApgEXAK0BGwCxARIA9QALAAIAFwBDARoAEwAUAKQBHgAMADECDgAyAhkCigEWAKYBFwBAAhkAGgIbALEBEgD1AAsAAgAXAEMBGgATABQApAEeAAwANAIOADICGQKK'
+..'ARYApgEXAEACGQAaAhsAsQELANUABQACAEECQwEaABMAFAAMAEICDgClARIA/AAJAAIAqAFDARoCpAEeAAwALAIOAC0CGQKKARYApgEXAK0BGwCxARIA/AAJAAIAqAFDARoCpAEeAAwAKQIOAC0CGQKKARYApgEXAK0BGwCxARIA/AAJAAIAqAFDARoCpAEeAAwALgIOAC8CGQKKARYApgEXAK0BGwCxARIA/AAJAA'
+..'IAqAFDARoCpAEeAAwAMAIOAC8CGQKKARYApgEXAK0BGwCxARIA/AALAAIAFwBDARoAEwAUAKQBHgAMADECDgAyAhkCigEWAKYBFwBDAhkAGgIbALEBEgD8AAsAAgAXAEMBGgATABQApAEeAAwANAIOADICGQKKARYApgEXAEMCGQAaAhsAsQELANUABQACAEQCQwEaABMAFAAMAEUCDgClARIAAwEJAAIAqAFDARoC'
+..'pAEeAAwALAIOAC0CGQKKARYApgEXAK0BGwCxARIAAwEJAAIAqAFDARoCpAEeAAwAKQIOAC0CGQKKARYApgEXAK0BGwCxARIAAwEJAAIAqAFDARoCpAEeAAwALgIOAC8CGQKKARYApgEXAK0BGwCxARIAAwEJAAIAqAFDARoCpAEeAAwAMAIOAC8CGQKKARYApgEXAK0BGwCxARIAAwELAAIAFwBDARoAEwAUAKQBHg'
+..'AMADECDgAyAhkCigEWAKYBFwBGAhkAGgIbALEBEgADAQsAAgAXAEMBGgATABQApAEeAAwANAIOADICGQKKARYApgEXAEYCGQAaAhsAsQELANUABQACAEcCQwEaABMAFAAMAEgCDgClARIACgEJAAIAqAFDARoCpAEeAAwALAIOAC0CGQKKARYApgEXAK0BGwCxARIACgEJAAIAqAFDARoCpAEeAAwAKQIOAC0CGQKK'
+..'ARYApgEXAK0BGwCxARIACgEJAAIAqAFDARoCpAEeAAwALgIOAC8CGQKKARYApgEXAK0BGwCxARIACgEJAAIAqAFDARoCpAEeAAwAMAIOAC8CGQKKARYApgEXAK0BGwCxARIACgELAAIAFwBDARoAEwAUAKQBHgAMADECDgAyAhkCigEWAKYBFwBJAhkAGgIbALEBEgAKAQsAAgAXAEMBGgATABQApAEeAAwANAIOAD'
+..'ICGQKKARYApgEXAEkCGQAaAhsAsQELANUABQACAEoCQwEaABMAFAAMAEsCDgClARIAEQEJAAIAqAFDARoCpAEeAAwALAIOAC0CGQKKARYApgEXAK0BGwCxARIAEQEJAAIAqAFDARoCpAEeAAwAKQIOAC0CGQKKARYApgEXAK0BGwCxARIAEQEJAAIAqAFDARoCpAEeAAwALgIOAC8CGQKKARYApgEXAK0BGwCxARIA'
+..'EQEJAAIAqAFDARoCpAEeAAwAMAIOAC8CGQKKARYApgEXAK0BGwCxARIAEQELAAIAFwBDARoAEwAUAKQBHgAMADECDgAyAhkCigEWAKYBFwBMAhkAGgIbALEBEgARAQsAAgAXAEMBGgATABQApAEeAAwANAIOADICGQKKARYApgEXAEwCGQAaAhsAsQELANUABQACAE0CQwEaABMAFAAMAE4CDgClARIAGAEJAAIAqA'
+..'FDARoCpAEeAAwALAIOAC0CGQKKARYApgEXAK0BGwCxARIAGAEJAAIAqAFDARoCpAEeAAwAKQIOAC0CGQKKARYApgEXAK0BGwCxARIAGAEJAAIAqAFDARoCpAEeAAwALgIOAC8CGQKKARYApgEXAK0BGwCxARIAGAEJAAIAqAFDARoCpAEeAAwAMAIOAC8CGQKKARYApgEXAK0BGwCxARIAGAELAAIAFwBDARoAEwAU'
+..'AKQBHgAMADECDgAyAhkCigEWAKYBFwBPAhkAGgIbALEBEgAYAQsAAgAXAEMBGgATABQApAEeAAwANAIOADICGQKKARYApgEXAE8CGQAaAhsAsQELANUABQACAFACQwEaABMAFAAMAFECDgClARIAHwEJAAIAqAFDARoCpAEeAAwALAIOAC0CGQKKARYApgEXAK0BGwCxARIAHwEJAAIAqAFDARoCpAEeAAwAKQIOAC'
+..'0CGQKKARYApgEXAK0BGwCxARIAHwEJAAIAqAFDARoCpAEeAAwALgIOAC8CGQKKARYApgEXAK0BGwCxARIAHwEJAAIAqAFDARoCpAEeAAwAMAIOAC8CGQKKARYApgEXAK0BGwCxARIAHwELAAIAFwBDARoAEwAUAKQBHgAMADECDgAyAhkCigEWAKYBFwBSAhkAGgIbALEBEgAfAQsAAgAXAEMBGgATABQApAEeAAwA'
+..'NAIOADICGQKKARYApgEXAFICGQAaAhsAsQELANUABQACAFMCQwEaABMAFAAMAFQCDgClARIAJgEJAAIAqAFDARoCpAEeAAwALAIOAC0CGQKKARYApgEXAK0BGwCxARIAJgEJAAIAqAFDARoCpAEeAAwAKQIOAC0CGQKKARYApgEXAK0BGwCxARIAJgEJAAIAqAFDARoCpAEeAAwALgIOAC8CGQKKARYApgEXAK0BGw'
+..'CxARIAJgEJAAIAqAFDARoCpAEeAAwAMAIOAC8CGQKKARYApgEXAK0BGwCxARIAJgELAAIAFwBDARoAEwAUAKQBHgAMADECDgAyAhkCigEWAKYBFwBVAhkAGgIbALEBEgAmAQsAAgAXAEMBGgATABQApAEeAAwANAIOADICGQKKARYApgEXAFUCGQAaAhsAsQELANUABQACAFYCQwEaABMAFAAMAFcCDgClARIALQEJ'
+..'AAIAqAFDARoCpAEeAAwALAIOAC0CGQKKARYApgEXAK0BGwCxARIALQEJAAIAqAFDARoCpAEeAAwAKQIOAC0CGQKKARYApgEXAK0BGwCxARIALQEJAAIAqAFDARoCpAEeAAwALgIOAC8CGQKKARYApgEXAK0BGwCxARIALQEJAAIAqAFDARoCpAEeAAwAMAIOAC8CGQKKARYApgEXAK0BGwCxARIALQELAAIAFwBDAR'
+..'oAEwAUAKQBHgAMADECDgAyAhkCigEWAKYBFwBYAhkAGgIbALEBEgAtAQsAAgAXAEMBGgATABQApAEeAAwANAIOADICGQKKARYApgEXAFgCGQAaAhsAsQELANUABQACAFkCQwEaABMAFAAMAFoCDgClARIANAEJAAIAqAFDARoCpAEeAAwALAIOAC0CGQKKARYApgEXAK0BGwCxARIANAEJAAIAqAFDARoCpAEeAAwA'
+..'KQIOAC0CGQKKARYApgEXAK0BGwCxARIANAEJAAIAqAFDARoCpAEeAAwALgIOAC8CGQKKARYApgEXAK0BGwCxARIANAEJAAIAqAFDARoCpAEeAAwAMAIOAC8CGQKKARYApgEXAK0BGwCxARIANAELAAIAFwBDARoAEwAUAKQBHgAMADECDgAyAhkCigEWAKYBFwBbAhkAGgIbALEBEgA0AQsAAgAXAEMBGgATABQApA'
+..'EeAAwANAIOADICGQKKARYApgEXAFsCGQAaAhsAsQELANUABQACAFwCQwEaABMAFAAMAF0CDgClARIAOwEJAAIAqAFDARoCpAEeAAwALAIOAC0CGQKKARYApgEXAK0BGwCxARIAOwEJAAIAqAFDARoCpAEeAAwAKQIOAC0CGQKKARYApgEXAK0BGwCxARIAOwEJAAIAqAFDARoCpAEeAAwALgIOAC8CGQKKARYApgEX'
+..'AK0BGwCxARIAOwEJAAIAqAFDARoCpAEeAAwAMAIOAC8CGQKKARYApgEXAK0BGwCxARIAOwELAAIAFwBDARoAEwAUAKQBHgAMADECDgAyAhkCigEWAKYBFwBeAhkAGgIbALEBEgA7AQsAAgAXAEMBGgATABQApAEeAAwANAIOADICGQKKARYApgEXAF4CGQAaAhsAsQELANUABQACAF8CQwEaABMAFAAMAGACDgClAR'
+..'IAQgEJAAIAqAFDARoCpAEeAAwALAIOAC0CGQKKARYApgEXAK0BGwCxARIAQgEJAAIAqAFDARoCpAEeAAwAKQIOAC0CGQKKARYApgEXAK0BGwCxARIAQgEJAAIAqAFDARoCpAEeAAwALgIOAC8CGQKKARYApgEXAK0BGwCxARIAQgEJAAIAqAFDARoCpAEeAAwAMAIOAC8CGQKKARYApgEXAK0BGwCxARIAQgELAAIA'
+..'FwBDARoAEwAUAKQBHgAMADECDgAyAhkCigEWAKYBFwBhAhkAGgIbALEBEgBCAQsAAgAXAEMBGgATABQApAEeAAwANAIOADICGQKKARYApgEXAGECGQAaAhsAsQELANUABQACAGICQwEaABMAFAAMAGMCDgClARIASQEJAAIAqAFDARoCpAEeAAwALAIOAC0CGQKKARYApgEXAK0BGwCxARIASQEJAAIAqAFDARoCpA'
+..'EeAAwAKQIOAC0CGQKKARYApgEXAK0BGwCxARIASQEJAAIAqAFDARoCpAEeAAwALgIOAC8CGQKKARYApgEXAK0BGwCxARIASQEJAAIAqAFDARoCpAEeAAwAMAIOAC8CGQKKARYApgEXAK0BGwCxARIASQELAAIAFwBDARoAEwAUAKQBHgAMADECDgAyAhkCigEWAKYBFwBkAhkAGgIbALEBEgBJAQsAAgAXAEMBGgAT'
+..'ABQApAEeAAwANAIOADICGQKKARYApgEXAGQCGQAaAhsAsQELANUABQACAGUCQwEaABMAFAAMAGYCDgClARIAUAEJAAIAqAFDARoCpAEeAAwALAIOAC0CGQKKARYApgEXAK0BGwCxARIAUAEJAAIAqAFDARoCpAEeAAwAKQIOAC0CGQKKARYApgEXAK0BGwCxARIAUAEJAAIAqAFDARoCpAEeAAwALgIOAC8CGQKKAR'
+..'YApgEXAK0BGwCxARIAUAEJAAIAqAFDARoCpAEeAAwAMAIOAC8CGQKKARYApgEXAK0BGwCxARIAUAELAAIAFwBDARoAEwAUAKQBHgAMADECDgAyAhkCigEWAKYBFwBnAhkAGgIbALEBEgBQAQsAAgAXAEMBGgATABQApAEeAAwANAIOADICGQKKARYApgEXAGcCGQAaAhsAsQELAM8ABgACAGgBQwEaABMAFABoAjEA'
+..'DABpAg4AagILAFcBBQACAJ8BQwEaAKQBHgAMAGsCDgDmAQsAWAEGAAIAbAJDARoAEwAUAKQBHgAMAG0CDgBuAhIAWQEJAAIAqAFDARoCpAEeAAwAbwIOAHACGQKKARYApgEXAK0BGwCxARIAWQEMAAIAFwBDARoAEwAUAKQBHgAMAHECDgAyAhkCigEWAKYBFwByAhkAGgIbAKcB5AEUABIAWQEJAAIAqAFDARoCpA'
+..'EeAAwAcwIOAHQCGQKKARYApgEXAK0BGwCxARIAWQEJAAIAqAFDARoCpAEeAAwAdQIOAHQCGQKKARYApgEXAK0BGwCxARIAWQEJAAIAqAFDARoCpAEeAAwAdgIOAHQCGQKKARYApgEXAK0BGwCxARIAWQEJAAIAqAFDARoCpAEeAAwAdwIOAHQCGQKKARYApgEXAK0BGwCxAQsAVwEFAAIAeAJDARoAEwAUAAwAeQIO'
+..'AHoCQQFgAQgAAgAdAkMBGgATABQADAB7AoQAfAIOAH0CGQKKAUcBIAISAGABCgACAKgBPwExAEMBfgKkAR4ADAB/Ag4AgAIZAooBFgCmARcArQEbALEBEgBgAQoAAgCoAT8BMQBDAX4CpAEeAAwAgQIOAIACGQKKARYApgEXAK0BGwCxARIAYAEKAAIAqAE/ATEAQwF+AqQBHgAMAH8CDgCCAhkCigEWAKYBFwCtAR'
+..'sAsQESAGABCwACABcAQwEaABMAFACkAR4ADgCDAhkCigEWAKYBFwByAhkAGgIbAKcB5AEUABIAVwEKAAIAqAE/ATEAQwEaAqQBHgAMAIECDgCEAhkCigEWAKYBFwCtARsAsQESAFcBCQACAKgBPwExAEMBGgKkAR4ADgCEAhkCigEWAKYBFwCtARsAsQESAFcBCgACAKgBPwExAEMBGgKkAR4ADACFAg4AhgIZAooB'
+..'FgCmARcArQEbALEBEgBXAQsAAgAXAEMBGgATABQApAEeAAwAhwIOAIMCGQKKARYApgEXAIgCGQAaAhsApwELAM8ABgACALIBQwEaABMAFABoAjEADACJAg4AagILAGoBBQACAJ8BQwEaAKQBHgAMAGsCDgDmAQsAawEGAAIAigJDARoAEwAUAKQBHgAMAG0CDgBuAhIAbAEJAAIAqAFDARoCpAEeAAwAiwIOAHACGQ'
+..'KKARYApgEXAK0BGwCxARIAbAEMAAIAFwBDARoAEwAUAKQBHgAMAIwCDgAyAhkCigEWAKYBFwByAhkAGgIbAKcB5AEeABIAbAEJAAIAqAFDARoCpAEeAAwAjQIOAHQCGQKKARYApgEXAK0BGwCxARIAbAEJAAIAqAFDARoCpAEeAAwAjgIOAHQCGQKKARYApgEXAK0BGwCxARIAbAEJAAIAqAFDARoCpAEeAAwAjwIO'
+..'AHQCGQKKARYApgEXAK0BGwCxARIAbAEJAAIAqAFDARoCpAEeAAwAkAIOAHQCGQKKARYApgEXAK0BGwCxAQsAagEFAAIAeAJDARoAEwAUAAwAkQIOAHoCQQFzAQcAAgAdAkMBGgATABQAhACSAg4AfQIZAooBRwEgAhIAcwEKAAIAqAE/ATEAQwF+AqQBHgAMAJMCDgCAAhkCigEWAKYBFwCtARsAsQESAHMBCgACAK'
+..'gBPwExAEMBfgKkAR4ADACUAg4AgAIZAooBFgCmARcArQEbALEBEgBzAQoAAgCoAT8BMQBDAX4CpAEeAAwAlQIOAIICGQKKARYApgEXAK0BGwCxARIAcwEMAAIAFwBDARoAEwAUAKQBHgAMAJYCDgCDAhkCigEWAKYBFwByAhkAGgIbAKcB5AEeABIAagEKAAIAqAE/ATEAQwEaAqQBHgAMAIECDgCEAhkCigEWAKYB'
+..'FwCtARsAsQESAGoBCQACAKgBPwExAEMBGgKkAR4ADgCEAhkCigEWAKYBFwCtARsAsQESAGoBCQACAKgBPwExAEMBGgKkAR4ADgCGAhkCigEWAKYBFwCtARsAsQESAGoBCwACABcAQwEaABMAFACkAR4ADACXAg4AgwIZAooBFgCmARcAsgEZABoCGwCnARIAzwALAAIAmAJDARoAEwAUAKQBHgAMAJkCDgCaAhkCig'
+..'EWAKYBFwC5ARkATwEbAMIBEgDPAAwAAgCbAkMBGgATABQApAEeAAwAnAIOAJoCGQKKARYApgEXAJ0CGQAaAhsAwgHkAR4AEgDPAAwAAgCeAkMBGgATABQApAEeAAwAnwIOAKACogF+ABkCigEWAKYBFwChAhkATwEbABwAEgDPAAsAAgCiAkMBGgATABQApAEeAAwAowIOAKQCGQKKARYApgEXAKUCGQAwARsAHAAS'
+..'AM8ACwACAKYCQwEaABMAFACkAR4ADACnAg4AmgIZAooBFgCmARcAwQEZAE8BGwDCAQsAzwAFAAIAwwFDARoAEwAUAAwAqAIOAKkCEgCCAQsAAgCjAUMBGgATABQApAEeAAwAqgIOAKUBGQKKARYApgEXAMMBGQAwARsApwESAIIBCgACAHgCQwEaABMAFACkAR4ADgClARkCigEWAKYBFwCrAhkAMAEbAKcBCwCCAQ'
+..'YAAgDHAUMBqQETAOoApAEeAAwArAIOAK0CCwCFAQUAAgDKAUMBTwGkAR4ADADMAQ4A5gESAIUBCAACAM0BQwEaAKoBGgAMAMwBDgDmARYApgEXAK0BGwCxARIAzwAMAAIA9QFDARoAEwAUAKQBHgAMAK4CDgCgAqIBfgAZAooBFgCmARcA9gEZAE8BGwAcAAsAzwAFAAIA3QEMAK8CDgCwAhkCcgEQABEAEgCJAQsA'
+..'AgDgARMAFAAMAOEBDgDiARkCcgEWAKYBFwDjARkAGgAbALEBHQAeAOQBHgASAIoBCwACAOUBEwAUAAwA5gEOABUAGQJyARYAigEXAOcBGQAaABsAsQEdAB4A5AEeABIAiQELAAIA6AETABQADADbAQ4A4gEZAnIBFgCmARcA6QEZABoAGwCxAR0AHgDkAR4AEgCMAQsAAgDlARMAFAAMAOYBDgAVABkCcgEWAIoBFw'
+..'DnARkAGgAbALEBHQAeAOQBHgASAIkBCwACAOoBEwAUAAwAxAEOAOIBGQJyARYApgEXAOsBGQAaABsAsQEdAB4A5AEeABIAjgELAAIA5QETABQADADmAQ4AFQAZAnIBFgCKARcA5wEZABoAGwCxAR0AHgDkAR4AEgCJAQsAAgDxABMAFAAMAOwBDgDiARkCcgEWAKYBFwDtARkAGgAbALEBHQAeAOQBHgASAJABCwAC'
+..'AOUBEwAUAAwA5gEOABUAGQJyARYAigEXAOcBGQAaABsAsQEdAB4A5AEeABIAiQELAAIA7gETABQADADvAQ4A4gEZAnIBFgCmARcA8AEZABoAGwCxAR0AHgDkAR4AEgCSAQsAAgDlARMAFAAMAOYBDgAVABkCcgEWAIoBFwDnARkAGgAbALEBHQAeAOQBHgASAIkBCQACAKMBEwAUAA4A8QEZAnIBFgCmARcA3AEZAE'
+..'8BGwCnAR0AHgASAJQBCQACAKgBQwHyAaoBqQGkAR4ADADzAQ4A/QEZAnIBFwCtARkAqQELAM8ABQACAPcBDACxAg4AsAIZAnIBEAARABIAlgELAAIA4AETABQADADhAQ4A4gEZAnIBFgCmARcA+gEZABoAGwCxAR0AHgDkAR4AEgCXAQsAAgDlARMAFAAMAOYBDgAVABkCcgEWAIoBFwDnARkAGgAbALEBHQAeAOQB'
+..'HgASAJYBCwACAOgBEwAUAAwA2wEOAOIBGQJyARYApgEXAPsBGQAaABsAsQEdAB4A5AEeABIAmQELAAIA5QETABQADADmAQ4AFQAZAnIBFgCKARcA5wEZABoAGwCxAR0AHgDkAR4AEgCWAQsAAgDqARMAFAAMAMQBDgDiARkCcgEWAKYBFwD8ARkAGgAbALEBHQAeAOQBHgASAJsBCwACAOUBEwAUAAwA5gEOABUAGQ'
+..'JyARYAigEXAOcBGQAaABsAsQEdAB4A5AEeABIAlgELAAIA8QATABQADADsAQ4A4gEZAnIBFgCmARcATwAZABoAGwCxAR0AHgDkAR4AEgCdAQsAAgDlARMAFAAMAOYBDgAVABkCcgEWAIoBFwDnARkAGgAbALEBHQAeAOQBHgASAJYBCQACAKMBEwAUAA4A8QEZAnIBFgCmARcAvgEZAE8BGwCnAR0AHgASAJ8BCQAC'
+..'AKgBQwHyAaoBqQGkAR4ADADzAQ4A/QEZAnIBFwCtARkAqQESAJYBCwACAO4BEwAUAAwA7wEOAOIBGQJyARYApgEXAP4BGQAaABsAsQEdAB4A5AEeABIAoQELAAIA5QETABQADADmAQ4AFQAZAnIBFgCKARcA5wEZABoAGwCxAR0AHgDkAR4AEgCWAQsAAgD/ARMAFAAMAL8BDgDiARkCcgEWAKYBFwBRABkAGgAbAL'
+..'EBHQAeAOQBHgASAKMBCwACAOUBEwAUAAwA5gEOABUAGQJyARYAigEXAOcBGQAaABsAsQEdAB4A5AEeABIAlgELAAIAAAITABQADAABAg4A4gEZAnIBFgCmARcAAgIZABoAGwCxAR0AHgDkAR4AEgClAQsAAgDlARMAFAAMAOYBDgAVABkCcgEWAIoBFwDnARkAGgAbALEBHQAeAOQBHgC6Ac8ACQACALsBDACyAg4A'
+..'egIZAnIBEAAUABYApgEXAL4BGQAaABsAsQG6Ac8ACQACANoBDACzAg4AegIZAnIBEAAUABYApgEXANwBGQAaABsAsQGbAYoAAgACAJ8BWgAxACsBhgAMAAIATwB6ADEALQGKAXsAtAJ3AYoBgQCCAAwAtQJ5AYoBhACFAA4AtgI2AYoBwwAUAJIBqgEAALcCqgECAAIAuAK5AroCuwKqAQQAAgC8Ar0CugK+AnIBvw'
+..'K6AsACqgEFAAIATwDBAjEAwgLDAsQCxQLGAhQAwAKqAQQAAgDHAsECMQDEAsgCxgIUAMACqgECAAIAyQLEAsoCwAKqAQMAAgDLAsECMQDEAswCwAKqAQMAAgDNAsECMQDEAs4CwAKqAQIAAgDPAsQC0ALAAqoBAgACANECxALSAgEAhgACAAIATQAEANMCeQC1AQkAewDUAn8AgACBAIIADADVAoQAhQAOANYChwDX'
+..'AokA2AKLAIwAeQC1AQkAewDZAn8AgACBAIIADADaAoQAhQAOANsChwDcAokA3QKLAIwAeQC1AQkAewDeAn8AgACBAIIADADfAoQAhQAOAOAChwDhAokA4gKLAIwAAQCGAAIAAgDjAgQA5AIrAYYACAACAOUCewDmAoEA5wIMAOgChADnAg4A6QLDABQANwEeAF4BugEMAAIA6gK+AOsCYAF+AGEB7ALtAhQA7gIxAG'
+..'MB7wJlAfAChADxAg4A8gJoAfMCbAH0AsACugEEAMECMQD1AvYCxAL3AsYCEQArAYYACAACAPgCewD5AoEA5wIMAPoChADnAg4A6QLDABQANwEeAF4BvQEMAAIA6gK+AOsCYAF+AGEB7ALtAhQA7gIxAGMB7wJlAfAChADxAg4A8gJoAfMCbAH0AsACvQEEAMECMQD1AvYCxAL3AsYCEQAvAAcAAQACAPsCIwAHAAEA'
+..'AgD8Ai8ABwABAAIA/QIBAAcAAgACADAABAD+AisBwwEKAAIA/wJ6ADEALQEeAHsAAAOBAAEDDAACA4QAAwMOAAQDNgEeAMMAFAArAcMBDAACAAUDegAxAC0BHgC7AIsBewAGA74AjQGBAIIADAAHA4QAhQAOAAgDNgEeAMMAFAArAcMBDAACAAkDegAxAC0BHgC7ANgAewAKA74A2gCBAIIADAALA4QAhQAOAAgDNg'
+..'EeAMMAFADAAsYBAgDEAgwDxgKKAQcAxwECAAIADQNaADEAKwHDAQwAAgAOA3oAMQAtAR4AuwAPA3sAEAO+ABEDgQABAwwAEgOEAAMDDgAEAzYBHgDDABQAKwHDAQwAAgAOA3oAMQAtAR4AuwAPA3sAEwO+ABEDgQABAwwAFAOEAAMDDgAEAzYBHgDDABQAKwHDAQoAAgD/AnoAMQAtAR4AewAVA4EAAQMMABYDhAAD'
+..'Aw4ABAM2AR4AwwAUACsBwwEMAAIABQN6ADEALQEeALsAiwF7ABcDvgCNAYEAggAMABgDhACFAA4ACAM2AR4AwwAUACsBwwEMAAIAGQN6ADEALQEeALsAGgN7ABsDvgAcA4EAHQMMAB4DhAAfAw4AIAM2AR4AwwAUAC8ABwABAAIAIQMHAAcAAQACACIDBwAHAAEAAgAjAwcABwACAAIAJANaADEALwACAAIAAgAlAy'
+..'cAMQABAAIAAgACACYDBAAnAysB0wEMAAIAnwF6ADEALQEeALsAKAN7ACkDfQB+AL4AKgOBACsDDAAsA4QAKwMOAC0DNgEeAC4D1AEAAD0B1AECAA4ALwMwAzEDKwHTAQwAAgAyA3oAMQAtAR4AuwAzA3sANAN9AH4AvgA1A4EAKwMMADYDhAArAw4ANwM2AR4ALgPXAQAABlIA8wBRAFIA9ABNAH8AfAF9AH8AgAF+'
+..'AIQAfAGCAIQAgAGDAA==')
 for _,obj in pairs(Objects) do
 	obj.Parent = script or workspace
 end
+
+RunScripts()
