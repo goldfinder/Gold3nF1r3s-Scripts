@@ -21,59 +21,58 @@ function Triggered(Player)
 	if Player.Character:FindFirstChild("AccessLevel").Value < 0 then 
 		Door.AccessDenied:Play()
 		return end
-	if not Debounce then
-		Debounce = true
-		if Open then
-			Open = false
-			CloseSound:Play()
-			--Door.Transparency = 0
-			for i,v in pairs(Door:GetChildren()) do
-				if v:IsA("Decal") then
-					v.Transparency = 0
-				end
-			end
-			spawn(function()
-				for i = 3,(Door.Size.z / 0.15)  do
-					Door.CFrame = Door.CFrame + (Door.CFrame.lookVector * 0.15)
-
-					wait()
-				end
-			end)
-
-			spawn(function()
-				for i = 3,(Door2.Size.z / 0.15) do
-					Door2.CFrame = Door2.CFrame + (Door2.CFrame.lookVector * 0.15)
-
-					wait()
-				end
-			end)
-		else
-			Open = true
-			OpenSound:Play()
-			spawn(function()
-				for i = 3,(Door.Size.z / 0.15) do
-					Door.CFrame = Door.CFrame - (Door.CFrame.lookVector * 0.15)
-
-					wait()
-				end
-			end)
-			spawn(function()
-				for i = 3,(Door2.Size.z / 0.15) do
-					Door2.CFrame = Door2.CFrame - (Door2.CFrame.lookVector * 0.15)
-
-					wait()
-				end
-			end)
-			--Door.Transparency = 1
-			for i,v in pairs(Door:GetChildren()) do
-				if v:IsA("Decal") then
-					v.Transparency = 1
-				end
+	if Debounce == true then return end
+	Debounce = true
+	if Open then
+		Open = false
+		CloseSound:Play()
+		--Door.Transparency = 0
+		for i,v in pairs(Door:GetChildren()) do
+			if v:IsA("Decal") then
+				v.Transparency = 0
 			end
 		end
-		wait(0.4)
-		Debounce = false
+		spawn(function()
+			for i = 3,(Door.Size.z / 0.15)  do
+				Door.CFrame = Door.CFrame + (Door.CFrame.lookVector * 0.15)
+
+				wait()
+			end
+		end)
+
+		spawn(function()
+			for i = 3,(Door2.Size.z / 0.15) do
+				Door2.CFrame = Door2.CFrame + (Door2.CFrame.lookVector * 0.15)
+
+				wait()
+			end
+		end)
+	else
+		Open = true
+		OpenSound:Play()
+		spawn(function()
+			for i = 3,(Door.Size.z / 0.15) do
+				Door.CFrame = Door.CFrame - (Door.CFrame.lookVector * 0.15)
+
+				wait()
+			end
+		end)
+		spawn(function()
+			for i = 3,(Door2.Size.z / 0.15) do
+				Door2.CFrame = Door2.CFrame - (Door2.CFrame.lookVector * 0.15)
+
+				wait()
+			end
+		end)
+		--Door.Transparency = 1
+		for i,v in pairs(Door:GetChildren()) do
+			if v:IsA("Decal") then
+				v.Transparency = 1
+			end
+		end
 	end
+	wait(0.4)
+	Debounce = false
 end
 Button1.ProximityPrompt.Triggered:connect(Triggered)
 Button2.ProximityPrompt.Triggered:connect(Triggered)
@@ -98,59 +97,58 @@ function Triggered(Player)
 	if Player.Character:FindFirstChild("AccessLevel").Value < 0 then 
 		Door.AccessDenied:Play()
 		return end
-	if not Debounce then
-		Debounce = true
-		if Open then
-			Open = false
-			CloseSound:Play()
-			--Door.Transparency = 0
-			for i,v in pairs(Door:GetChildren()) do
-				if v:IsA("Decal") then
-					v.Transparency = 0
-				end
-			end
-			spawn(function()
-				for i = 3,(Door.Size.z / 0.15)  do
-					Door.CFrame = Door.CFrame + (Door.CFrame.lookVector * 0.15)
-
-					wait()
-				end
-			end)
-
-			spawn(function()
-				for i = 3,(Door2.Size.z / 0.15) do
-					Door2.CFrame = Door2.CFrame + (Door2.CFrame.lookVector * 0.15)
-
-					wait()
-				end
-			end)
-		else
-			Open = true
-			OpenSound:Play()
-			spawn(function()
-				for i = 3,(Door.Size.z / 0.15) do
-					Door.CFrame = Door.CFrame - (Door.CFrame.lookVector * 0.15)
-
-					wait()
-				end
-			end)
-			spawn(function()
-				for i = 3,(Door2.Size.z / 0.15) do
-					Door2.CFrame = Door2.CFrame - (Door2.CFrame.lookVector * 0.15)
-
-					wait()
-				end
-			end)
-			--Door.Transparency = 1
-			for i,v in pairs(Door:GetChildren()) do
-				if v:IsA("Decal") then
-					v.Transparency = 1
-				end
+	if Debounce == true then return end
+	Debounce = true
+	if Open then
+		Open = false
+		CloseSound:Play()
+		--Door.Transparency = 0
+		for i,v in pairs(Door:GetChildren()) do
+			if v:IsA("Decal") then
+				v.Transparency = 0
 			end
 		end
-		wait(0.4)
-		Debounce = false
+		spawn(function()
+			for i = 3,(Door.Size.z / 0.15)  do
+				Door.CFrame = Door.CFrame + (Door.CFrame.lookVector * 0.15)
+
+				wait()
+			end
+		end)
+
+		spawn(function()
+			for i = 3,(Door2.Size.z / 0.15) do
+				Door2.CFrame = Door2.CFrame + (Door2.CFrame.lookVector * 0.15)
+
+				wait()
+			end
+		end)
+	else
+		Open = true
+		OpenSound:Play()
+		spawn(function()
+			for i = 3,(Door.Size.z / 0.15) do
+				Door.CFrame = Door.CFrame - (Door.CFrame.lookVector * 0.15)
+
+				wait()
+			end
+		end)
+		spawn(function()
+			for i = 3,(Door2.Size.z / 0.15) do
+				Door2.CFrame = Door2.CFrame - (Door2.CFrame.lookVector * 0.15)
+
+				wait()
+			end
+		end)
+		--Door.Transparency = 1
+		for i,v in pairs(Door:GetChildren()) do
+			if v:IsA("Decal") then
+				v.Transparency = 1
+			end
+		end
 	end
+	wait(0.4)
+	Debounce = false
 end
 Button1.ProximityPrompt.Triggered:connect(Triggered)
 Button2.ProximityPrompt.Triggered:connect(Triggered)
