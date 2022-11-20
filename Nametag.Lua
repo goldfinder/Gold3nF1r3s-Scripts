@@ -1,3 +1,7 @@
+local afkbool2=Instance.new("BoolValue")
+afkbool2.Parent=owner
+afkbool2.Value = false
+wait()
 function nametag()
 	Afk = Instance.new("RemoteEvent")
 	Afk.Parent = owner.Character
@@ -103,15 +107,21 @@ end)]==],Afk)
 	BGUC.CornerRadius=UDim.new(0,16)
 	BGUC.Parent=BGF
 	guiafk.Parent=guiMAIN
-	guiafk.Visible=false
+	if afkbool2.Value == false then
+		guiafk.Visible=false
+	else
+		guiafk.Visible=true
+	end
 	local TweenService = game:GetService('TweenService')
 	local object = text1M
 	local tweenInfo = TweenInfo.new(1,Enum.EasingStyle.Linear,Enum.EasingDirection.InOut,0,false,0)
 	Afk.OnServerEvent:Connect(function(plr,t)
 		if t == "WFR" then
 			guiafk.Visible = true
+			afkbool2.Value=true
 		elseif t == "WF" then
 			guiafk.Visible = false
+			afkbool2.Value=false
 		end
 	end)
 	while true do
