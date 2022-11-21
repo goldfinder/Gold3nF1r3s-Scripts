@@ -16,16 +16,16 @@ local CloseSound = Door.DoorClose
 
 local Debounce = false
 function Triggered(Player)
-	if game.Workspace:FindFirstChild("MainGroup") ~= nil then 
-		if Player.Character:FindFirstChild("AccessLevel").Value < 7 then 
-			Door.AccessDenied:Play()
-			return end
-	end
 	if Player.Character == nil then return end
 	if Player.Character:FindFirstChild("User Setup") == nil then return end
 	if Player.Character:FindFirstChild("AccessLevel").Value < 0 then 
 		Door.AccessDenied:Play()
 		return end
+	if game.Workspace:FindFirstChild("MainGroup") ~= nil then 
+		if Player.Character:FindFirstChild("AccessLevel").Value < 7 then 
+			Door.AccessDenied:Play()
+			return end
+	end
 	if Debounce == true then return end
 	Debounce = true
 	if Open then
@@ -82,16 +82,16 @@ local CloseSound = Door.DoorClose
 
 local Debounce = false
 function Triggered(Player)
-	if game.Workspace:FindFirstChild("MainGroup") ~= nil then 
-		if Player.Character:FindFirstChild("AccessLevel").Value < 7 then 
-			Door.AccessDenied:Play()
-			return end
-	end
 	if Player.Character == nil then return end
 	if Player.Character:FindFirstChild("User Setup") == nil then return end
 	if Player.Character:FindFirstChild("AccessLevel").Value < 0 then 
 		Door.AccessDenied:Play()
 		return end
+	if game.Workspace:FindFirstChild("MainGroup") ~= nil then 
+		if Player.Character:FindFirstChild("AccessLevel").Value < 7 then 
+			Door.AccessDenied:Play()
+			return end
+	end
 	if Debounce == true then return end
 	Debounce = true
 	if Open then
