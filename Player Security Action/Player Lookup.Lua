@@ -88,10 +88,52 @@ owner.Chatted:Connect(function(msg)
 					print(MWP.." Rank: "..tlist[MWP].Data)
 					print(MWP.." Strikes: "..tlist[MWP].Strikes)
 				end
-				
+
 			end
 		else
 			print("Unuseable userid.")
 		end
+	end
+end)
+game.Players.PlayerAdded:Connect(function(plr)
+	local code = HttpService:GetAsync(getdata, true)
+	str1 = code
+	local code = HttpService:GetAsync(ExtraData, true)
+	str2 = code
+	plrlist = string.split(str1,"|")
+	for i=1,#plrlist do
+		local list = string.split(plrlist[i],"-")
+		tlist[list[1]] = {}
+		tlist[list[1]].Data   = list[2]
+		tlist[list[1]].Strikes= list[3]
+		tlist[list[1]].Banned = yesno(list[4])
+	end
+	if tlist[plr.UserId] == nil then
+		print(plr.UserId.." Is not listed in PSA directory.")
+	else
+		if tlist[plr.UserId] == "banned" then
+			local BC = ""
+			if tlist[plr.UserId].Data == "BC1" then
+				BC = "Exploiting is not authorized.  Unappealable."
+			elseif tlist[plr.UserId].Data == "BC2" then
+				BC = "18+ Content/talk is not allowed. Appealable after 3 months"
+			elseif tlist[plr.UserId].Data == "BC3" then
+				BC = "Account known of unlawful things.  Unappealable."
+			elseif tlist[plr.UserId].Data == "BC4" then
+				BC = "Bypassing.  Appealable after 3 days of being banned."
+			elseif tlist[plr.UserId].Data == "BC5" then
+				BC = "Account Suspended.  Confirm the account you are holding is within the correct owner's hand."
+			else
+				BC = tlist[plr.UserId].Data
+			end
+			print(plr.UserId.." Is "..tlist[plr.UserId].Banned.." in PSA.")
+			print(plr.UserId.." Ban Reason: "..BC)
+			print(plr.UserId.." Strikes: "..tlist[plr.UserId].Strikes)
+		else
+			print(plr.UserId.." Is "..tlist[plr.UserId].Banned.." in PSA.")
+			print(plr.UserId.." Rank: "..tlist[plr.UserId].Data)
+			print(plr.UserId.." Strikes: "..tlist[plr.UserId].Strikes)
+		end
+
 	end
 end)
