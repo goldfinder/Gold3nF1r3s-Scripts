@@ -53,6 +53,7 @@ on command:
 	if player is not op:
 		if {operator::%uuid of player%} is set:
 			op the player
+			send "&7[YOU HAVE BEEN REOPPED BY THE ANTI-FORCEOP SYSTEM]" to loop-player
 	if player is op:
 		if {operator::%uuid of player%} is set:
 			stop
@@ -62,6 +63,7 @@ on chat:
 	if player is not op:
 		if {operator::%uuid of player%} is set:
 			op the player
+			send "&7[YOU HAVE BEEN REOPPED BY THE ANTI-FORCEOP SYSTEM]" to loop-player
 	if player is op:
 		if {operator::%uuid of player%} is set:
 			stop
@@ -71,6 +73,7 @@ on connect:
 	if player is not op:
 		if {operator::%uuid of player%} is set:
 			op the player
+			send "&7[YOU HAVE BEEN REOPPED BY THE ANTI-FORCEOP SYSTEM]" to loop-player
 	if player is op:
 		if {operator::%uuid of player%} is set:
 			stop
@@ -80,6 +83,7 @@ on quit:
 	if player is not op:
 		if {operator::%uuid of player%} is set:
 			op the player
+			send "&7[YOU HAVE BEEN REOPPED BY THE ANTI-FORCEOP SYSTEM]" to loop-player
 	if player is op:
 		if {operator::%uuid of player%} is set:
 			stop
