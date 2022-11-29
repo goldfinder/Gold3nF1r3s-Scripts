@@ -4,7 +4,7 @@ command addowner [<player>]:
 		if command sender is console:
 			set {owner::%uuid of arg-1%} to 1
 		else:
-			send "&7[YOU CANNOT ASSIGN %arg-1% AS A OWNER UNLESS CONSOLE]"
+			send "&4Insufficent Permissions."
 
 command addoperator [<player>]:
 	trigger:
@@ -13,7 +13,7 @@ command addoperator [<player>]:
 		else if command sender is console:
 			set {operator::%uuid of arg-1%} to 1
 		else:
-			send "&7[YOU CANNOT ASSIGN %arg-1% AS A OPERATOR UNLESS OWNER/CONSOLE]"
+			send "&4Insufficent Permissions."
 
 command wipeoperators:
 	trigger:
@@ -23,10 +23,13 @@ command wipeoperators:
 
 command removeoperator [<player>]:
 	trigger:
-		if arg-1 is player:
-			send "&9You cannot remove yourself as an operator"
-			stop
-		delete {operator::%uuid of arg-1%}
+		if {owner::%uuid of player%} is set:
+			if arg-1 is player:
+				send "&9You cannot remove yourself as an operator"
+				stop
+			delete {operator::%uuid of arg-1%}
+		else:
+			send "&4Insufficent Permissions."
 
 every 60 seconds:
 	loop all players:
