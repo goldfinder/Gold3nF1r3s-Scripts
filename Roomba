@@ -7,44 +7,43 @@ local Boop = 0
 local Broken = false
 local ChatService = game:GetService("Chat")
 
-script.Parent.ClickDetector.MouseClick:Connect(function()
-	if Broken == false then
-		script.Parent.Honk:Play()
-		Boop = Boop + 1
-		script.Parent.PointLight.Brightness = Boop/2.5
-		if Boop >= 10 then
-			Broken = true
-			script.Parent.Error:Play()
-			script.Parent.Parent.Main.Anchored = true
-			local Text = {"TOO MUCH BOOP","Roomba.exe has stopped working","THIS... IS TOO MUCH BOOP","ITS TOO MUCH, ITS TOO MUCH BOOP","I CAN'T STAND THE BOOP ANYMORE"}
-			local ChooseText = Text[math.random(#Text)]
-			Chat(ChooseText)
-			wait(3)
-			local Text = {"X-X","xpx","A-","AEUGH","BLERGH","AE","BLEH","X_X","xwx","xox"}
-			local ChooseText = Text[math.random(#Text)]
-			Chat(ChooseText)
-			script.Parent.Parent.Wheel.Explode:Play()
-			script.Parent.Parent.Wheel.Explosion.Enabled = true
-			script.Parent.Parent.Wheel.Fire:Play()
-			script.Parent.FireBurn.Enabled = true
-			script.Parent.Alarm:Play()
-			wait(0.1)
-			script.Parent.Parent.Wheel.Explosion.Enabled = false
-			wait(30)
-			Broken = false
-			script.Parent.Parent.Main.Anchored = false
-			script.Parent.Parent.Wheel.Fire:Stop()
-			script.Parent.FireBurn.Enabled = false
-		end
-	end
-end)
-
 function Chat(ChooseText)
 	script.Parent.Parent.RoombaP.Ping:Play()
 	local part = script.Parent.Parent.Main
 	ChatService:Chat(part, ChooseText, "Blue")
 end
-
+		
+		script.Parent.ClickDetector.MouseClick:Connect(function()
+			if Broken == false then
+				script.Parent.Honk:Play()
+				Boop = Boop + 1
+				script.Parent.PointLight.Brightness = Boop/2.5
+				if Boop >= 10 then
+					Broken = true
+					script.Parent.Error:Play()
+					script.Parent.Parent.Main.Anchored = true
+					local Text = {"TOO MUCH BOOP","Roomba.exe has stopped working","THIS... IS TOO MUCH BOOP","ITS TOO MUCH, ITS TOO MUCH BOOP","I CAN'T STAND THE BOOP ANYMORE"}
+					local ChooseText = Text[math.random(#Text)]
+					Chat(ChooseText)
+					wait(3)
+					local Text = {"X-X","xpx","A-","AEUGH","BLERGH","AE","BLEH","X_X","xwx","xox"}
+					local ChooseText = Text[math.random(#Text)]
+					Chat(ChooseText)
+					script.Parent.Parent.Wheel.Explode:Play()
+					script.Parent.Parent.Wheel.Explosion.Enabled = true
+					script.Parent.Parent.Wheel.Fire:Play()
+					script.Parent.FireBurn.Enabled = true
+					script.Parent.Alarm:Play()
+					wait(0.1)
+					script.Parent.Parent.Wheel.Explosion.Enabled = false
+					wait(30)
+					Broken = false
+					script.Parent.Parent.Main.Anchored = false
+					script.Parent.Parent.Wheel.Fire:Stop()
+					script.Parent.FireBurn.Enabled = false
+				end
+			end
+		end)
 
 while wait(1) do
 	if Boop >= 1 then
