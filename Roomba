@@ -1,0 +1,509 @@
+-- Converted using Mokiros's Model to Script Version 3
+-- Converted string size: 4480 characters
+
+local ScriptFunctions = {
+function(script,require)
+local Boop = 0
+local Broken = false
+local ChatService = game:GetService("Chat")
+
+script.Parent.ClickDetector.MouseClick:Connect(function()
+	if Broken == false then
+		script.Parent.Honk:Play()
+		Boop = Boop + 1
+		script.Parent.PointLight.Brightness = Boop/2.5
+		if Boop >= 10 then
+			Broken = true
+			script.Parent.Error:Play()
+			script.Parent.Parent.Main.Anchored = true
+			local Text = {"TOO MUCH BOOP","Roomba.exe has stopped working","THIS... IS TOO MUCH BOOP","ITS TOO MUCH, ITS TOO MUCH BOOP","I CAN'T STAND THE BOOP ANYMORE"}
+			local ChooseText = Text[math.random(#Text)]
+			Chat(ChooseText)
+			wait(3)
+			local Text = {"X-X","xpx","A-","AEUGH","BLERGH","AE","BLEH","X_X","xwx","xox"}
+			local ChooseText = Text[math.random(#Text)]
+			Chat(ChooseText)
+			script.Parent.Parent.Wheel.Explode:Play()
+			script.Parent.Parent.Wheel.Explosion.Enabled = true
+			script.Parent.Parent.Wheel.Fire:Play()
+			script.Parent.FireBurn.Enabled = true
+			script.Parent.Alarm:Play()
+			wait(0.1)
+			script.Parent.Parent.Wheel.Explosion.Enabled = false
+			wait(30)
+			Broken = false
+			script.Parent.Parent.Main.Anchored = false
+			script.Parent.Parent.Wheel.Fire:Stop()
+			script.Parent.FireBurn.Enabled = false
+		end
+	end
+end)
+
+function Chat(ChooseText)
+	script.Parent.Parent.RoombaP.Ping:Play()
+	local part = script.Parent.Parent.Main
+	ChatService:Chat(part, ChooseText, "Blue")
+end
+
+
+while wait(1) do
+	if Boop >= 1 then
+		Boop = Boop - 1
+		script.Parent.PointLight.Brightness = Boop/2.5
+	end
+end
+end,
+function(script,require)
+local Debounce = false
+
+local ChatService = game:GetService("Chat")
+
+local Speed = 10
+local MinTurn = 2
+local MaxTurn = 4.5
+
+script.Parent.Touched:Connect(function(Hit)
+	local Humanoid = Hit.Parent:FindFirstChild("Humanoid")
+	local Humanoid2 = Hit.Parent.Parent:FindFirstChild("Humanoid")
+	if Humanoid == nil and Debounce == false and Humanoid2 == nil then
+		Debounce = true
+		local Text = {"Ouch" , "Owie" , ">_<" , "Yikes" , "A-","Ow",">w<",";-;","AAA","Youch","That hurt","xwx","There's a wall?"}
+		local ChooseText = Text[math.random(#Text)]
+		Chat(ChooseText)
+		script.Parent.Hit:Play()
+		script.Parent.L.AngularVelocity = 0
+		script.Parent.R.AngularVelocity = 0
+		script.Parent.Wheel.AngularVelocity = 0
+		wait(1)
+		script.Parent.Beep:Play()
+		script.Parent.L.AngularVelocity = 5
+		script.Parent.R.AngularVelocity = 5
+		script.Parent.Wheel.AngularVelocity = 5
+		wait(2.5)
+		local TurnDirection = math.random(1,2)
+		if TurnDirection == 1 then
+			script.Parent.L.AngularVelocity = -10
+			script.Parent.R.AngularVelocity = 10
+			script.Parent.Wheel.AngularVelocity = 0
+		elseif TurnDirection == 2 then
+			script.Parent.L.AngularVelocity = 10
+			script.Parent.R.AngularVelocity = -10
+			script.Parent.Wheel.AngularVelocity = 0
+		end
+		wait(math.random(MinTurn,MaxTurn))
+		script.Parent.L.AngularVelocity = 0 - Speed
+		script.Parent.R.AngularVelocity = 0 - Speed
+		script.Parent.Wheel.AngularVelocity = 0 - Speed
+		Debounce = false
+	end
+end)
+
+function Chat(ChooseText)
+	script.Parent.Parent.RoombaP.Ping:Play()
+	if script.Parent.Anchored == false then
+		local part = script.Parent
+		ChatService:Chat(part, ChooseText, "Blue")
+	end 
+end
+
+while wait(math.random(5,30)) do
+	local Sus = math.random(1,100)
+	if Sus ~= 1 then
+		script.Parent.Parent.RoombaP.Ping:Play()
+		local Text = {
+			"I think I sucked up something bad...",
+			"Hello?","I'm a roomba!",
+			":3",
+			"-w-",
+			"brrrrr","I can do this all day",
+			"That dust was delicious",
+			"Me smol",
+			"Cheese",
+			"Was that an ant?",
+			"Beep",
+			"Cheese is solid milk",
+			"I wish I could go faster",
+			"Toaster noise",
+			"What is this place anyway?",
+			"brrt",
+			"a",
+			"Also check out this game called adopt me.",
+			"I am on an adventure!",
+			"Yep, this is my job.",
+			"I eat dust for a living!",
+			"I also eat ram for a living.",
+			"Why is it that protogen are called toaster?",
+			"Did you know that I actually scared my creator and made him jump once when I exploded after too much boop?",
+			"I am everywhere.",
+			"brrt brrt",
+			"fish",
+			"Such funny such wow, is that the meme kids is into these days?",
+			"I wish I could go even faster than this.",
+			"Yawh",
+			"meerp",
+			"mur",
+			"I swear I heard a cat or somethin, pspspspspsps.",
+			"I am from Buck Bew! I am on an adventure.",
+			"Gaming chair < Office chair, facts.",
+			"X3","I am really badly programmed.",
+			"I am a free model, please take it and put me everywhere, I am on an adventure.",
+			"=w="
+		}
+		local ChooseText = Text[math.random(#Text)]
+		Chat(ChooseText)
+	elseif Sus == 1 then
+		local ChooseText = "That dust look sus :Flushed:"
+		Chat(ChooseText)
+		script.Parent.AMOGUS:Play()
+	end
+end
+end
+}
+local ScriptIndex = 0
+local Scripts,ModuleScripts,ModuleCache = {},{},{}
+local _require = require
+function require(obj,...)
+	local index = ModuleScripts[obj]
+	if not index then
+		local a,b = pcall(_require,obj,...)
+		return not a and error(b,2) or b
+	end
+	
+	local res = ModuleCache[index]
+	if res then return res end
+	res = ScriptFunctions[index](obj,require)
+	if res==nil then error("Module code did not return exactly one value",2) end
+	ModuleCache[index] = res
+	return res
+end
+local function Script(obj,ismodule)
+	ScriptIndex = ScriptIndex + 1
+	local t = ismodule and ModuleScripts or Scripts
+	t[obj] = ScriptIndex
+end
+
+function RunScripts()
+	for script,index in pairs(Scripts) do
+		coroutine.wrap(ScriptFunctions[index])(script,require)
+	end
+end
+
+
+local function DecodeUnion(Values,Flags,Parse,data)
+	local m = Instance.new("Folder")
+	m.Name = "UnionCache ["..tostring(math.random(1,9999)).."]"
+	m.Archivable = false
+	m.Parent = game:GetService("ServerStorage")
+	local Union,Subtract = {},{}
+	if not data then
+		data = Parse('B')
+	end
+	local ByteLength = (data % 4) + 1
+	local Length = Parse('I'..ByteLength)
+	local ValueFMT = ('I'..Flags[1])
+	for i = 1,Length do
+		local data = Parse('B')
+		local part
+		local isNegate = bit32.band(data,0b10000000) > 0
+		local isUnion =  bit32.band(data,0b01000000) > 0
+		if isUnion then
+			part = DecodeUnion(Values,Flags,Parse,data)
+		else
+			local isMesh = data % 2 == 1
+			local ClassName = Values[Parse(ValueFMT)]
+			part = Instance.new(ClassName)
+			part.Size = Values[Parse(ValueFMT)]
+			part.Position = Values[Parse(ValueFMT)]
+			part.Orientation = Values[Parse(ValueFMT)]
+			if isMesh then
+				local mesh = Instance.new("SpecialMesh")
+				mesh.MeshType = Values[Parse(ValueFMT)]
+				mesh.Scale = Values[Parse(ValueFMT)]
+				mesh.Offset = Values[Parse(ValueFMT)]
+				mesh.Parent = part
+			end
+		end
+		part.Parent = m
+		table.insert(isNegate and Subtract or Union,part)
+	end
+	local first = table.remove(Union,1)
+	if #Union>0 then
+		first = first:UnionAsync(Union)
+	end
+	if #Subtract>0 then
+		first = first:SubtractAsync(Subtract)
+	end
+	m:Destroy()
+	return first
+end
+
+local function Decode(str)
+	local StringLength = #str
+	
+	-- Base64 decoding
+	do
+		local decoder = {}
+		for b64code, char in pairs(('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/='):split('')) do
+			decoder[char:byte()] = b64code-1
+		end
+		local n = StringLength
+		local t,k = table.create(math.floor(n/4)+1),1
+		local padding = str:sub(-2) == '==' and 2 or str:sub(-1) == '=' and 1 or 0
+		for i = 1, padding > 0 and n-4 or n, 4 do
+			local a, b, c, d = str:byte(i,i+3)
+			local v = decoder[a]*0x40000 + decoder[b]*0x1000 + decoder[c]*0x40 + decoder[d]
+			t[k] = string.char(bit32.extract(v,16,8),bit32.extract(v,8,8),bit32.extract(v,0,8))
+			k = k + 1
+		end
+		if padding == 1 then
+			local a, b, c = str:byte(n-3,n-1)
+			local v = decoder[a]*0x40000 + decoder[b]*0x1000 + decoder[c]*0x40
+			t[k] = string.char(bit32.extract(v,16,8),bit32.extract(v,8,8))
+		elseif padding == 2 then
+			local a, b = str:byte(n-3,n-2)
+			local v = decoder[a]*0x40000 + decoder[b]*0x1000
+			t[k] = string.char(bit32.extract(v,16,8))
+		end
+		str = table.concat(t)
+	end
+	
+	local Position = 1
+	local function Parse(fmt)
+		local Values = {string.unpack(fmt,str,Position)}
+		Position = table.remove(Values)
+		return table.unpack(Values)
+	end
+	
+	local Settings = Parse('B')
+	local Flags = Parse('B')
+	Flags = {
+		--[[ValueIndexByteLength]] bit32.extract(Flags,6,2)+1,
+		--[[InstanceIndexByteLength]] bit32.extract(Flags,4,2)+1,
+		--[[ConnectionsIndexByteLength]] bit32.extract(Flags,2,2)+1,
+		--[[MaxPropertiesLengthByteLength]] bit32.extract(Flags,0,2)+1,
+		--[[Use Double instead of Float]] bit32.band(Settings,0b1) > 0
+	}
+	
+	local ValueFMT = ('I'..Flags[1])
+	local InstanceFMT = ('I'..Flags[2])
+	local ConnectionFMT = ('I'..Flags[3])
+	local PropertyLengthFMT = ('I'..Flags[4])
+	
+	local ValuesLength = Parse(ValueFMT)
+	local Values = table.create(ValuesLength)
+	local CFrameIndexes = {}
+	
+	local ValueDecoders = {
+		--!!Start
+		[1] = function(Modifier)
+			return Parse('s'..Modifier)
+		end,
+		--!!Split
+		[2] = function(Modifier)
+			return Modifier ~= 0
+		end,
+		--!!Split
+		[3] = function()
+			return Parse('d')
+		end,
+		--!!Split
+		[4] = function(_,Index)
+			table.insert(CFrameIndexes,{Index,Parse(('I'..Flags[1]):rep(3))})
+		end,
+		--!!Split
+		[5] = {CFrame.new,Flags[5] and 'dddddddddddd' or 'ffffffffffff'},
+		--!!Split
+		[6] = {Color3.fromRGB,'BBB'},
+		--!!Split
+		[7] = {BrickColor.new,'I2'},
+		--!!Split
+		[8] = function(Modifier)
+			local len = Parse('I'..Modifier)
+			local kpts = table.create(len)
+			for i = 1,len do
+				kpts[i] = ColorSequenceKeypoint.new(Parse('f'),Color3.fromRGB(Parse('BBB')))
+			end
+			return ColorSequence.new(kpts)
+		end,
+		--!!Split
+		[9] = function(Modifier)
+			local len = Parse('I'..Modifier)
+			local kpts = table.create(len)
+			for i = 1,len do
+				kpts[i] = NumberSequenceKeypoint.new(Parse(Flags[5] and 'ddd' or 'fff'))
+			end
+			return NumberSequence.new(kpts)
+		end,
+		--!!Split
+		[10] = {Vector3.new,Flags[5] and 'ddd' or 'fff'},
+		--!!Split
+		[11] = {Vector2.new,Flags[5] and 'dd' or 'ff'},
+		--!!Split
+		[12] = {UDim2.new,Flags[5] and 'di2di2' or 'fi2fi2'},
+		--!!Split
+		[13] = {Rect.new,Flags[5] and 'dddd' or 'ffff'},
+		--!!Split
+		[14] = function()
+			local flags = Parse('B')
+			local ids = {"Top","Bottom","Left","Right","Front","Back"}
+			local t = {}
+			for i = 0,5 do
+				if bit32.extract(flags,i,1)==1 then
+					table.insert(t,Enum.NormalId[ids[i+1]])
+				end
+			end
+			return Axes.new(unpack(t))
+		end,
+		--!!Split
+		[15] = function()
+			local flags = Parse('B')
+			local ids = {"Top","Bottom","Left","Right","Front","Back"}
+			local t = {}
+			for i = 0,5 do
+				if bit32.extract(flags,i,1)==1 then
+					table.insert(t,Enum.NormalId[ids[i+1]])
+				end
+			end
+			return Faces.new(unpack(t))
+		end,
+		--!!Split
+		[16] = {PhysicalProperties.new,Flags[5] and 'ddddd' or 'fffff'},
+		--!!Split
+		[17] = {NumberRange.new,Flags[5] and 'dd' or 'ff'},
+		--!!Split
+		[18] = {UDim.new,Flags[5] and 'di2' or 'fi2'},
+		--!!Split
+		[19] = function()
+			return Ray.new(Vector3.new(Parse(Flags[5] and 'ddd' or 'fff')),Vector3.new(Parse(Flags[5] and 'ddd' or 'fff')))
+		end
+		--!!End
+	}
+	
+	for i = 1,ValuesLength do
+		local TypeAndModifier = Parse('B')
+		local Type = bit32.band(TypeAndModifier,0b11111)
+		local Modifier = (TypeAndModifier - Type) / 0b100000
+		local Decoder = ValueDecoders[Type]
+		if type(Decoder)=='function' then
+			Values[i] = Decoder(Modifier,i)
+		else
+			Values[i] = Decoder[1](Parse(Decoder[2]))
+		end
+	end
+	
+	for i,t in pairs(CFrameIndexes) do
+		Values[t[1]] = CFrame.fromMatrix(Values[t[2]],Values[t[3]],Values[t[4]])
+	end
+	
+	local InstancesLength = Parse(InstanceFMT)
+	local Instances = {}
+	local NoParent = {}
+	
+	for i = 1,InstancesLength do
+		local ClassName = Values[Parse(ValueFMT)]
+		local obj
+		local MeshPartMesh,MeshPartScale
+		if ClassName == "UnionOperation" then
+			obj = DecodeUnion(Values,Flags,Parse)
+			obj.UsePartColor = true
+		elseif ClassName:find("Script") then
+			obj = Instance.new("Folder")
+			Script(obj,ClassName=='ModuleScript')
+		elseif ClassName == "MeshPart" then
+			obj = Instance.new("Part")
+			MeshPartMesh = Instance.new("SpecialMesh")
+			MeshPartMesh.MeshType = Enum.MeshType.FileMesh
+			MeshPartMesh.Parent = obj
+		else
+			obj = Instance.new(ClassName)
+		end
+		local Parent = Instances[Parse(InstanceFMT)]
+		local PropertiesLength = Parse(PropertyLengthFMT)
+		local AttributesLength = Parse(PropertyLengthFMT)
+		Instances[i] = obj
+		for i = 1,PropertiesLength do
+			local Prop,Value = Values[Parse(ValueFMT)],Values[Parse(ValueFMT)]
+			
+			-- ok this looks awful
+			if MeshPartMesh then
+				if Prop == "MeshId" then
+					MeshPartMesh.MeshId = Value
+					continue
+				elseif Prop == "TextureID" then
+					MeshPartMesh.TextureId = Value
+					continue
+				elseif Prop == "Size" then
+					if not MeshPartScale then
+						MeshPartScale = Value
+					else
+						MeshPartMesh.Scale = Value / MeshPartScale
+					end
+				elseif Prop == "MeshSize" then
+					if not MeshPartScale then
+						MeshPartScale = Value
+						MeshPartMesh.Scale = obj.Size / Value
+					else
+						MeshPartMesh.Scale = MeshPartScale / Value
+					end
+					continue
+				end
+			end
+			
+			obj[Prop] = Value
+		end
+		if MeshPartMesh then
+			if MeshPartMesh.MeshId=='' then
+				if MeshPartMesh.TextureId=='' then
+					MeshPartMesh.TextureId = 'rbxasset://textures/meshPartFallback.png'
+				end
+				MeshPartMesh.Scale = obj.Size
+			end
+		end
+		for i = 1,AttributesLength do
+			obj:SetAttribute(Values[Parse(ValueFMT)],Values[Parse(ValueFMT)])
+		end
+		if not Parent then
+			table.insert(NoParent,obj)
+		else
+			obj.Parent = Parent
+		end
+	end
+	
+	local ConnectionsLength = Parse(ConnectionFMT)
+	for i = 1,ConnectionsLength do
+		local a,b,c = Parse(InstanceFMT),Parse(ValueFMT),Parse(InstanceFMT)
+		Instances[a][Values[b]] = Instances[c]
+	end
+	
+	return NoParent
+end
+
+
+local Objects = Decode('AADrIQVNb2RlbCEETmFtZSEGUm9vbWJhIQtQcmltYXJ5UGFydCEKV29ybGRQaXZvdATP0NEhBFBhcnQhB1Jvb21iYVAhDUJvdHRvbVN1cmZhY2UDAAAAAAAAAAAhCkJyaWNrQ29sb3IH6wMhBkNGcmFtZQQa0tMhCkNhbkNvbGxpZGUCIQVDb2xvcgYREREhCE1hc3Ns'
+..'ZXNzIiEITWF0ZXJpYWwDAAAAAACAmEAhC09yaWVudGF0aW9uClyPqkAAALRCAAAAACEIUG9zaXRpb24KNA6fQZsamD9WS4PCIQhSb3RhdGlvbgoAALRCClepQgAAtMIhBFNpemUK093PP8Thtz+J2uM/IQpUb3BTdXJmYWNlIQtTcGVjaWFsTWVzaCEGT2Zmc2V0CgAA'
+..'AAB04D++MNtfPyEFU2NhbGUKtuWfP7blnz+15Z8/IQZNZXNoSWQhF3JieGFzc2V0aWQ6Ly80OTA0NzIzODQ5IQlUZXh0dXJlSWQhF3JieGFzc2V0aWQ6Ly80OTA0NzIzODc3IQhNZXNoVHlwZQMAAAAAAAAUQCEFU291bmQhBEhvbmshElJvbGxPZmZNYXhEaXN0YW5j'
+..'ZQMAAAAAAABJQCESUm9sbE9mZk1pbkRpc3RhbmNlIQdTb3VuZElkIRdyYnhhc3NldGlkOi8vMTM5NDQ4MDY3OSEGVm9sdW1lAwAAAAAAAABAIQ1DbGlja0RldGVjdG9yIQZTY3JpcHQhD1BhcnRpY2xlRW1pdHRlciEIRmlyZUJ1cm4hDEFjY2VsZXJhdGlvbgoAAAAA'
+..'AACgQQAAAAAoAgAAAAD///8AAIA/YQEBIQREcmFnIQdFbmFibGVkIQhMaWZldGltZRHNzEw+zcxMPyENTGlnaHRFbWlzc2lvbgMAAABgZmbmPyEEUmF0ZQMAAAAAAIjDQCkDAAAAAAAAAAAAAAAASBSNPAIAAD8AAAAAAACAPwAAAAAAAAAAIQtTcHJlYWRBbmdsZQsA'
+..'AKBBAACgQSEHVGV4dHVyZSEXcmJ4YXNzZXRpZDovLzEwNjgwOTEwODYhDFRyYW5zcGFyZW5jeSkDAAAAAAAAAAAAAAAAHi+2PWRmRj4AAAAAAACAPwAAgD8AAAAAIQVBbGFybQMAAAAAAABUQCEXcmJ4YXNzZXRpZDovLzkwNjgwNzcwNTIDAAAAoJmZyT8hBUVycm9y'
+..'IRdyYnhhc3NldGlkOi8vNzU0MTc3MDI3NQMAAAAAAAAIQCEKUG9pbnRMaWdodCEKQnJpZ2h0bmVzcwb/AAAhBVJhbmdlIQRQaW5nIQ1QbGF5YmFja1NwZWVkAwAAAAAAAPA/IRdyYnhhc3NldGlkOi8vNjAyNjk4NDIyNCEGUldoZWVsBF/U1SEYQ3VzdG9tUGh5c2lj'
+..'YWxQcm9wZXJ0aWVzEJZDaz8AAAAAAAAAAAAAAAAAAAAAAwAAAAAAAHFACgpXqcIAALRCAAA0wwosMqNBAKioPhI7hMIKAAC0wlyPqkAAALTCCgO6Lj6Ky9E+oOPRPiEFU2hhcGUhCkF0dGFjaG1lbnQhC0F0dGFjaG1lbnQxIQZMV2hlZWwEZ9TVCiwyo0EAqKg+YluC'
+..'wiEFV2hlZWwEatTVCtxxmkEA9b0+OkuDwiEERmlyZSEGTG9vcGVkIRZyYnhhc3NldGlkOi8vMTMyODk3MTU2IQdFeHBsb2RlIRdyYnhhc3NldGlkOi8vODU5MzA1OTYzMiEJRXhwbG9zaW9uEc3MzD2amZk+KQMAAAAAAAAAAAAAAADqzkA9AADwPwAAAAAAAIA/AAAA'
+..'AAAAAAAhBVNwZWVkEQAAoEEAAKBBCwAANEMAADRDIQ5Vbmlvbk9wZXJhdGlvbiEETWFpbgR61tcKAAAAAAAAtEIAAAAACgjelkF0Ve4+JlCDwgopXI8+qMszPilcjz4KhnhZPoZ4WT6GeFk+CpHglkFjyeQ+dk+DwgoAAIA/AACAPwAAgD8KAAAAAAAAAAAAAAAACqsF'
+..'PD7xw40+MsGNPgq34JZBZAbFPn5Pg8IKAAAAAAAANMMAALRCAwAAAAAAABBACoySyj3xw40+MsGNPgq34JZB27TaPn1Pg8IhD0hpbmdlQ29uc3RyYWludCELQXR0YWNobWVudDAhDEFjdHVhdG9yVHlwZSEPQW5ndWxhclZlbG9jaXR5AwAAAAAAACTAIQ5Nb3Rvck1h'
+..'eFRvcnF1ZSEMQXR0YWNobWVudDBMBI/Y2Qr8/ao48AjIudM4qrcKAPD0vvrgCr5ATcU/IQFSIQFMBJTa2wrR/ao4fQjIuWE4qrcKAIAZvCTKwb0AFOU+IQxBdHRhY2htZW50MFIEmNzdCvz9qjhY8Nm5tjiqtwoA0Oo++uAKvkBNxT8hBEJlZXADAAAAAACAUUAhF3Ji'
+..'eGFzc2V0aWQ6Ly82ODYxNDcwMjE5IQNIaXQhF3JieGFzc2V0aWQ6Ly82NTQ4NTEzNTk5IQhCb2R5R3lybyEBRCEJTWF4VG9ycXVlCgAAr0MAAAAAAACvQyEBUCEQQXR0YWNobWVudDBCbGFkZQSm3t8K8Lmqr+AuZTEAALRCCgAEGj9Ym1S+APn1PiEFQmxhZGUDAAAA'
+..'AAAAWUAhBFdlbGQhEU1haW4g8J+hqiBSb29tYmFQIQJDMATg4eIhBVBhcnQwIQVQYXJ0MSEPTWFpbiDwn6GqIExpZ2h0BOPk5SEGQU1PR1VTIRdyYnhhc3NldGlkOi8vNzUzNDc2OTgzOCEEU3BpbgfCAAS35ucGo6KlCvy1mkEACoQ+IoSEwgpeTyQ/xOpZPVdQJD8K'
+..'5U4kP8bqWT3G6lk9Cvy1mkEACoQ+I4SEwgoAAAAAAAA0wwAAAAAEvujpCgAAAAAAAAAAAAC0QgoAAAAAAABmtgAAAAAhBUxpZ2h0B30ABMXq6wbquJIDAAAAAACAiEAKAAAHwgAAtMIAALRCCtzomEGAc7Q+JkuDwgoAALTCAABhwgAAAAAKzcxMPQAAgD8AAIA/IQlT'
+..'cG90TGlnaHQDAAAAAAAAREAGAPP/IQdTaGFkb3dzIQVBbmdsZQMAAAAAAEBdQCEERmFjZQoI3pZBgFXuPiZQg8IKAABgsvr/XzAAAIC/CqAgRKIAAIA/+v9fsAr6RQY3d0S6tAAAgL8KgyS+PfDkfj+nV9Y0Chw2JjXMlHSzAACAPwrx5H4/diS+vWYUGbUKAADgsvr/'
+..'3zAAAIC/CgAAAAAAAIA/+P/fsAoAAIA/yCO+tO5w3zYKeyK+NAAAgD8YAL81CgAAgD9II760bnDfNgr7Ib40AACAP+j/vjUKAACAP6gjvrSlcPM2Cj0ivjQAAIA/GgC/NQoAAAAAAACAPwC0vqwKAACAvwC0vhsAAIAuCgAAGrx8Cjk/wAKDPwoAAIA/dyS7tPq1BjcK'
+..'7+nVtPDkfj+DJL49CgAAILzQh+e9ALWCPgq1RDGvMdtUP9o5Dj8KAACAPwAAsC0AALCvCgDA3LL6v9wwAACAvwpMtD6sAACAP/u/3LAKAAAAAAAAgD8AAAAACgAAgL8AAAAAAAAAAAraOQ4/MdtUPzLYXjIKAEDdsvo/3TAAAIC/KAEAAgACAwUGBwENAAIICQoLDA0O'
+..'DxAREhMUFRYXGBkaGxwdHh8KIAIGAAIgISIjJCUmJygpKisCBQACLC0uLyowMTIzNAIAADUCAAA2AgwAAjc4ORE6Oyo8ED0+P0BBQh1DREVGR0hJKwIFAAJKLUsvKjBMMk0rAgQAAk4tSzBPMlBRAgMAUgoRU1RQKwIGAAJVVjMtLi9XMFgyKgcBDgACWQkKCwwNWhES'
+..'W1wTFBVdF14ZXxtgHWEfCmIzYwwBAAJkBwEOAAJlCQoLDA1mERJbXBMUFV0XXhlnG2AdYR8KYjNjDgEAAmQHAQ4AAmgJCgsMDWkREltcExQVXRdeGWobYB1hHwpiM2MQAQACZCsQBQACa2wULUsvKjBtKxAFAAJuLUsvKjBvMjM2EAsAAnAROjwQPXE/V0FCHXJzdER1'
+..'RkdISXZAAkACAQd8fXlQfn+BB4CBgoN+fwEHhIWCg35/AQsAAncLDA14DxAREhVdF3kZeht5HXtIV4YVBAACaIhXiYqLS2MVBAACjA2NF44Zj4YVBAACkIhXiYqLS4YVBAACkYhXiYqLS2MVBAAChw2SF5MZlGMVBAAClQ2WF5cZmDUVAAArFQUAApktmi9XMJsyKisV'
+..'BQACnC1LL1cwnTIznhUDAJ8uoKGiLmMVBAACow2kF6UZpoYVBAACp4hXiaiLS6kVAgACqqusqRUCAAKvq7ArFQUAArEtSy9XMLIyV3ZAAgAHubp5AAe5ursBCgACswu0DbUPEBG2ExQXeRm3G3kduGMlBAACZA28F70ZvgcBDgACvwkKC8ANwQ8QEcIVwxfEGcUbxh3H'
+..'HwpIV2IzyCcFAFLJEcrLFMzNzlANAQQVFocaFmQRGIcbGGQNGYcXGWQPIYcgIWQmIq0VIq4CI60VI64n')
+for _,obj in pairs(Objects) do
+	obj.Parent = script or workspace
+end
+
+RunScripts()
