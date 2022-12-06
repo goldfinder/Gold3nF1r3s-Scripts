@@ -1,4 +1,9 @@
 warn("No creditable user for original code.  Original code: 'https://pastebin.com/raw/9fQuLpvc' | Current code:  'https://github.com/goldfinder/Gold3nF1r3s-Scripts/blob/main/WunderWaffe.Lua'")
+if owner.Character.Humanoid.RigType==Enum.HumanoidRigType.R6 then else print("Useable only in R6.")return end
+print("Controls:")
+print("Q: Holster/Unholster")
+print("R: Reload")
+print("Left Mouse: Fire")
 local ls = NLS([[local plr = owner
 	local mouse = plr:GetMouse()
 	mouse.KeyDown:Connect(function(key)
