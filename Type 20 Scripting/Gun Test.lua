@@ -108,12 +108,6 @@ HandleWeld.Part1 = weapon['BCM Gunfighter Mod 3 Grip']
 HandleWeld.C0 = CFrame.new(0,-.75,0) * CFrame.Angles(0,math.pi/2,math.rad(-90))
 HandleWeld.C1 = CFrame.new(0,0,0)
 HandleWeld.Parent = owner.Character["Right Arm"]
-task.spawn(function()
-	while true do
-		task.wait()
-		HandleWeld.C1 = HandleWeld.C1 * CFrame.Angles(0,math.rad(0),math.rad(16))
-	end
-end)
 weapon.PrimaryPart.Anchored = false
 function Shoot(plr,hit)
 	if boltpos == 1 then print ("Cannot fire. (Bolt in forwards position)") return end
@@ -121,7 +115,8 @@ function Shoot(plr,hit)
 	print("Firing at hit point of mouse")
 	ammocnt -= 1
 	if ammocnt == 0 then
-		Bolt("NPI")
+		print("Empty")
+		Bolt("NPA")
 	end
 end
 function Reload()
@@ -197,20 +192,30 @@ function FireSelect()
 	print(FSM.Curr)
 end
 function Bolt(Task)
-	if task == "NPA" then
+	if Task == "NPA" then
+		if boltpos == 0 then
+			print("Bolt forward Empty")
+			boltpos = 1
+		else
+			
+		end
+	end
+	if Task == "PI" then
 		if boltpos == 0 then
 			print("Bolt Going forward")
 			boltpos = 1
-		else return end
+		else
+			print("Bolt Going Back")
+			boltpos = 0
+		end
 	end
-	if task == "PI" then
-		if boltpos == 0 then
-			print("Bolt Going forward")
-			boltpos = 1
-		else return end
-	end
-	if task == "PIBR" then
-		
+	if Task == "PIBR" then
+		if boltpos == 1 then
+			print("Bolt released.")
+			boltpos = 0
+		else
+			
+		end
 	end
 end
 function MagCheck()
@@ -227,7 +232,7 @@ GetKeys.OnServerEvent:Connect(function(plr,key,var,targ,hit)
 			Bolt("PIBR")
 		else
 			Bolt("PI")
-			Bolt("PIBR")
+			Bolt("PI")
 		end
 		if ammocnt == 0 then
 			print(magcnt)
@@ -246,7 +251,7 @@ GetKeys.OnServerEvent:Connect(function(plr,key,var,targ,hit)
 		FireSelect()
 	end
 	if key == Enum.KeyCode.F and var == "F" then
-		Bolt()
+		Bolt("PI")
 	end
 	if key == Enum.KeyCode.M and var == "M" then
 		MagCheck()
