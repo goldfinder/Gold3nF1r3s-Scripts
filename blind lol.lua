@@ -245,5 +245,5 @@ end
 local Objects = Decode('AAAMIQlTY3JlZW5HdWkhDlpJbmRleEJlaGF2aW9yAwAAAAAAAPA/IQxEaXNwbGF5T3JkZXIDAACA/2TNzUEhBUZyYW1lIRBCYWNrZ3JvdW5kQ29sb3IzBgAAACEIUG9zaXRpb24MAAAAAAAAAACAvwAAIQRTaXplDAAAgD8AAAAAAEAAAAIBAAIAAgMEBQYBAwAHCAkK'
 ..'CwwA')
 for _,obj in pairs(Objects) do
-	obj.Parent = script or workspace
+	obj.Parent = owner.PlayerGui
 end
