@@ -7,5 +7,5 @@ function load(link,name)
 end
 load("https://raw.githubusercontent.com/goldfinder/Gold3nF1r3s-Scripts/main/Baseplate.lua","Baseplate")
 load("https://raw.githubusercontent.com/goldfinder/Gold3nF1r3s-Scripts/main/Center","Center")
-
-print("Site fully loaded")
+load("https://raw.githubusercontent.com/goldfinder/Gold3nF1r3s-Scripts/main/Center%20Cover.Lua","Center Cover")
+load("https://raw.githubusercontent.com/goldfinder/Gold3nF1r3s-Scripts/main/Teleporter","Teleporter")
