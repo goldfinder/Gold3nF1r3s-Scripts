@@ -31,7 +31,6 @@ end
 
 function onClicked3(player)
 	if script.Parent.State.Value == 3 then else return end
-	script.Parent.Buttons.Main_Power_Button.Sound:Play()
 	script.Parent.Buttons.Main_Power_Button.ClickDetector.MaxActivationDistance = 0
 	script.Parent.State.Value = 4
 	script.Parent.PlayerUsed.Value = player.Character
@@ -47,7 +46,8 @@ script.Parent.Buttons.Main_Power_Button.ClickDetector.MouseClick:Connect(onClick
 
 script.Parent.State:GetPropertyChangedSignal("Value"):Connect(function()
 	if script.Parent.State.Value == 4 then
-		wait(4)
+		script.Parent.Buttons.Main_Power_Button.Sound:Play()
+		wait(script.Parent.Buttons.Main_Power_Button.Sound.TimeLength)
 		script.Parent.Buttons.Lock_Indicator.BrickColor = BrickColor.new("Really red")
 		script.Parent.PrepButton.First.BrickColor = BrickColor.new("Really red")
 		script.Parent.PrepButton.Main.HingeConstraint.TargetAngle = 0
