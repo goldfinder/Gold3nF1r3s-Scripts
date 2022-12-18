@@ -1,3 +1,5 @@
+--Rig Type Check
+if owner.Character.Humanoid.RigType==Enum.HumanoidRigType.R6 then else warn("Useable only in R6.") return end
 --CREDITS
 warn("Model was taken from 'BigToastBoii'.  Handcoded")
 print("Controls:")print("V: Fire Selector")print("F: Bolt")print("R: Reload")print("M: Mag Check")print("F1: Weapon Debug Information")
