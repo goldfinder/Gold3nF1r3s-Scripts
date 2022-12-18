@@ -5,7 +5,7 @@
 ]]
 local X = 20
 local Z = 20
-local plr = Owner.Character
+local plr = owner.Character
 local posx = plr.HumanoidRootPart.Position.X
 local posy = plr.HumanoidRootPart.Position.Y
 local posz = plr.HumanoidRootPart.Position.Z
