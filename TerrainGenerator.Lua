@@ -45,7 +45,7 @@ for x = 1, X do
 		end
 		part.Position = Vector3.new((posx+(x*1-((X*1)/2))), (posy+((yPos/8))), (posz+(z*1-((Z*1)/2))))
 		part.Size = Vector3.new(1, 0.5, 1)
-		local f = instance.New("WeldConstraint")
+		local f = instance.new("WeldConstraint")
 		part.Parent = workspace
 	end
 end
