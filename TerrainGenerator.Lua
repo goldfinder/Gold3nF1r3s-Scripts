@@ -22,7 +22,9 @@ for x = 1, X do
 end
 for x = 1, X do
 	for z = 1, Z do
-		wait(0.06)
+		wait(1)
+		for i=1,16 do
+			
 		local yPos = grid[x][z]
 
 		local part = Instance.new("Part")
@@ -47,6 +49,7 @@ for x = 1, X do
 		part.Size = Vector3.new(1, 0.5, 1)
 		local f = instance.new("WeldConstraint")
 		part.Parent = workspace
+		end
 	end
 end
 
