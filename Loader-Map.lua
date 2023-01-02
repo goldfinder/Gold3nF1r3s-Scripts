@@ -12,3 +12,5 @@ load("https://raw.githubusercontent.com/goldfinder/Gold3nF1r3s-Scripts/main/Cent
 load("https://raw.githubusercontent.com/goldfinder/Gold3nF1r3s-Scripts/main/Center%20Cover.Lua","Center Cover")
 	wait(1)
 load("https://raw.githubusercontent.com/goldfinder/Gold3nF1r3s-Scripts/main/Teleporter","Teleporter")
+	wait(1)
+load("https://raw.githubusercontent.com/goldfinder/Gold3nF1r3s-Scripts/main/Material%20Map","Material Map")
