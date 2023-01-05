@@ -32,8 +32,6 @@ function onTouched(hit)
 			h[i].Anchored = false
 			h[i].CanCollide = false
 		end
-		hit.Parent.Saude.Protecao.VestProtect.Value = 200
-		hit.Parent.Saude.Protecao.VestVida.Value = 300
 	end
 end
 
