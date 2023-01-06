@@ -1,7 +1,7 @@
 --Rig Type Check
 if owner.Character.Humanoid.RigType==Enum.HumanoidRigType.R6 then else warn("Useable only in R6.") return end
 --CREDITS
-warn("Model was taken from 'BigToastBoii'.  Handcoded")
+warn("Model was taken from 'BigToastBoii'.  Handcoded by Gold3nF1r3, and help from Errorcodedot")
 print("Controls:")print("V: Fire Selector")print("F: Bolt")print("R: Reload")print("M: Mag Check")print("F1: Weapon Debug Information")
 --VARIABLES
 local ammocnt,mammocnt,mammowadd,FSC = 31,30,31,1
@@ -21,38 +21,34 @@ FSSettings.Bolt = false
 FSSettings.RPG = false
 FSSettings.Shotgun = false
 local boltpos = 0
-GetClick = Instance.new("RemoteEvent")
-GetClick.Parent = owner.Character
-GetClick.Name = "GetClick"
+warn("Controls being recoded.")
+--[[GetEvent = Instance.new("RemoteEvent")
+GetEvent.Parent = owner.Character
+GetEvent.Name = "GetKey"
 NLS([==[
-game:GetService("RunService").RenderStepped:Connect(function()
-    for i, part in pairs(owner.Character:GetChildren()) do
-        if part:IsA("Part") and (part.Name == "Right Arm" or part.Name == "Left Arm") then
-            part.LocalTransparencyModifier = 0
-        end
-    end
+local plr = game.Players.LocalPlayer
+local mouse = plr:GetMouse()
+mouse.KeyDown:Connect(function(key)
+	script.Parent:FireServer("Keyboard",key.KeyCode,"H",mouse.Target,mouse.Hit)
+	script.Parent:FireServer("Keyboard",key.KeyCode,"R",mouse.Target,mouse.Hit)
+	script.Parent:FireServer("Keyboard",key.KeyCode,"V",mouse.Target,mouse.Hit)
+	script.Parent:FireServer("Keyboard",key.KeyCode,"F",mouse.Target,mouse.Hit)
+	script.Parent:FireServer("Keyboard",key.KeyCode,"M",mouse.Target,mouse.Hit)
+	script.Parent:FireServer("Keyboard",key.KeyCode,"CG1",mouse.Target,mouse.Hit)
 end)
-local mouse = owner:GetMouse()
 mouse.Button1Down:Connect(function()
-	script.Parent:FireServer(mouse.Hit)
+	script.Parent:FireServer("Mouse",nil,"M1D",mouse.Target,mouse.Hit)
 end)
-]==],GetClick)
-GetKeys = Instance.new("RemoteEvent")
-GetKeys.Parent = owner.Character
-GetKeys.Name = "GetKey"
-NLS([==[
-game:GetService("UserInputService").InputBegan:Connect(function(key,isTyping)
-	if isTyping == false then
-		local mouse = owner:GetMouse()
-		script.Parent:FireServer(key.KeyCode,"H",mouse.Target,mouse.Hit)
-		script.Parent:FireServer(key.KeyCode,"R",mouse.Target,mouse.Hit)
-		script.Parent:FireServer(key.KeyCode,"V",mouse.Target,mouse.Hit)
-		script.Parent:FireServer(key.KeyCode,"F",mouse.Target,mouse.Hit)
-		script.Parent:FireServer(key.KeyCode,"M",mouse.Target,mouse.Hit)
-		script.Parent:FireServer(key.KeyCode,"CG1",mouse.Target,mouse.Hit)
-	end
+mouse.Button1Up:Connect(function()
+	script.Parent:FireServer("Mouse",nil,"M1U",mouse.Target,mouse.Hit)
 end)
-]==],GetKeys)
+mouse.Button2Down:Connect(function()
+	script.Parent:FireServer("Mouse",nil,"M2D",mouse.Target,mouse.Hit)
+end)
+mouse.Button2Up:Connect(function()
+	script.Parent:FireServer("Mouse",nil,"M2U",mouse.Target,mouse.Hit)
+end)
+]==],GetEvent)]]
 for _,a in pairs(owner.Character:GetDescendants()) do
 	if a:IsA("Motor6D") and a.Name ~= "Left Hip" and a.Name ~= "Right Hip" then
 		local Weld = Instance.new("Weld")
@@ -135,28 +131,6 @@ function ClickSound()
 	end)
 	coroutine.resume(f)
 end
-function Shoot(plr,hit)
-	if ammocnt == 0 then if DT == true then print ("Cannot fire. (No ammo in magazine)") end ClickSound() return end
-	if boltpos == 1 then if DT == true then print ("Cannot fire. (Bolt in forwards position)") end return end
-	if OHL == true then if DT == true then print ("Cannot fire.  (Too hot)") end ClickSound() return end
-	if DT == true then
-		print("Firing at hit point of mouse")
-	end	
-	ammocnt -= 1
-	CH+=1
-	if CH == 45 then
-		OHL = true
-	end
-	OverheatEffect()
-	FireSound()
-	FireEffects()
-	if ammocnt == 0 then
-		if DT == true then
-			print("Empty")
-		end
-		Bolt("NPA")
-	end
-end
 --  Effects
 function FireEffects()
 	local f = coroutine.create(function()
@@ -205,6 +179,28 @@ function OverheatEffect()
 	coroutine.resume(f)
 end
 --  Triggers
+function Shoot(plr,hit)
+	if ammocnt == 0 then if DT == true then print ("Cannot fire. (No ammo in magazine)") end ClickSound() return end
+	if boltpos == 1 then if DT == true then print ("Cannot fire. (Bolt in forwards position)") end return end
+	if OHL == true then if DT == true then print ("Cannot fire.  (Too hot)") end ClickSound() return end
+	if DT == true then
+		print("Firing at hit point of mouse")
+	end	
+	ammocnt -= 1
+	CH+=1
+	if CH == 45 then
+		OHL = true
+	end
+	OverheatEffect()
+	FireSound()
+	FireEffects()
+	if ammocnt == 0 then
+		if DT == true then
+			print("Empty")
+		end
+		Bolt("NPA")
+	end
+end
 function Reload(targ)
 	if DT == true then
 		print("Reloading")
@@ -318,65 +314,69 @@ function MagCheck()
 	end
 end
 --Connect functions to their events
-GetClick.OnServerEvent:Connect(function(plr,extra)
-	if DT == true then
-		print(plr,extra)
-	end
+--[[GetEvent.OnServerEvent:Connect(function(plr,type,key,var,targ,hit)
+	print(plr,type,var,key,targ,hit)
+	if type == "Keyboard" then
+		if key == nil then
+			print("Uh oh, errored")
+			return end
+		if key == Enum.KeyCode.R and var == "R" then
+			Reload()
+			if boltpos == 1 then
+				Bolt("PIBR")
+			else
+				Bolt("PI")
+				Bolt("PI")
+			end
+			if ammocnt == 0 then
+				if DT == true then
+					print(magcnt,ammocnt)
+				end
+				for i=1,30 do
+					if magcnt ~= 0 then
+						ammocnt+=1
+						magcnt-=1
+					end
+				end
+				if DT == true then
+					print(magcnt,ammocnt)
+				end
+			else
+				if DT == true then
+					print(magcnt,ammocnt)
+				end
+				local curammo = ammocnt
+				local missing = math.abs(curammo-mammowadd)
+				for i=1,missing do
+					if magcnt ~= 0 then
+						ammocnt+=1
+						magcnt-=1
+					end
+				end
+				if DT == true then
+					print(magcnt,ammocnt)
+				end
+			end
+		end
+		if key == Enum.KeyCode.V and var == "V" then
+			FireSelect()
+		end
+		if key == Enum.KeyCode.F and var == "F" then
+			Bolt("PI")
+		end
+		if key == Enum.KeyCode.M and var == "M" then
+			MagCheck()
+		end
+		if key == Enum.KeyCode.F1 and var == "CG1" then
+			ToggleDeveloper()
+		end
+	elseif type == "Mouse" then
+		if key == "M1D" then
+			
+		end
 	
-	Shoot(plr)
-end )
-GetKeys.OnServerEvent:Connect(function(plr,key,var,targ,hit)
-	if key == Enum.KeyCode.R and var == "R" then
-		Reload()
-		if boltpos == 1 then
-			Bolt("PIBR")
-		else
-			Bolt("PI")
-			Bolt("PI")
-		end
-		if ammocnt == 0 then
-			if DT == true then
-				print(magcnt,ammocnt)
-			end
-			for i=1,30 do
-				if magcnt ~= 0 then
-					ammocnt+=1
-					magcnt-=1
-				end
-			end
-			if DT == true then
-				print(magcnt,ammocnt)
-			end
-		else
-			if DT == true then
-				print(magcnt,ammocnt)
-			end
-			local curammo = ammocnt
-			local missing = math.abs(curammo-mammowadd)
-			for i=1,missing do
-				if magcnt ~= 0 then
-					ammocnt+=1
-					magcnt-=1
-				end
-			end
-			if DT == true then
-				print(magcnt,ammocnt)
-			end
-		end
 	end
-	if key == Enum.KeyCode.V and var == "V" then
-		FireSelect()
-	end
-	if key == Enum.KeyCode.F and var == "F" then
-		Bolt("PI")
-	end
-	if key == Enum.KeyCode.M and var == "M" then
-		MagCheck()
-	end
-	if key == Enum.KeyCode.F1 and var == "CG1" then
-		ToggleDeveloper()
-	end
-end)
+end)]]
 --Animations
 local char = owner.Character
 torso = char.Torso
