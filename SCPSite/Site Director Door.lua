@@ -18,7 +18,8 @@ local Debounce = false
 function Triggered(Player)
 	if Player.Character == nil then return end
 	if Player.Character:FindFirstChild("User Setup") == nil then return end
-	if Player.Character:FindFirstChild("AccessLevel").Value < 7 or Player.UserId == owner.UserId then 
+	if (Player.Character:FindFirstChild("AccessLevel").Value < 7) == false or Player.UserId == owner.UserId then 
+	else
 		Door.AccessDenied:Play()
 		return end
 	if game.Workspace:FindFirstChild("MainGroup") ~= nil then
@@ -27,7 +28,6 @@ function Triggered(Player)
 				Door.AccessDenied:Play()
 				return end
 		end
-
 	end
 	if Debounce == true then return end
 	Debounce = true
