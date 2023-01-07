@@ -1,8 +1,8 @@
 -- Converted using Mokiros's Model to Script Version 3
--- Converted string size: 640 characters
+-- Converted string size: 744 characters
 local function Decode(str)
 	local StringLength = #str
-
+	
 	-- Base64 decoding
 	do
 		local decoder = {}
@@ -29,14 +29,14 @@ local function Decode(str)
 		end
 		str = table.concat(t)
 	end
-
+	
 	local Position = 1
 	local function Parse(fmt)
 		local Values = {string.unpack(fmt,str,Position)}
 		Position = table.remove(Values)
 		return table.unpack(Values)
 	end
-
+	
 	local Settings = Parse('B')
 	local Flags = Parse('B')
 	Flags = {
@@ -46,16 +46,16 @@ local function Decode(str)
 		--[[MaxPropertiesLengthByteLength]] bit32.extract(Flags,0,2)+1,
 		--[[Use Double instead of Float]] bit32.band(Settings,0b1) > 0
 	}
-
+	
 	local ValueFMT = ('I'..Flags[1])
 	local InstanceFMT = ('I'..Flags[2])
 	local ConnectionFMT = ('I'..Flags[3])
 	local PropertyLengthFMT = ('I'..Flags[4])
-
+	
 	local ValuesLength = Parse(ValueFMT)
 	local Values = table.create(ValuesLength)
 	local CFrameIndexes = {}
-
+	
 	local ValueDecoders = {
 		--!!Start
 		[1] = function(Modifier)
@@ -141,7 +141,7 @@ local function Decode(str)
 		end
 		--!!End
 	}
-
+	
 	for i = 1,ValuesLength do
 		local TypeAndModifier = Parse('B')
 		local Type = bit32.band(TypeAndModifier,0b11111)
@@ -153,15 +153,15 @@ local function Decode(str)
 			Values[i] = Decoder[1](Parse(Decoder[2]))
 		end
 	end
-
+	
 	for i,t in pairs(CFrameIndexes) do
 		Values[t[1]] = CFrame.fromMatrix(Values[t[2]],Values[t[3]],Values[t[4]])
 	end
-
+	
 	local InstancesLength = Parse(InstanceFMT)
 	local Instances = {}
 	local NoParent = {}
-
+	
 	for i = 1,InstancesLength do
 		local ClassName = Values[Parse(ValueFMT)]
 		local obj
@@ -186,7 +186,7 @@ local function Decode(str)
 		Instances[i] = obj
 		for i = 1,PropertiesLength do
 			local Prop,Value = Values[Parse(ValueFMT)],Values[Parse(ValueFMT)]
-
+			
 			-- ok this looks awful
 			if MeshPartMesh then
 				if Prop == "MeshId" then
@@ -211,7 +211,7 @@ local function Decode(str)
 					continue
 				end
 			end
-
+			
 			obj[Prop] = Value
 		end
 		if MeshPartMesh then
@@ -231,21 +231,21 @@ local function Decode(str)
 			obj.Parent = Parent
 		end
 	end
-
+	
 	local ConnectionsLength = Parse(ConnectionFMT)
 	for i = 1,ConnectionsLength do
 		local a,b,c = Parse(InstanceFMT),Parse(ValueFMT),Parse(InstanceFMT)
 		Instances[a][Values[b]] = Instances[c]
 	end
-
+	
 	return NoParent
 end
 
 
-local Objects = Decode('AAAjIQxCaWxsYm9hcmRHdWkhBE5hbWUhBlJhbmtVSSELQWx3YXlzT25Ub3AiIRBDbGlwc0Rlc2NlbmRhbnRzIQtNYXhEaXN0YW5jZQMAAAAAAABJQCEEU2l6ZQwAAIBAAAAAAMA/AAAhClNpemVPZmZzZXQLAAAAAAAAgD8hCVRleHRMYWJlbCEDSElEIQtBbmNob3JQ'
-	..'b2ludAsAAAA/AAAAACEQQmFja2dyb3VuZENvbG9yMwb///8hFkJhY2tncm91bmRUcmFuc3BhcmVuY3kDAAAAAAAA8D8hCFBvc2l0aW9uDAAAAD8AAAAAAAAAAAwAAIA/AAD6fqo+AAAhBEZvbnQDAAAAAAAAJkAhBFRleHQhEk1hcCBMb2FkZXIgQWN0aW9uOiEKVGV4'
-	..'dENvbG9yMyEKVGV4dFNjYWxlZCEIVGV4dFNpemUhC1RleHRXcmFwcGVkIQNNTEEMAAAAPwAA+n6qPgAAIQNDTEEMAAAAPwAAg8AqPwAABAEABgACAwQFBgUHCAkKCwwNAQwAAg4PEBESExQVFgkXGBkaGxwSHQUeCB8FDQEMAAIgDxAREhMUFSEJFxgZGhscEh0FHggf'
-	..'BQ0BDAACIg8QERITFBUjCRcYGRobHBIdBR4IHwUA')
+local Objects = Decode('AAApIQxCaWxsYm9hcmRHdWkhBE5hbWUhBlJhbmtVSSELQWx3YXlzT25Ub3AiIRBDbGlwc0Rlc2NlbmRhbnRzIQtNYXhEaXN0YW5jZQMAAAAAAABJQCEEU2l6ZQwAAIBAAAAAAMA/AAAhClNpemVPZmZzZXQLAAAAAAAAgD8hCVRleHRMYWJlbCEDSElEIQtBbmNob3JQ'
+..'b2ludAsAAAA/AAAAACEQQmFja2dyb3VuZENvbG9yMwb///8hFkJhY2tncm91bmRUcmFuc3BhcmVuY3kDAAAAAAAA8D8hCFBvc2l0aW9uDAAAAD8AAAAAAAAAAAwAAIA/AAD6fqo+AAAhBEZvbnQDAAAAAAAAJkAhBFRleHQhEk1hcCBMb2FkZXIgQWN0aW9uOiEKVGV4'
+..'dENvbG9yMyEKVGV4dFNjYWxlZCEIVGV4dFNpemUhC1RleHRXcmFwcGVkIQdUZXh0Qm94IQNNTEEMAAAAAAAA+n6qPgAAIRBDbGVhclRleHRPbkZvY3VzAiEPU2hvd05hdGl2ZUlucHV0IQxUZXh0RWRpdGFibGUDAAAAAAAALEAhA0NMQQwAAAAAAACDwCo/AAAEAQAG'
+..'AAIDBAUGBQcICQoLDA0BDAACDg8QERITFBUWCRcYGRobHBIdBR4IHwUgAQ4AAiEREhMUFSIJFyMkGBklJBobHBImJB0FHicfBSABDgACKBESExQVKQkXIyQYGSUkGhscEiYkHQUeJx8FAA==')
 local MGUI1
 local MGUI2
 local MGUI3
