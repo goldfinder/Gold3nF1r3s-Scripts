@@ -16,7 +16,7 @@ script.Parent.L0A.ClickDetector.MouseClick:Connect(function(plr)
 		script.Parent.L0A.SurfaceGui.TextLabel.Text=TLTS
 	end
 	for i=1,#players do
-		if plr.UserId == players[i] then
+		if plr.UserId == tonumber(players[i]) then
 			script.Parent.L0A.SurfaceGui.TextLabel.Text="Added Access."
 			local inst = Instance.new("NumberValue")
 			inst.Value = TLT
