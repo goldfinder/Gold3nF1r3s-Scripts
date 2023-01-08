@@ -133,6 +133,24 @@ script.Parent.L3B.ClickDetector.MouseClick:Connect(function(plr)
 		script.Parent.L3B.SurfaceGui.TextLabel.Text=TLT
 	end
 end)
+
+script.Parent.L5B.ClickDetector.MouseClick:Connect(function(plr)
+	local TLT = "Site Director"
+	local TLTS = "SiD (LOCKED)"
+	if plr.Character:FindFirstChild("Class") ~= nil then
+		script.Parent.L5B.SurfaceGui.TextLabel.Text="Already have a Class."
+		wait(3)
+		script.Parent.L5B.SurfaceGui.TextLabel.Text=TLTS
+	else
+		script.Parent.L5B.SurfaceGui.TextLabel.Text="Added Class."
+		local inst = Instance.new("StringValue")
+		inst.Value = TLT
+		inst.Name="Class"
+		inst.Parent = plr.Character
+		wait(3)
+		script.Parent.L5B.SurfaceGui.TextLabel.Text=TLTS
+	end
+end)
 end,
 function(script,require)
 local SD = owner.UserId
@@ -464,11 +482,11 @@ local function Script(obj,ismodule)
 	t[obj] = ScriptIndex
 end
 function RunScripts()
-    for script, index in pairs(Scripts) do
-        coroutine.wrap(function()
-            ScriptFunctions[index](script, require)
-        end)()
-    end
+	for script, index in pairs(Scripts) do
+		coroutine.wrap(function()
+			ScriptFunctions[index](script, require)
+		end)()
+	end
 end
 local function Decode(str)
 	local StringLength = #str
