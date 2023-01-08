@@ -178,12 +178,12 @@ script.Parent.MouseClick:Connect(function(plr)
 	local players = string:split("|")
 	local betatester = false
 	for i=1,#players do
-		if plr.UserId == tostring(players[i]) then
+		if plr.UserId == tonumber(players[i]) then
 			betatester = true
 		end
 	end
 	if betatester==false then
-		i.Handle.GUI["Beta Tester tag"]:Destroy()
+		i.Handle.GUI["Beta Tester Tag"]:Destroy()
 	end
 	i.Parent = plr.Backpack
 	local setup = Instance.new("Folder")
