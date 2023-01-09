@@ -1,91 +1,93 @@
 -- Converted using Mokiros's Model to Script Version 3
--- Converted string size: 3148 characters
+-- Converted string size: 3268 characters
 
 local ScriptFunctions = {
 function(script,require)
-local board = script.Parent.SurfaceGui.ScrollingFrame
-local selfcount = script.Parent.SurfaceGui.MSGCNT
-local plrlist = game.Players:GetChildren()
-local tweenService = game:GetService("TweenService")
-local tweenInfo = TweenInfo.new(
-	5, --Time
-	Enum.EasingStyle.Linear, --EasingStyle
-	Enum.EasingDirection.Out, --EasingDirection
-	0, --Repeat count
-	false, --Reverses if true
-	0 --Delay time
-)
+		local board = script.Parent.SurfaceGui.ScrollingFrame
+		local selfcount = script.Parent.SurfaceGui.MSGCNT
+		local plrlist = game.Players:GetChildren()
+		local tweenService = game:GetService("TweenService")
+		local tweenInfo = TweenInfo.new(
+			5, --Time
+			Enum.EasingStyle.Linear, --EasingStyle
+			Enum.EasingDirection.Out, --EasingDirection
+			0, --Repeat count
+			false, --Reverses if true
+			0 --Delay time
+		)
 
-local messages = 0
-for i=1,#plrlist do
-	plrlist[i].Chatted:Connect(function(msg)
-				if msg:find("/") == 1 or msg:find("/") == 2 or msg:find("/") == 3 then
-		else
-			local f = script.MSG:Clone()
-			if plrlist[i].UserId == 21490931 then
-				f.Message.TextColor3 = Color3.fromRGB(0,255,0)
-				f.PName.TextColor3 = Color3.fromRGB(255,204,51)
-			end
-			if plrlist[i].UserId == 13480417 then
-				f.Message.TextColor3 = Color3.fromRGB(255,215,0)
-			end
-			f.Message.Text = msg
-			f.PName.Text = plrlist[i].Name
-			f.Parent=board
-			messages = messages+1
-			selfcount.Text = messages
+		local messages = 1
+		for i=1,#plrlist do
+			plrlist[i].Chatted:Connect(function(msg)
+				if msg:find("/") == 1 or msg:find("/") == 2 then
+				else
+					local f = script.MSG:Clone()
+					if plrlist[i].UserId == 21490931 then
+						f.Message.TextColor3 = Color3.fromRGB(0,255,0)
+						f.PName.TextColor3 = Color3.fromRGB(255,204,51)
+					end
+					if plrlist[i].UserId == 13480417 then
+						f.Message.TextColor3 = Color3.fromRGB(255,215,0)
+					end
+					f.Message.Text = msg
+					f.PName.Text = plrlist[i].Name
+					f.Parent=board
+					messages = messages+1
+					selfcount.Text = messages
+					wait(55)
+					local Tween = game:GetService("TweenService"):Create(f, TweenInfo.new(5), {Transparency = 0})
+					Tween:Play()
+					wait(5)
+					f:Destroy()
+				end
+			end)
+		end
+		game.Players.PlayerAdded:Connect(function(plr)
+			plr.Chatted:Connect(function(msg)
+				if msg:find("/") == 1 or msg:find("/") == 2 then
+				else
+					local f = script.MSG:Clone()
+					if plr.UserId == 21490931 then
+						f.Message.TextColor3 = Color3.fromRGB(0,255,0)
+						f.PName.TextColor3 = Color3.fromRGB(255,204,51)
+					end
+					if plr.UserId == 13480417 then
+						f.Message.TextColor3 = Color3.fromRGB(255,215,0)
+					end
+					f.Message.Text = msg
+					f.PName.Text = plr.Name
+					f.Parent=board
+					messages = messages+1
+					selfcount.Text = messages
+					wait(55)
+					local Tween = game:GetService("TweenService"):Create(f, TweenInfo.new(5), {Transparency = 0})
+					Tween:Play()
+					f:Destroy()
+				end
+			end)
+		end)
+		game.Players.PlayerRemoving:Connect(function(plr)
+			local f = script.SYSTEM:Clone()
+			f.Message.Text = plr.Name.." Has left the server."
+			f.Message.TextColor3 = Color3.fromRGB(170, 0, 0)
+			f.Parent = board
 			wait(55)
 			local Tween = game:GetService("TweenService"):Create(f, TweenInfo.new(5), {Transparency = 0})
 			Tween:Play()
 			wait(5)
 			f:Destroy()
-		end
-	end)
-end
-game.Players.PlayerAdded:Connect(function(plr)
-	plr.Chatted:Connect(function(msg)
-				if msg:find("/") == 1 or msg:find("/") == 2 or msg:find("/") == 3 then
-		else
-			local f = script.MSG:Clone()
-			if plr.UserId == 21490931 then
-				f.Message.TextColor3 = Color3.fromRGB(0,255,0)
-				f.PName.TextColor3 = Color3.fromRGB(255,204,51)
-			end
-			if plr.UserId == 13480417 then
-				f.Message.TextColor3 = Color3.fromRGB(255,215,0)
-			end
-					f.Message.Text = msg
-			f.PName.Text = plr.Name
-			f.Parent=board
-			messages = messages+1
-			selfcount.Text = messages
+		end)
+		game.Players.PlayerAdded:Connect(function(plr)
+			local f = script.SYSTEM:Clone()
+			f.Message.Text = plr.Name.." Has joined the server."
+			f.Message.TextColor3 = Color3.fromRGB(85, 255, 0)
+			f.Parent = board
 			wait(55)
 			local Tween = game:GetService("TweenService"):Create(f, TweenInfo.new(5), {Transparency = 0})
 			Tween:Play()
+			wait(5)
 			f:Destroy()
-		end
-	end)
-end)
-game.Players.PlayerRemoving:Connect(function(plr)
-	local f = script.SYSTEM:Clone()
-	f.Message.Text = "SERVER | "..plr.Name.." Has left the server."
-	f.Parent = board
-	wait(55)
-	local Tween = game:GetService("TweenService"):Create(f, TweenInfo.new(5), {Transparency = 0})
-	Tween:Play()
-	wait(5)
-	f:Destroy()
-end)
-game.Players.PlayerAdded:Connect(function(plr)
-	local f = script.SYSTEM:Clone()
-	f.Message.Text = "SERVER | "..plr.Name.." Has joined the server."
-	f.Parent = board
-	wait(55)
-	local Tween = game:GetService("TweenService"):Create(f, TweenInfo.new(5), {Transparency = 0})
-	Tween:Play()
-	wait(5)
-	f:Destroy()
-end)
+		end)
 end
 }
 local ScriptIndex = 0
@@ -359,22 +361,23 @@ local function Decode(str)
 end
 
 
-local Objects = Decode('AACbIQVNb2RlbCEKV29ybGRQaXZvdASOj5AhBFBhcnQhCEFuY2hvcmVkIiENQm90dG9tU3VyZmFjZQMAAAAAAAAAACEKQnJpY2tDb2xvcgfHACEGQ0ZyYW1lBBKRkiEFQ29sb3IGY19iIQtPcmllbnRhdGlvbgoAAJBCAAAAAAAAAAAhCFBvc2l0aW9uCgIAWUJ+wVg/'
-..'DO6mQiEIUm90YXRpb24hBFNpemUKAACgPwAAwD4AAEA/IQpUb3BTdXJmYWNlBBiRkgoCAFlC8KRiP+oqp0IKAADgPwAAAD4AAEA/BByTlAoAAHBCAAAAAAAAAAAKAgBZQtADxz9OkqZCBB6TlAoCAFlC9gO/P+JapkIEIZWWCgAAQEIAAAAAAAAAAAoCAFlCJhkEQDOG'
-..'pUIEI5WWCgIAWUKMcwlAw7WlQgQml5gKAAAQQgAAAAAAAAAACgIAWUKpXCJAUHmkQgQol5gKAgBZQnjVKEDunqRCBCuPmQoAAMBBAAAAAAAAAAAKAgBZQtz5OED2P6NCBC2PmQoCAFlC0EhAQP5Zo0IEMI+aCgAAQEEAAAAAAAAAAAoCAFlC1fNGQNjnoUIEMo+aCgIA'
-..'WUIQx05AJvWhQgQ0j5AKAgBZQhSuS0D/f6BCBDaPkAoCAFlCFK5TQP9/oEIEOI+QCgIAWUIUrktA/3+JQgoAAKA/AADAPgAAskEEO4+QCgIAWUIUrlNA/3+JQgoAAOA/AAAAPgAAskEEPo+QCgIAWUIoXPc//n9nQgoAAOA/AAA4QAAAAD8hBE5hbWUhBlNjcmVlbgRG'
-..'m5AhCkNhbkNvbGxpZGUCCgAAAAAAALRCAAAAAAoCwFlCCtf1QP+/jkIKAABwQQAACkEAAMA9IQxUcmFuc3BhcmVuY3kDAAAAAAAA8D8hClN1cmZhY2VHdWkhDlpJbmRleEJlaGF2aW9yIRBDbGlwc0Rlc2NlbmRhbnRzIQRGYWNlAwAAAAAAAABAIQ5MaWdodEluZmx1'
+local Objects = Decode('AACcIQVNb2RlbCEKV29ybGRQaXZvdASPkJEhBFBhcnQhCEFuY2hvcmVkIiENQm90dG9tU3VyZmFjZQMAAAAAAAAAACEKQnJpY2tDb2xvcgfHACEGQ0ZyYW1lBBKSkyEFQ29sb3IGY19iIQtPcmllbnRhdGlvbgoAAJBCAAAAAAAAAAAhCFBvc2l0aW9uCgA8AMPARNQ+'
+..'zEebwSEIUm90YXRpb24hBFNpemUKAACgPwAAwD4AAEA/IQpUb3BTdXJmYWNlBBiSkwoAPADDsAvoPlRUmsEKAADgPwAAAD4AAEA/BByUlQoAAHBCAAAAAAAAAAAKADwAw0i0jz/EtpzBBB6UlQoAPADDYLSHP3SUncEEIZaXCgAAQEIAAAAAAAAAAAoAPADDvOLQPzDn'
+..'oMEEI5aXCgA8AMOEl9s/8CigwQQmmJkKAAAQQgAAAAAAAAAACgA8AMPatAZAvBqlwQQomJkKADwAw6otDUBEhKTBBCuQmgoAAMBBAAAAAAAAAAAKADwAwxJSHUAkAKrBBC2QmgoAPADDAqEkQASYqcEEMJCbCgAAQEEAAAAAAAAAAAoAPADDB0wrQJxgr8EEMpCbCgA8'
+..'AMNEHzNAZCuvwQQ0kJEKADwAw0cGMEAAALXBBDaQkQoAPADDRwY4QAAAtcEEOJCRCgA8AMNHBjBAAIAIwgoAAKA/AADAPgAAskEEO5CRCgA8AMNHBjhAAIAIwgoAAOA/AAAAPgAAskEEPpCRCgA8AMOgDMA/AAA0wgoAAOA/AAA4QAAAAD8hBE5hbWUhBlNjcmVlbgRG'
+..'nJEhCkNhbkNvbGxpZGUCCgAAAAAAALRCAAAAAAoADADDIAPoQAAA/MEKAABwQQAACkEAAMA9IQxUcmFuc3BhcmVuY3kDAAAAAAAA8D8hClN1cmZhY2VHdWkhDlpJbmRleEJlaGF2aW9yIRBDbGlwc0Rlc2NlbmRhbnRzIQRGYWNlAwAAAAAAAABAIQ5MaWdodEluZmx1'
 ..'ZW5jZSENUGl4ZWxzUGVyU3R1ZAMAAAAAAMByQCEKU2l6aW5nTW9kZSEOU2Nyb2xsaW5nRnJhbWUhBkFjdGl2ZSEQQmFja2dyb3VuZENvbG9yMwYAAAAMAACAPwAAAACAPwAAIQpDYW52YXNTaXplDAAAAAAAAAAAAEIAACESU2Nyb2xsQmFyVGhpY2tuZXNzAwAAAAAA'
 ..'ADhAIQxVSUxpc3RMYXlvdXQhCVNvcnRPcmRlciEHVGV4dEJveCEGTVNHQ05UBv///ww7328/6P8AAAAAAAAMJQaBPQAAJQaBPQAAIQRGb250AwAAAAAAAAhAIQRUZXh0IQhNU0dDT1VOVCEKVGV4dENvbG9yMyEKVGV4dFNjYWxlZCEIVGV4dFNpemUDAAAAAAAALEAh'
 ..'C1RleHRXcmFwcGVkIQZTY3JpcHQhBUZyYW1lIQNNU0cG/wAAIRZCYWNrZ3JvdW5kVHJhbnNwYXJlbmN5IQ9Cb3JkZXJTaXplUGl4ZWwMAACAPwAAAAAAAGQAIQVQTmFtZQwAAAA+AAAAAIA/AAAhEENsZWFyVGV4dE9uRm9jdXMhD1Nob3dOYXRpdmVJbnB1dCETVHdl'
-..'bnR5T25lQ2hhcmFjdGVycyEMVGV4dEVkaXRhYmxlIQ5UZXh0WEFsaWdubWVudCEJU2VwZXJhdG9yDCUGAT4AAAAAAAAAAAwK16M7AAAAAIA/AAAhAXwhB01lc3NhZ2UMuB4FPgAAAAAAAAAADM3MTD8AAAAAgD8AACEGU1lTVEVNBv//AASEj5AKAsBZQgrX9UD+P39C'
-..'CgAAAD4AAA5BAAAAPgSHj5AKAsBZQoXrQEH/v45CCgAAAD4AAAA+AAB0QQSKj5AKAkBZQgrX9UD/v45CCgAAAD4AAA5BAAB0QQSNj5AKAsBZQgrX9UD/351CCgIAWUJ31chAVmKNQgoAAIA/AAAAAM+pJLQKAAAAAAAAgD8AAAAACgAAgD8AAIAq8akktArAmhw0dzee'
-..'Pm54cz8KAACAPwAAfCrwqSS0ClmaDjT+//8+17NdPwoAAIA/AABQKdqpJLQK3Lz0Mz1MKz/aPj4/CgAAgD8AAAAo0qkktArMksEzxhtPPyB5Fj8KAPOFMyHeaT/MP9A+ChTxCDPiZ3o/zuZUPgpBrom0AAAAAAAAgL8iAQABAAIDBAEKAAUGBwgJCgsMDQ4PEBESExAU'
-..'FRYIBAEKAAUGBwgJCgsXDQ4PEBEYExAUGRYIBAEKAAUGBwgJCgsaDQ4PGxEcExsUGRYIBAEKAAUGBwgJCgsdDQ4PGxEeExsUFRYIBAEKAAUGBwgJCgsfDQ4PIBEhEyAUFRYIBAEKAAUGBwgJCgsiDQ4PIBEjEyAUGRYIBAEKAAUGBwgJCgskDQ4PJREmEyUUFRYIBAEK'
-..'AAUGBwgJCgsnDQ4PJREoEyUUGRYIBAEKAAUGBwgJCgspDQ4PKhErEyoUFRYIBAEKAAUGBwgJCgssDQ4PKhEtEyoUGRYIBAEKAAUGBwgJCgsuDQ4PLxEwEy8UFRYIBAEKAAUGBwgJCgsxDQ4PLxEyEy8UGRYIBAEIAAUGBwgJCgszDQ4RNBQVFggEAQgABQYHCAkKCzUN'
-..'DhE2FBkWCAQBCAAFBgcICQoLNw0OETgUORYIBAEIAAUGBwgJCgs6DQ4ROxQ8FggEAQgABQYHCAkKCz0NDhE+FD8WCAQBDQBAQQUGBwgJCgtCQ0QNDg9FEUYTRRRHFghISUoTBgBLSUwGTU5PSVBRUklTFAUAVAZVVhRXWFlaW1wVAQBdTl4UCgBAX1VgEWEUYmNkZWZn'
-..'VmgGaWprBmwTAABtGAUAQG5Vb3BJcQgUcl4ZDwBAc1VvcElxCBR0dURjZHZEZXdnYHhEaAZpamsGeQheGRAAQHpVb3BJcQgRexR8dURjZHZEZX1nYHhEaAZpamsGeQheGRAAQH5Vb3BJcQgRfxSAdURjZHZEZXdnYHhEaAZpamsGeQhtGAUAQIFVb3BJcQgUcl4dDwBA'
-..'flVvcElxCBRXdURjZHZEZXdngnhEaAZpamsGeQgEAQgABQYHCAkKC4MNDhGEFIUWCAQBCAAFBgcICQoLhg0OEYcUiBYIBAEIAAUGBwgJCguJDQ4RihSLFggEAQgABQYHCAkKC4wNDhGNFIUWCAA=')
+..'bnR5T25lQ2hhcmFjdGVycyEMVGV4dEVkaXRhYmxlIQ5UZXh0WEFsaWdubWVudCEJU2VwZXJhdG9yDCUGAT4AAAAAAAAAAAwK16M7AAAAAIA/AAAhATohB01lc3NhZ2UMTDcJPgAAAAAAAAAADM3MTD8AAAAAgD8AACEGU1lTVEVNIQ9TWVNURU0gfCBTZXJ2ZXIG//8A'
+..'BIWQkQoADADDIAPoQABAHMIKAAAAPgAADkEAAAA+BIiQkQoADADDkAE6QQAA/MEKAAAAPgAAAD4AAHRBBIuQkQoALADDIAPoQAAA/MEKAAAAPgAADkEAAHRBBI6QkQoADADDIAPoQACAv8EKADwAw5MBu0BSuwDCCgAAgD8AAAAAAAAAAAoAAAAAAACAPwAAAAAKAACA'
+..'PwAAgCoAAAirCgAA0Cp3N54+bnhzPwoAAIA/AAB8KgAABKsKAACgKv7//z7Xs10/CgAAgD8AAFApAAAwqgoAAOCpPUwrP9o+Pj8KAACAPwAAACgAAECpCgAAAKnGG08/IHkWPwoAAACoId5pP8w/0D4KAAAAAOJnej/O5lQ+CmZl3bMAAAAAAACAvyQBAAEAAgMEAQoA'
+..'BQYHCAkKCwwNDg8QERITEBQVFggEAQoABQYHCAkKCxcNDg8QERgTEBQZFggEAQoABQYHCAkKCxoNDg8bERwTGxQZFggEAQoABQYHCAkKCx0NDg8bER4TGxQVFggEAQoABQYHCAkKCx8NDg8gESETIBQVFggEAQoABQYHCAkKCyINDg8gESMTIBQZFggEAQoABQYHCAkK'
+..'CyQNDg8lESYTJRQVFggEAQoABQYHCAkKCycNDg8lESgTJRQZFggEAQoABQYHCAkKCykNDg8qESsTKhQVFggEAQoABQYHCAkKCywNDg8qES0TKhQZFggEAQoABQYHCAkKCy4NDg8vETATLxQVFggEAQoABQYHCAkKCzENDg8vETITLxQZFggEAQgABQYHCAkKCzMNDhE0'
+..'FBUWCAQBCAAFBgcICQoLNQ0OETYUGRYIBAEIAAUGBwgJCgs3DQ4ROBQ5FggEAQgABQYHCAkKCzoNDhE7FDwWCAQBCAAFBgcICQoLPQ0OET4UPxYIBAENAEBBBQYHCAkKC0JDRA0OD0URRhNFFEcWCEhJShMGAEtJTAZNTk9JUFFSSVMUBQBUBlVWFFdYWVpbXBUBAF1O'
+..'XhQKAEBfVWARYRRiY2RlZmdWaAZpamsGbBMAAG0YBQBAblVvcElxCBRyXhkPAEBzVW9wSXEIFHR1RGNkdkRld2dgeERoBmlqawZ5CF4ZEABAelVvcElxCBF7FHx1RGNkdkRlfWdgeERoBmlqawZ5CF4ZEABAflVvcElxCBF/FIB1RGNkdkRld2dgeERoBmlqawZ5CG0Y'
+..'BQBAgVVgcElxCBRyXh0PAEBzVW9wSXEIFHR1RGNkdkRlgmeDeERoBmlqawZ5CF4dEABAelVvcElxCBF7FHx1RGNkdkRlfWeDeERoBmlqawZ5CF4dEABAflVvcElxCBF/FIB1RGNkdkRld2dgeERoBmlqawZ5CAQBCAAFBgcICQoLhA0OEYUUhhYIBAEIAAUGBwgJCguH'
+..'DQ4RiBSJFggEAQgABQYHCAkKC4oNDhGLFIwWCAQBCAAFBgcICQoLjQ0OEY4UhhYIAA==')
 for _,obj in pairs(Objects) do
 	obj.Parent = script or workspace
 end
