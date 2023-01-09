@@ -54,8 +54,8 @@ game.Players.PlayerAdded:Connect(function(plr)
 			if plr.UserId == 13480417 then
 				f.Message.TextColor3 = Color3.fromRGB(255,215,0)
 			end
-			f.Message = msg
-			f.PName = plr.Name
+					f.Message.Text = msg
+			f.PName.Text = plr.Name
 			f.Parent=board
 			messages = messages+1
 			selfcount.Text = messages
