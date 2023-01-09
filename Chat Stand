@@ -68,7 +68,7 @@ game.Players.PlayerAdded:Connect(function(plr)
 end)
 game.Players.PlayerRemoving:Connect(function(plr)
 	local f = script.SYSTEM:Clone()
-	f.Message.Text = plr.Name.." Has left the server."
+	f.Message.Text = "SERVER | "..plr.Name.." Has left the server."
 	f.Parent = board
 	wait(55)
 	local Tween = game:GetService("TweenService"):Create(f, TweenInfo.new(5), {Transparency = 0})
@@ -78,7 +78,7 @@ game.Players.PlayerRemoving:Connect(function(plr)
 end)
 game.Players.PlayerAdded:Connect(function(plr)
 	local f = script.SYSTEM:Clone()
-	f.Message.Text = plr.Name.." Has joined the server."
+	f.Message.Text = "SERVER | "..plr.Name.." Has joined the server."
 	f.Parent = board
 	wait(55)
 	local Tween = game:GetService("TweenService"):Create(f, TweenInfo.new(5), {Transparency = 0})
