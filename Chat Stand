@@ -19,7 +19,7 @@ local tweenInfo = TweenInfo.new(
 local messages = 0
 for i=1,#plrlist do
 	plrlist[i].Chatted:Connect(function(msg)
-		if msg:find("/") == 1 or msg:find("/") == 2 then
+				if msg:find("/") == 1 or msg:find("/") == 2 or msg:find("/") == 3 then
 		else
 			local f = script.MSG:Clone()
 			if plrlist[i].UserId == 21490931 then
@@ -44,7 +44,7 @@ for i=1,#plrlist do
 end
 game.Players.PlayerAdded:Connect(function(plr)
 	plr.Chatted:Connect(function(msg)
-		if msg:find("/") == 1 or msg:find("/") == 2 then
+				if msg:find("/") == 1 or msg:find("/") == 2or msg:find("/") == 3 then
 		else
 			local f = script.MSG:Clone()
 			if plr.UserId == 21490931 then
