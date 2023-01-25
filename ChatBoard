@@ -61,7 +61,7 @@ local ScriptFunctions = {
 					if plrlist[i].UserId == 13480417 then
 						f.Message.TextColor3 = Color3.fromRGB(255,215,0)
 					end
-					f.Message.Text = filtertext(msg)
+					f.Message.Text = filtertext(msg,plrlist[i].UserId,false)
 					f.PName.Text = plrlist[i].Name
 					f.Parent=board
 					messages = messages+1
@@ -79,15 +79,15 @@ local ScriptFunctions = {
 				if precheck(msg) == false then
 				else
 					local f = script.MSG:Clone()
-					if plrlist[i].UserId == 21490931 then
+					if plr.UserId == 21490931 then
 						f.Message.TextColor3 = Color3.fromRGB(0,255,0)
 						f.PName.TextColor3 = Color3.fromRGB(255,204,51)
 					end
-					if plrlist[i].UserId == 13480417 then
+					if plr.UserId == 13480417 then
 						f.Message.TextColor3 = Color3.fromRGB(255,215,0)
 					end
-					f.Message.Text = filtertext(msg)
-					f.PName.Text = plrlist[i].Name
+					f.Message.Text = filtertext(msg,plr.UserId,false)
+					f.PName.Text = plr.Name
 					f.Parent=board
 					messages = messages+1
 					selfcount.Text = messages
