@@ -63,7 +63,6 @@ script.Parent.ProximityPrompt.TriggerEnded:Connect(function(plr)
 	-- Gear
 	-- Gear
 	-- Sound
-	sound:Destroy()
 	-- Sound
 	wait(3)
 	f:Destroy()
