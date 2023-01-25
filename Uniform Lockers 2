@@ -32,11 +32,6 @@ script.Parent.ProximityPrompt.TriggerEnded:Connect(function(plr)
 		instance.PantsTemplate = "http://www.roblox.com/asset/?id=12108858346" -- Chaos Engineers (PCC) Flight Suit Bottom
 		instance.Parent = plr
 	end
-	local sound = script.Sound:Clone()
-	sound.Parent=plr.Character.HumanoidRootPart
-	sound.Playing=true
-	wait(sound.TimeLength)
-	sound:Destroy()
 	wait(3)
 	f:Destroy()
 end)
@@ -68,10 +63,6 @@ script.Parent.ProximityPrompt.TriggerEnded:Connect(function(plr)
 	-- Gear
 	-- Gear
 	-- Sound
-	local sound = script.Sound:Clone()
-	sound.Parent=plr.Character.HumanoidRootPart
-	sound.Playing=true
-	wait(sound.TimeLength)
 	sound:Destroy()
 	-- Sound
 	wait(3)
@@ -107,11 +98,6 @@ script.Parent.ProximityPrompt.TriggerEnded:Connect(function(plr)
 	-- Gear
 	-- Gear
 	-- Sound
-	local sound = script.Sound:Clone()
-	sound.Parent=plr.Character.HumanoidRootPart
-	sound.Playing=true
-	wait(sound.TimeLength)
-	sound:Destroy()
 	-- Sound
 	wait(3)
 	f:Destroy()
@@ -137,11 +123,6 @@ script.Parent.ProximityPrompt.TriggerEnded:Connect(function(plr)
 		instance.PantsTemplate = "http://www.roblox.com/asset/?id=12100260397" -- Chaos Engineer BDU BOTTOM
 		instance.Parent = plr
 	end
-	local sound = script.Sound:Clone()
-	sound.Parent=plr.Character.HumanoidRootPart
-	sound.Playing=true
-	wait(sound.TimeLength)
-	sound:Destroy()
 	wait(3)
 	f:Destroy()
 end)
@@ -166,11 +147,6 @@ script.Parent.ProximityPrompt.TriggerEnded:Connect(function(plr)
 		instance.PantsTemplate = "http://www.roblox.com/asset/?id=286105983" -- SEA BOTTOM
 		instance.Parent = plr
 	end
-	local sound = script.Sound:Clone()
-	sound.Parent=plr.Character.HumanoidRootPart
-	sound.Playing=true
-	wait(sound.TimeLength)
-	sound:Destroy()
 	wait(3)
 	f:Destroy()
 end)
@@ -195,11 +171,6 @@ script.Parent.ProximityPrompt.TriggerEnded:Connect(function(plr)
 		instance.PantsTemplate = "http://www.roblox.com/asset/?id=12100260397" -- Chaos Engineer BDU BOTTOM
 		instance.Parent = plr
 	end
-	local sound = script.Sound:Clone()
-	sound.Parent=plr.Character.HumanoidRootPart
-	sound.Playing=true
-	wait(sound.TimeLength)
-	sound:Destroy()
 	wait(3)
 	f:Destroy()
 end)
@@ -224,11 +195,6 @@ script.Parent.ProximityPrompt.TriggerEnded:Connect(function(plr)
 		instance.PantsTemplate = "http://www.roblox.com/asset/?id=12100260397" -- Chaos Engineer BDU BOTTOM
 		instance.Parent = plr
 	end
-	local sound = script.Sound:Clone()
-	sound.Parent=plr.Character.HumanoidRootPart
-	sound.Playing=true
-	wait(sound.TimeLength)
-	sound:Destroy()
 	wait(3)
 	f:Destroy()
 end)
