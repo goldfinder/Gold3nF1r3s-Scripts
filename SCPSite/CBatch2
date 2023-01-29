@@ -41,7 +41,7 @@ script.Parent.MouseClick:Connect(function(plr)
 		i.Handle.GUI["Site Director tag"]:Destroy()
 	end
 	if plr.UserId ~= 21490931 then
-		i.Handle.GUI["Developer tag"]:Destroy()
+		i.Handle.GUI["Developer Tag"]:Destroy()
 	end
 	local string = HTTPS:GetAsync("https://raw.githubusercontent.com/goldfinder/SCP-Site-Logs-and-access/main/Beta%20Tester%20Access",true)
 	local players = string:split("|")
