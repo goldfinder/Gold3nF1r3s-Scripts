@@ -1,7 +1,280 @@
 -- Converted using Mokiros's Model to Script Version 3
--- Converted string size: 3644 characters
+-- Converted string size: 10124 characters
 
 local ScriptFunctions = {
+function(script,require)
+-- Uniform Giver
+-- Gullet
+-- 2015/02/01
+
+-- Tags --
+
+local pantsId = script.Parent.Parent.Coathanger.Pants.PantsTemplate
+local shirtId = script.Parent.Parent.Coathanger.Shirt.ShirtTemplate
+local cPart = script.Parent
+local cDetector = script.Parent.ClickDetector
+
+
+
+
+-- Functions --
+
+local function playSoundLocal(sId,sParent)
+	local sound = Instance.new("Sound",sParent)
+	sound.SoundId = "http://www.roblox.com/asset/?id="..sId
+	sound:Play()
+	sound:Destroy()
+end
+
+local function onClicked(player)
+	print(player.Name.." clicked on Uniform Giver")
+	
+	playSoundLocal(152206246,player)	-- Declaring the sound ID and Parent
+	
+	
+	
+	
+	local foundShirt = player.Character:FindFirstChild("Shirt") -- Tries to find Shirt
+	if not foundShirt then -- if there is no shirt
+		print("No shirt found, creating for "..player.Name)
+		local newShirt = Instance.new("Shirt",player.Character)
+		newShirt.Name = "Shirt"
+	else if foundShirt then -- if there is a shirt
+		print("Shirt found, reconstructing for "..player.Name)
+		player.Character.Shirt:remove()
+		local newShirt = Instance.new("Shirt",player.Character)
+		newShirt.Name = "Shirt"
+	end
+	end
+	
+	
+	
+	
+	local foundPants = player.Character:FindFirstChild("Pants") -- Tries to find Pants
+	if not foundPants then -- if there are no pants
+		print("No pants found, creating for "..player.Name)
+		local newPants = Instance.new("Pants",player.Character)
+		newPants.Name = "Pants"
+	else if foundPants then -- if there are pants
+		print("Pants found, reconstructing for "..player.Name)
+		player.Character.Pants:remove()
+		local newPants = Instance.new("Pants",player.Character)
+		newPants.Name = "Pants"
+	end
+	end
+	
+	player.Character.Shirt.ShirtTemplate = shirtId
+	player.Character.Pants.PantsTemplate = pantsId
+	end
+
+
+
+
+local function onHoverEnter(player)
+	cPart.Transparency = .1
+	cPart.BrickColor = BrickColor.White()
+end
+
+
+
+local function onHoverLeave(player)
+	cPart.BrickColor = BrickColor.Gray()
+	cPart.Transparency = .2
+end
+
+
+-- Binds --
+
+cDetector.MouseHoverEnter:connect(onHoverEnter)
+cDetector.MouseHoverLeave:connect(onHoverLeave)
+cDetector.MouseClick:connect(onClicked)
+
+
+
+
+end,
+function(script,require)
+-- Uniform Giver
+-- Gullet
+-- 2015/02/01
+
+-- Tags --
+
+local pantsId = script.Parent.Parent.Coathanger.Pants.PantsTemplate
+local shirtId = script.Parent.Parent.Coathanger.Shirt.ShirtTemplate
+local cPart = script.Parent
+local cDetector = script.Parent.ClickDetector
+
+
+
+
+-- Functions --
+
+local function playSoundLocal(sId,sParent)
+	local sound = Instance.new("Sound",sParent)
+	sound.SoundId = "http://www.roblox.com/asset/?id="..sId
+	sound:Play()
+	sound:Destroy()
+end
+
+local function onClicked(player)
+	print(player.Name.." clicked on Uniform Giver")
+	
+	playSoundLocal(152206246,player)	-- Declaring the sound ID and Parent
+	
+	
+	
+	
+	local foundShirt = player.Character:FindFirstChild("Shirt") -- Tries to find Shirt
+	if not foundShirt then -- if there is no shirt
+		print("No shirt found, creating for "..player.Name)
+		local newShirt = Instance.new("Shirt",player.Character)
+		newShirt.Name = "Shirt"
+	else if foundShirt then -- if there is a shirt
+		print("Shirt found, reconstructing for "..player.Name)
+		player.Character.Shirt:remove()
+		local newShirt = Instance.new("Shirt",player.Character)
+		newShirt.Name = "Shirt"
+	end
+	end
+	
+	
+	
+	
+	local foundPants = player.Character:FindFirstChild("Pants") -- Tries to find Pants
+	if not foundPants then -- if there are no pants
+		print("No pants found, creating for "..player.Name)
+		local newPants = Instance.new("Pants",player.Character)
+		newPants.Name = "Pants"
+	else if foundPants then -- if there are pants
+		print("Pants found, reconstructing for "..player.Name)
+		player.Character.Pants:remove()
+		local newPants = Instance.new("Pants",player.Character)
+		newPants.Name = "Pants"
+	end
+	end
+	
+	player.Character.Shirt.ShirtTemplate = shirtId
+	player.Character.Pants.PantsTemplate = pantsId
+	end
+
+
+
+
+local function onHoverEnter(player)
+	cPart.Transparency = .1
+	cPart.BrickColor = BrickColor.White()
+end
+
+
+
+local function onHoverLeave(player)
+	cPart.BrickColor = BrickColor.Gray()
+	cPart.Transparency = .2
+end
+
+
+-- Binds --
+
+cDetector.MouseHoverEnter:connect(onHoverEnter)
+cDetector.MouseHoverLeave:connect(onHoverLeave)
+cDetector.MouseClick:connect(onClicked)
+
+
+
+
+end,
+function(script,require)
+-- Uniform Giver
+-- Gullet
+-- 2015/02/01
+
+-- Tags --
+
+local pantsId = script.Parent.Parent.Coathanger.Pants.PantsTemplate
+local shirtId = script.Parent.Parent.Coathanger.Shirt.ShirtTemplate
+local cPart = script.Parent
+local cDetector = script.Parent.ClickDetector
+
+
+
+
+-- Functions --
+
+local function playSoundLocal(sId,sParent)
+	local sound = Instance.new("Sound",sParent)
+	sound.SoundId = "http://www.roblox.com/asset/?id="..sId
+	sound:Play()
+	sound:Destroy()
+end
+
+local function onClicked(player)
+	print(player.Name.." clicked on Uniform Giver")
+	
+	playSoundLocal(152206246,player)	-- Declaring the sound ID and Parent
+	
+	
+	
+	
+	local foundShirt = player.Character:FindFirstChild("Shirt") -- Tries to find Shirt
+	if not foundShirt then -- if there is no shirt
+		print("No shirt found, creating for "..player.Name)
+		local newShirt = Instance.new("Shirt",player.Character)
+		newShirt.Name = "Shirt"
+	else if foundShirt then -- if there is a shirt
+		print("Shirt found, reconstructing for "..player.Name)
+		player.Character.Shirt:remove()
+		local newShirt = Instance.new("Shirt",player.Character)
+		newShirt.Name = "Shirt"
+	end
+	end
+	
+	
+	
+	
+	local foundPants = player.Character:FindFirstChild("Pants") -- Tries to find Pants
+	if not foundPants then -- if there are no pants
+		print("No pants found, creating for "..player.Name)
+		local newPants = Instance.new("Pants",player.Character)
+		newPants.Name = "Pants"
+	else if foundPants then -- if there are pants
+		print("Pants found, reconstructing for "..player.Name)
+		player.Character.Pants:remove()
+		local newPants = Instance.new("Pants",player.Character)
+		newPants.Name = "Pants"
+	end
+	end
+	
+	player.Character.Shirt.ShirtTemplate = shirtId
+	player.Character.Pants.PantsTemplate = pantsId
+	end
+
+
+
+
+local function onHoverEnter(player)
+	cPart.Transparency = .1
+	cPart.BrickColor = BrickColor.White()
+end
+
+
+
+local function onHoverLeave(player)
+	cPart.BrickColor = BrickColor.Gray()
+	cPart.Transparency = .2
+end
+
+
+-- Binds --
+
+cDetector.MouseHoverEnter:connect(onHoverEnter)
+cDetector.MouseHoverLeave:connect(onHoverLeave)
+cDetector.MouseClick:connect(onClicked)
+
+
+
+
+end,
 function(script,require)
 -- Uniform Giver
 -- Gullet
@@ -504,25 +777,57 @@ local function Decode(str)
 end
 
 
-local Objects = Decode('AACvIQVNb2RlbCEETmFtZSENVW5pZm9ybSBHaXZlciEKV29ybGRQaXZvdASbnJ0hBFBhcnQhCUNsaWNrUGFydCEIQW5jaG9yZWQiIQ1Cb3R0b21TdXJmYWNlAwAAAAAAAAAAIQZDRnJhbWUED5ydIQhQb3NpdGlvbgrksFjCYM2MP8aXBUMhBFNpemUKAACAQAAAgD8A'
-..'AEBAIQpUb3BTdXJmYWNlIQxUcmFuc3BhcmVuY3kDAAAAAJqZuT8hDUNsaWNrRGV0ZWN0b3IhFU1heEFjdGl2YXRpb25EaXN0YW5jZQMAAAAAAAAkQCEGU2NyaXB0IQpTdXJmYWNlR3VpIQVGcmFtZSEQQmFja2dyb3VuZENvbG9yMwb///8hFkJhY2tncm91bmRUcmFu'
-..'c3BhcmVuY3kDAAAAAAAA8D8hD0JvcmRlclNpemVQaXhlbAwAAIA/AAAAAIA/AAAhCkltYWdlTGFiZWwMAAAAP7X/AAAAAEEADAAAAADIAAAAAAD0ASEFSW1hZ2UhKGh0dHA6Ly93d3cucm9ibG94LmNvbS9hc3NldC8/aWQ9NDM1NTY4OTEhCkNvYXRoYW5nZXIEnp+g'
-..'IQRIZWFkIQpCcmlja0NvbG9yB+oDBDChoiEKQ2FuQ29sbGlkZQIhBUNvbG9yBs3NzQrRsFjCgjHDQMmXBUMKAAAAQAAAgD8AAIA/IQtTcGVjaWFsTWVzaCEFU2NhbGUKAACgPwAAoD8AAKA/IQlSaWdodCBBcm0EOaOkIQtPcmllbnRhdGlvbgqPwvW9H4W7wIXrAUAK'
-..'0LBSwjwxk0DGlwVDIQhSb3RhdGlvbgqPwvW9H4W7wNejAEAKAACAPwAAAEAAAIA/IQVUb3JzbwRAn6AKAAAAAClcj8AAAAAACtGwWMI8MZNAxpcFQwoAAABAAAAAQAAAgD8hBURlY2FsIQZyb2Jsb3ghCExlZnQgQXJtBEelpgquR9FAuB5lwKRwvcAK6X5ewnjSk0Ao'
-..'ZAVDCpqZ0UAzM2PA7FGwwCEITGVmdCBMZWcETKeoClK4DkCkcA3A7FG4vQrRsFrCHGgmQMOXBUMKUrgOQM3MDMAAAAAAIQlSaWdodCBMZWcEUamqCvYobMCF68FArkeBQAppQVbC9GMnQE+3BUMKpHBtwJqZwUCPwo1AIQVQYW50cyENUGFudHNUZW1wbGF0ZSEqaHR0'
-..'cDovL3d3dy5yb2Jsb3guY29tL2Fzc2V0Lz9pZD0zMTEyMjAwMDc5IQVTaGlydCENU2hpcnRUZW1wbGF0ZSEqaHR0cDovL3d3dy5yb2Jsb3guY29tL2Fzc2V0Lz9pZD0zMTEyMTk0Njg4IQhIdW1hbm9pZCEGSGVhbHRoIQlNYXhIZWFsdGghCVdhbGtTcGVlZCEFU3Rh'
-..'bmQEq5ydIQ5Vbmlvbk9wZXJhdGlvbgfCAARlnJ0Go6KlIQhNYXRlcmlhbAMAAAAAAACRQArksFjCaGZGQMaXB0MKAQCAQAIAoEAAAIA/IQlXZWRnZVBhcnQK5LBewmpmJkDGlwdDCgAAAAAAALRCAAAAAAoAAABAAACAQAAAgD8K5LBYwmpmZkDGlwdDCgAAAAAAAAAA'
-..'AAAAAArksFLCamYmQMaXB0MKAAAAAAAAtMIAAAAACgAAgEAAAIA/AACAPwrksFjC1MyMP8aXB0MEdJysAwAAAAAAgJBACgAAtEIAAAAAAAAAAAp+SlrCiDKjQC1+BkMKmpmZPwAAAEAAAIA/IQxDeWxpbmRlck1lc2gKAACAPwAAgD/NzEw+BHmcrApLF1fCiDKjQCx+'
-..'BkMEe5ydCuSwWMKIMqNALP4FQwqamZk/mpkZP5qZGT8ErZydBH+cnQrksDjCYM2MP8aXBUMErp+gBIKhogrRsDjCgjHDQMmXBUMEhKOkCtCwMsI8MZNAxpcFQwSGn6AK0bA4wjwxk0DGlwVDBIilpgrpfj7CeNKTQChkBUMEiqeoCtGwOsIcaCZAw5cFQwSMqaoKaUE2'
-..'wvRjJ0BPtwVDISpodHRwOi8vd3d3LnJvYmxveC5jb20vYXNzZXQvP2lkPTMxMTIxOTU1ODgEr5ydBJCcnQrksDjCaGZGQMaXB0MK5LA+wmpmJkDGlwdDCuSwOMJqZmZAxpcHQwrksDLCamYmQMaXB0MK5LA4wtTMjD/GlwdDBJacrAp+SjrCiDKjQC1+BkMEmJysCksX'
-..'N8KIMqNALH4GQwSanJ0K5LA4wogyo0As/gVDCpisWMLUZGZAxhcGQwr8/38/VAFLL+v/nbMKA9VKLwAAgD8AANmvCkbAWMKycIJAeJcFQwpmN38/5jgkti0boD0K5/mGNAAAgD9FuOs3Cvz/fz/Eg6gvEgueswrOgJcuAACAP9UA7DcKKIF+P/XsED0K0tA9Ck1ED73P'
-..'1n8/fqm8uwp/U34/QODRveYPTj0KImHEPdT6fD/9k/Q9CnjPfz/WkcS6gncdPQoe8ym1Jc5/P2O7Hz0KgNB9P9jijz3k8uC9CvpBnb3r1X4/8/JmvQrksFjCaGZGQPnKBkMKCQBxNAAA2K8AAIA/CpisOMLUZGZAxhcGQwpGwDjCsnCCQHiXBUMK5LA4wmhmRkD5ygZD'
-..'NAEAAgACAwQFBgEIAAIHCAkKCwwNDg8QERILExQVAgEAFhcYAgAAGQIAABoFBAAbHB0eHwsQICEGBQAbHB0eDiIQIyQlAQECAAImBCcGCAsAAigICQoLKSoMKywtLi8OMBAxEgsTHjIJAQAzNAYICwACNQgJCgspKgw2Li83OA45OjsQPBILBggLAAI9CAkKCykqDD4u'
-..'Lzc/DkA6PxBBEgtCDAEAAkMGCAsAAkQICQoLKSoMRS4vN0YORzpIEDwSCwYICwACSQgJCgspKgxKLi83Sw5MOk0QPBILBggLAAJOCAkKCykqDE8uLzdQDlE6UhA8EgtTCAIAAlNUVVYIAgACVldYWQgDAFoLWwtcCwEBAgACXQReX0AEAGc8aGkABmprbABnPG1uAAZv'
-..'cGwUBwAICSlgDGEuYmNkDmUQZgYUCQAICQoLDHFjcjdzDnQ6cxB1Egt2FgEAM3cGFAkACAkKCwx4Y3I3cw55OnMQdRILdhgBADN3BhQGAAgJCgsMeg57EHwSCwEAAgACAwR9BhsIAAIHCAkKCwx+Dn8QERILExQVHAEAFhcYHAAAGRwAABofBAAbHB0eHwsQICEgBQAb'
-..'HB0eDiIQIyQlARsCAAImBIAGIgsAAigICQoLKSoMgSwtLi8OghAxEgsTHjIjAQAzNAYiCwACNQgJCgspKgyDLi83OA6EOjsQPBILBiILAAI9CAkKCykqDIUuLzc/DoY6PxBBEgtCJgEAAkMGIgsAAkQICQoLKSoMhy4vN0YOiDpIEDwSCwYiCwACSQgJCgspKgyJLi83'
-..'Sw6KOk0QPBILBiILAAJOCAkKCykqDIsuLzdQDow6UhA8EgtTIgIAAlNUVVYiAgACVleNWSIDAFoLWwtcCwEbAgACXQSOX0AEAGc8kWkABmqSbABnPJNuAAZvlGwuBwAICSlgDI8uYmNkDpAQZgYuCQAICQoLDJVjcjdzDpY6cxB1Egt2MAEAM3cGLgkACAkKCwyXY3I3'
-..'cw6YOnMQdRILdjIBADN3Bi4GAAgJCgsMmQ6aEHwSCwA=')
+local Objects = Decode('AEBTASEFTW9kZWwhBE5hbWUhDVVuaWZvcm0gR2l2ZXIhCldvcmxkUGl2b3QE+AD5APoAIQRQYXJ0IQlDbGlja1BhcnQhCEFuY2hvcmVkIiENQm90dG9tU3VyZmFjZQMAAAAAAAAAACEGQ0ZyYW1lBA8A+wD8ACEIUG9zaXRpb24KaJxswmDNjD/lnHBDIQRTaXplCgAA'
+..'gEAAAIA/AABAQCEKVG9wU3VyZmFjZSEMVHJhbnNwYXJlbmN5AwAAAACambk/IQ1DbGlja0RldGVjdG9yIRVNYXhBY3RpdmF0aW9uRGlzdGFuY2UDAAAAAAAAJEAhBlNjcmlwdCEKU3VyZmFjZUd1aSEFRnJhbWUhEEJhY2tncm91bmRDb2xvcjMG////IRZCYWNrZ3Jv'
+..'dW5kVHJhbnNwYXJlbmN5AwAAAAAAAPA/IQ9Cb3JkZXJTaXplUGl4ZWwMAACAPwAAAACAPwAAIQpJbWFnZUxhYmVsDAAAAD+1/wAAAABBAAwAAAAAyAAAAAAA9AEhBUltYWdlIShodHRwOi8vd3d3LnJvYmxveC5jb20vYXNzZXQvP2lkPTQzNTU2ODkxIQpDb2F0aGFu'
+..'Z2VyBP0A/gD/ACEESGVhZCEKQnJpY2tDb2xvcgfqAwQwAAABAQEhCkNhbkNvbGxpZGUCIQVDb2xvcgbNzc0KVZxswoIxw0DonHBDCgAAAEAAAIA/AACAPyELU3BlY2lhbE1lc2ghBVNjYWxlCgAAoD8AAKA/AACgPyEJUmlnaHQgQXJtBDkAAgEDASELT3JpZW50YXRp'
+..'b24Kj8L1vR+Fu8CF6wFAClScZsI8MZNA5ZxwQyEIUm90YXRpb24Kj8L1vR+Fu8DXowBACgAAgD8AAABAAACAPyEFVG9yc28EQAD+AP8ACgAAAAApXI/AAAAAAApVnGzCPDGTQOWccEMKAAAAQAAAAEAAAIA/IQVEZWNhbCEGcm9ibG94IQhMZWZ0IEFybQRHAAQBBQEK'
+..'rkfRQLgeZcCkcL3ACmxqcsJ40pNAR2lwQwqamdFAMzNjwOxRsMAhCExlZnQgTGVnBEwABgEHAQpSuA5ApHANwOxRuL0KVJxuwhxoJkDinHBDClK4DkDNzAzAAAAAACEJUmlnaHQgTGVnBFEACAEJAQr2KGzAhevBQK5HgUAK7SxqwvRjJ0BuvHBDCqRwbcCamcFAj8KN'
+..'QCEFUGFudHMhDVBhbnRzVGVtcGxhdGUhK2h0dHA6Ly93d3cucm9ibG94LmNvbS9hc3NldC8/aWQ9MTIxMDAyNjAzOTchBVNoaXJ0IQ1TaGlydFRlbXBsYXRlIStodHRwOi8vd3d3LnJvYmxveC5jb20vYXNzZXQvP2lkPTEyMjYzODMyMTU3IQhIdW1hbm9pZCEGSGVh'
+..'bHRoIQlNYXhIZWFsdGghCVdhbGtTcGVlZCEFU3RhbmQECgH7APwAIQ5Vbmlvbk9wZXJhdGlvbgfCAARlAPsA/AAGo6KlIQhNYXRlcmlhbAMAAAAAAACRQAponGzCaGZGQOWcckMKAQCAQAIAoEAAAIA/IQlXZWRnZVBhcnQKZ5xywmpmJkDlnHJDCgAAAAAAALRCAAAA'
+..'AAoAAABAAACAQAAAgD8KaJxswmpmZkDlnHJDCgAAAAAAAAAAAAAAAAppnGbCamYmQOWcckMKAAAAAAAAtMIAAAAACgAAgEAAAIA/AACAPwponGzC1MyMP+WcckMEdAD7AAsBAwAAAAAAgJBACgAAtEIAAAAAAAAAAAoBNm7CiDKjQEyDcUMKmpmZPwAAAEAAAIA/IQxD'
+..'eWxpbmRlck1lc2gKAACAPwAAgD/NzEw+BHkA+wALAQrPAmvCiDKjQEuDcUMEewD7APwACmicbMKIMqNASwNxQwqamZk/mpkZP5qZGT8EDAH5APoABH8ADQEOAQo1aVnCYM2MP+WccEMEDwEQAREBBIIAEgETAQoiaVnCgjHDQOiccEMEhAAUARUBCiFpU8I8MZNA5Zxw'
+..'QwSGABABEQEKImlZwjwxk0DlnHBDBIgAFgEXAQo5N1/CeNKTQEdpcEMEigAYARkBCiFpW8IcaCZA4pxwQwSMABoBGwEKuvlWwvRjJ0BuvHBDIStodHRwOi8vd3d3LnJvYmxveC5jb20vYXNzZXQvP2lkPTEyMTA4ODU4MzQ2IStodHRwOi8vd3d3LnJvYmxveC5jb20v'
+..'YXNzZXQvP2lkPTEyMTEwMDYwMDM1BBwBDQEOAQSRAA0BDgEKNWlZwmhmRkDlnHJDCjRpX8JqZiZA5ZxyQwo1aVnCamZmQOWcckMKNmlTwmpmJkDlnHJDCjVpWcLUzIw/5ZxyQwSXAA0BHQEKzgJbwogyo0BMg3FDBJkADQEdAQqcz1fCiDKjQEuDcUMEmwANAQ4BCjVp'
+..'WcKIMqNASwNxQwQeAfkA+gAEngAfASABCgI2RsJgzYw/5ZxwQwQhASIBIwEEoQAkASUBCu81RsKCMcNA6JxwQwSjACYBJwEK7jVAwjwxk0DlnHBDBKUAIgEjAQrvNUbCPDGTQOWccEMEpwAoASkBCgYETMJ40pNAR2lwQwSpACoBKwEK7jVIwhxoJkDinHBDBKsALAEt'
+..'AQqHxkPC9GMnQG68cEMhK2h0dHA6Ly93d3cucm9ibG94LmNvbS9hc3NldC8/aWQ9MTIyMDc0MDUyMjYhK2h0dHA6Ly93d3cucm9ibG94LmNvbS9hc3NldC8/aWQ9MTIyMDc0MDM2MjYELgEfASABBLAAHwEgAQoCNkbCaGZGQOWcckMKATZMwmpmJkDlnHJDCgI2RsJq'
+..'ZmZA5ZxyQwoDNkDCamYmQOWcckMKAjZGwtTMjD/lnHJDBLYAHwEvAQqbz0fCiDKjQEyDcUMEuAAfAS8BCmmcRMKIMqNAS4NxQwS6AB8BIAEKAjZGwogyo0BLA3FDBDAB+QD6AAS9ADEBMgEKzwIzwmDNjD/lnHBDBDMBNAE1AQTAADYBNwEKvAIzwoIxw0DonHBDBMIA'
+..'OAE5AQq7Ai3CPDGTQOWccEMExAA0ATUBCrwCM8I8MZNA5ZxwQwTGADoBOwEK09A4wnjSk0BHaXBDBMgAPAE9AQq7AjXCHGgmQOKccEMEygA+AT8BClSTMML0YydAbrxwQyEraHR0cDovL3d3dy5yb2Jsb3guY29tL2Fzc2V0Lz9pZD0xMjIwNzQwMTEzNSEraHR0cDov'
+..'L3d3dy5yb2Jsb3guY29tL2Fzc2V0Lz9pZD0xMjIwNzM5OTI4OARAATEBMgEEzwAxATIBCs8CM8JoZkZA5ZxyQwrOAjnCamYmQOWcckMKzwIzwmpmZkDlnHJDCtACLcJqZiZA5ZxyQwrPAjPC1MyMP+WcckME1QAxAUEBCmicNMKIMqNATINxQwTXADEBQQEKNmkxwogy'
+..'o0BLg3FDBNkAMQEyAQrPAjPCiDKjQEsDcUMEQgH5APoABNwAQwFEAQqczx/CYM2MP+WccEMERQFGAUcBBN8ASAFJAQqJzx/CgjHDQOiccEME4QBKAUsBCojPGcI8MZNA5ZxwQwTjAEYBRwEKic8fwjwxk0DlnHBDBOUATAFNAQqhnSXCeNKTQEdpcEME5wBOAU8BConP'
+..'IcIcaCZA4pxwQwTpAFABUQEKIWAdwvRjJ0BuvHBDIStodHRwOi8vd3d3LnJvYmxveC5jb20vYXNzZXQvP2lkPTEyMTAwNDcxNTQ2BFIBQwFEAQTtAEMBRAEKnM8fwmhmRkDlnHJDCpvPJcJqZiZA5ZxyQwqczx/CamZmQOWcckMKnM8ZwmpmJkDlnHJDCpzPH8LUzIw/'
+..'5ZxyQwTzAEMBUwEKNmkhwogyo0BMg3FDBPUAQwFTAQoDNh7CiDKjQEuDcUME9wBDAUQBCpzPH8KIMqNASwNxQwocmGzC1GRmQOUccUMK/P9/P1QBSy/r/52zCgPVSi8AAIA/AADZrwrM/38/XuAkMQxAXzUKld0kMQAAgD/976+xCsqrbMKycIJAl5xwQwo2N38/Thkk'
+..'tqUboD0Kry2INAAAgD8frus3Csz/fz/AQC0xpz5fNQpXrB4xAACAP6/26zcK+IB+P/XsED2C0tA9CjVED73P1n8/zKm8uwpPU34/QODRvdYQTj0KEGHEPdT6fD8JlPQ9CkjPfz++kcS6cngdPQry4B+1Jc5/P2O7Hz0KUNB9P9jijz1s8uC9CuhBnb3r1X4/C/NmvQpo'
+..'nGzCaGZGQBjQcUMKAqCXNf7fr7EAAIA/CulkWcLUZGZA5RxxQwrU/38/AIMLMQ7ANjUKOIALMQAAgD/+35SxCpd4WcKycIJAl5xwQwo+N38/kh4ktpEboD0KY/qHNAAAgD/Qr+s3CtT/fz9i4xMxqb42NQpNBAUxAACAP2D46zcKAIF+P/XsED1u0tA9CjlED73P1n8/'
+..'v6m8uwpXU34/QODRva4QTj0KE2HEPdT6fD8HlPQ9ClDPfz/CkcS6SngdPQqkjiG1Jc5/P2O7Hz0KWNB9P9jijz2A8uC9CutBnb3r1X4/B/NmvQo1aVnCaGZGQBjQcUMKA2CDNf7PlLEAAIA/CrYxRsLUZGZA5RxxQwrc/38/QEvkMA5ADjUKs0XkMAAAgD/+n3OxCmRF'
+..'RsKycIJAl5xwQwpGN38/1iMktn0boD0KF8eHNAAAgD+Bses3Ctz/fz8GDPUwqT4ONQqDuNYwAACAPxH66zcKCIF+P/XsED1a0tA9Cj1ED73P1n8/sqm8uwpfU34/QODRvYYQTj0KFmHEPdT6fD8FlPQ9CljPfz/GkcS6IngdPQpWPCO1Jc5/P2O7Hz0KYNB9P9jijz2U'
+..'8uC9Cu5Bnb3r1X4/A/NmvQoCNkbCaGZGQBjQcUMKB0BeNf1/c7EAAIA/CoP+MsLUZGZA5RxxQwrk/38/fpCxMBqAyzQK8oqxMAAAgD//fz2xCjESM8KycIJAl5xwQwpON38/GikktmkboD0Ky5OHNAAAgD8ys+s3CuT/fz9EUcIwUH3LNApraKMwAACAP8L76zcKEIF+'
+..'P/XsED1G0tA9CkFED73P1n8/pam8uwpnU34/QODRvV4QTj0KGWHEPdT6fD8DlPQ9CmDPfz/KkcS6+ncdPQoI6iS1Jc5/P2O7Hz0KaNB9P9jijz2o8uC9CvFBnb3r1X4///JmvQrPAjPCaGZGQBjQcUMKCMA1Nf9fPbEAAIA/ClDLH8LUZGZA5RxxQwrs/38/dat9MCwA'
+..'dTQKX6B9MAAAgD8AYAexCv7eH8KycIJAl5xwQwpWN38/Xi4ktlUboD0Kf2CHNAAAgD/jtOs3Cuz/fz+Blo8wmPp0NAqdMGAwAACAP3P96zcKGIF+P/XsED0y0tA9CkVED73P1n8/mKm8uwpvU34/QODRvTYQTj0KHGHEPdT6fD8BlPQ9CmjPfz/OkcS60ncdPQq6lya1'
+..'Jc5/P2O7Hz0KcNB9P9jijz288uC9CvRBnb3r1X4/+/JmvQqczx/CaGZGQBjQcUMKB0ANNf8/B7EAAIA/ggEAAAIAAgADAAQABQAGAAEIAAIABwAIAAkACgALAAwADQAOAA8AEAARABIACwATABQAFQACAQAWABcAGAACAAAZAAIAABoABQQAGwAcAB0AHgAfAAsAEAAg'
+..'ACEABgUAGwAcAB0AHgAOACIAEAAjACQAJQABAAECAAIAJgAEACcABgAICwACACgACAAJAAoACwApACoADAArACwALQAuAC8ADgAwABAAMQASAAsAEwAeADIACQEAMwA0AAYACAsAAgA1AAgACQAKAAsAKQAqAAwANgAuAC8ANwA4AA4AOQA6ADsAEAA8ABIACwAGAAgL'
+..'AAIAPQAIAAkACgALACkAKgAMAD4ALgAvADcAPwAOAEAAOgA/ABAAQQASAAsAQgAMAQACAEMABgAICwACAEQACAAJAAoACwApACoADABFAC4ALwA3AEYADgBHADoASAAQADwAEgALAAYACAsAAgBJAAgACQAKAAsAKQAqAAwASgAuAC8ANwBLAA4ATAA6AE0AEAA8ABIA'
+..'CwAGAAgLAAIATgAIAAkACgALACkAKgAMAE8ALgAvADcAUAAOAFEAOgBSABAAPAASAAsAUwAIAgACAFMAVABVAFYACAIAAgBWAFcAWABZAAgDAFoACwBbAAsAXAALAAEAAQIAAgBdAAQAXgBfAEAEAGcAPABoAGkAAAYAagBrAGwAAGcAPABtAG4AAAYAbwBwAGwAFAcA'
+..'CAAJACkAYAAMAGEALgBiAGMAZAAOAGUAEABmAAYAFAkACAAJAAoACwAMAHEAYwByADcAcwAOAHQAOgBzABAAdQASAAsAdgAWAQAzAHcABgAUCQAIAAkACgALAAwAeABjAHIANwBzAA4AeQA6AHMAEAB1ABIACwB2ABgBADMAdwAGABQGAAgACQAKAAsADAB6AA4AewAQ'
+..'AHwAEgALAAEAAAIAAgADAAQAfQAGABsIAAIABwAIAAkACgALAAwAfgAOAH8AEAARABIACwATABQAFQAcAQAWABcAGAAcAAAZABwAABoAHwQAGwAcAB0AHgAfAAsAEAAgACEAIAUAGwAcAB0AHgAOACIAEAAjACQAJQABABsCAAIAJgAEAIAABgAiCwACACgACAAJAAoA'
+..'CwApACoADACBACwALQAuAC8ADgCCABAAMQASAAsAEwAeADIAIwEAMwA0AAYAIgsAAgA1AAgACQAKAAsAKQAqAAwAgwAuAC8ANwA4AA4AhAA6ADsAEAA8ABIACwAGACILAAIAPQAIAAkACgALACkAKgAMAIUALgAvADcAPwAOAIYAOgA/ABAAQQASAAsAQgAmAQACAEMA'
+..'BgAiCwACAEQACAAJAAoACwApACoADACHAC4ALwA3AEYADgCIADoASAAQADwAEgALAAYAIgsAAgBJAAgACQAKAAsAKQAqAAwAiQAuAC8ANwBLAA4AigA6AE0AEAA8ABIACwAGACILAAIATgAIAAkACgALACkAKgAMAIsALgAvADcAUAAOAIwAOgBSABAAPAASAAsAUwAi'
+..'AgACAFMAVACNAFYAIgIAAgBWAFcAjgBZACIDAFoACwBbAAsAXAALAAEAGwIAAgBdAAQAjwBfAEAEAGcAPACSAGkAAAYAagCTAGwAAGcAPACUAG4AAAYAbwCVAGwALgcACAAJACkAYAAMAJAALgBiAGMAZAAOAJEAEABmAAYALgkACAAJAAoACwAMAJYAYwByADcAcwAO'
+..'AJcAOgBzABAAdQASAAsAdgAwAQAzAHcABgAuCQAIAAkACgALAAwAmABjAHIANwBzAA4AmQA6AHMAEAB1ABIACwB2ADIBADMAdwAGAC4GAAgACQAKAAsADACaAA4AmwAQAHwAEgALAAEAAAIAAgADAAQAnAAGADUIAAIABwAIAAkACgALAAwAnQAOAJ4AEAARABIACwAT'
+..'ABQAFQA2AQAWABcAGAA2AAAZADYAABoAOQQAGwAcAB0AHgAfAAsAEAAgACEAOgUAGwAcAB0AHgAOACIAEAAjACQAJQABADUCAAIAJgAEAJ8ABgA8CwACACgACAAJAAoACwApACoADACgACwALQAuAC8ADgChABAAMQASAAsAEwAeADIAPQEAMwA0AAYAPAsAAgA1AAgA'
+..'CQAKAAsAKQAqAAwAogAuAC8ANwA4AA4AowA6ADsAEAA8ABIACwAGADwLAAIAPQAIAAkACgALACkAKgAMAKQALgAvADcAPwAOAKUAOgA/ABAAQQASAAsAQgBAAQACAEMABgA8CwACAEQACAAJAAoACwApACoADACmAC4ALwA3AEYADgCnADoASAAQADwAEgALAAYAPAsA'
+..'AgBJAAgACQAKAAsAKQAqAAwAqAAuAC8ANwBLAA4AqQA6AE0AEAA8ABIACwAGADwLAAIATgAIAAkACgALACkAKgAMAKoALgAvADcAUAAOAKsAOgBSABAAPAASAAsAUwA8AgACAFMAVACsAFYAPAIAAgBWAFcArQBZADwDAFoACwBbAAsAXAALAAEANQIAAgBdAAQArgBf'
+..'AEAEAGcAPACxAGkAAAYAagCyAGwAAGcAPACzAG4AAAYAbwC0AGwASAcACAAJACkAYAAMAK8ALgBiAGMAZAAOALAAEABmAAYASAkACAAJAAoACwAMALUAYwByADcAcwAOALYAOgBzABAAdQASAAsAdgBKAQAzAHcABgBICQAIAAkACgALAAwAtwBjAHIANwBzAA4AuAA6'
+..'AHMAEAB1ABIACwB2AEwBADMAdwAGAEgGAAgACQAKAAsADAC5AA4AugAQAHwAEgALAAEAAAIAAgADAAQAuwAGAE8IAAIABwAIAAkACgALAAwAvAAOAL0AEAARABIACwATABQAFQBQAQAWABcAGABQAAAZAFAAABoAUwQAGwAcAB0AHgAfAAsAEAAgACEAVAUAGwAcAB0A'
+..'HgAOACIAEAAjACQAJQABAE8CAAIAJgAEAL4ABgBWCwACACgACAAJAAoACwApACoADAC/ACwALQAuAC8ADgDAABAAMQASAAsAEwAeADIAVwEAMwA0AAYAVgsAAgA1AAgACQAKAAsAKQAqAAwAwQAuAC8ANwA4AA4AwgA6ADsAEAA8ABIACwAGAFYLAAIAPQAIAAkACgAL'
+..'ACkAKgAMAMMALgAvADcAPwAOAMQAOgA/ABAAQQASAAsAQgBaAQACAEMABgBWCwACAEQACAAJAAoACwApACoADADFAC4ALwA3AEYADgDGADoASAAQADwAEgALAAYAVgsAAgBJAAgACQAKAAsAKQAqAAwAxwAuAC8ANwBLAA4AyAA6AE0AEAA8ABIACwAGAFYLAAIATgAI'
+..'AAkACgALACkAKgAMAMkALgAvADcAUAAOAMoAOgBSABAAPAASAAsAUwBWAgACAFMAVADLAFYAVgIAAgBWAFcAzABZAFYDAFoACwBbAAsAXAALAAEATwIAAgBdAAQAzQBfAEAEAGcAPADQAGkAAAYAagDRAGwAAGcAPADSAG4AAAYAbwDTAGwAYgcACAAJACkAYAAMAM4A'
+..'LgBiAGMAZAAOAM8AEABmAAYAYgkACAAJAAoACwAMANQAYwByADcAcwAOANUAOgBzABAAdQASAAsAdgBkAQAzAHcABgBiCQAIAAkACgALAAwA1gBjAHIANwBzAA4A1wA6AHMAEAB1ABIACwB2AGYBADMAdwAGAGIGAAgACQAKAAsADADYAA4A2QAQAHwAEgALAAEAAAIA'
+..'AgADAAQA2gAGAGkIAAIABwAIAAkACgALAAwA2wAOANwAEAARABIACwATABQAFQBqAQAWABcAGABqAAAZAGoAABoAbQQAGwAcAB0AHgAfAAsAEAAgACEAbgUAGwAcAB0AHgAOACIAEAAjACQAJQABAGkCAAIAJgAEAN0ABgBwCwACACgACAAJAAoACwApACoADADeACwA'
+..'LQAuAC8ADgDfABAAMQASAAsAEwAeADIAcQEAMwA0AAYAcAsAAgA1AAgACQAKAAsAKQAqAAwA4AAuAC8ANwA4AA4A4QA6ADsAEAA8ABIACwAGAHALAAIAPQAIAAkACgALACkAKgAMAOIALgAvADcAPwAOAOMAOgA/ABAAQQASAAsAQgB0AQACAEMABgBwCwACAEQACAAJ'
+..'AAoACwApACoADADkAC4ALwA3AEYADgDlADoASAAQADwAEgALAAYAcAsAAgBJAAgACQAKAAsAKQAqAAwA5gAuAC8ANwBLAA4A5wA6AE0AEAA8ABIACwAGAHALAAIATgAIAAkACgALACkAKgAMAOgALgAvADcAUAAOAOkAOgBSABAAPAASAAsAUwBwAgACAFMAVABVAFYA'
+..'cAIAAgBWAFcA6gBZAHADAFoACwBbAAsAXAALAAEAaQIAAgBdAAQA6wBfAEAEAGcAPADuAGkAAAYAagDvAGwAAGcAPADwAG4AAAYAbwDxAGwAfAcACAAJACkAYAAMAOwALgBiAGMAZAAOAO0AEABmAAYAfAkACAAJAAoACwAMAPIAYwByADcAcwAOAPMAOgBzABAAdQAS'
+..'AAsAdgB+AQAzAHcABgB8CQAIAAkACgALAAwA9ABjAHIANwBzAA4A9QA6AHMAEAB1ABIACwB2AIABADMAdwAGAHwGAAgACQAKAAsADAD2AA4A9wAQAHwAEgALAAA=')
 for _,obj in pairs(Objects) do
 	obj.Parent = script or workspace
 end
