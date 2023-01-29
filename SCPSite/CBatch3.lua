@@ -90,7 +90,7 @@ script.Parent.L4A.ClickDetector.MouseClick:Connect(function(plr)
 		script.Parent.L4A.SurfaceGui.TextLabel.Text="Rapid Response Team"
 	end
 end)
-
+--[[
 script.Parent.L5A.ClickDetector.MouseClick:Connect(function(plr)
 	local TLT = "O5 Council"
 	if plr.Character:FindFirstChild("Role") ~= nil then
@@ -131,7 +131,7 @@ script.Parent.L6A.ClickDetector.MouseClick:Connect(function(plr)
 		script.Parent.L6A.SurfaceGui.TextLabel.Text=TLTS
 	end
 end)
-
+--]]
 end
 }
 local ScriptIndex = 0
