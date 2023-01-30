@@ -6,7 +6,7 @@ function(script,require)
 script.Parent.Anchored = true
 local Frames = 15
 while true do
-	wait(0.09)
+	task.wait()
 	Frames+=1
 	if Frames == 16 then 
 		Frames = 1
