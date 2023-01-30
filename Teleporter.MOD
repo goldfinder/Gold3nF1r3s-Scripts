@@ -37,14 +37,13 @@ local function Script(obj,ismodule)
 	local t = ismodule and ModuleScripts or Scripts
 	t[obj] = ScriptIndex
 end
-
 function RunScripts()
-	for script,index in pairs(Scripts) do
-		coroutine.wrap(ScriptFunctions[index])(script,require)
+	for script, index in pairs(Scripts) do
+		coroutine.wrap(function()
+			ScriptFunctions[index](script, require)
+		end)()
 	end
 end
-
-
 local function DecodeUnion(Values,Flags,Parse,data)
 	local m = Instance.new("Folder")
 	m.Name = "UnionCache ["..tostring(math.random(1,9999)).."]"
