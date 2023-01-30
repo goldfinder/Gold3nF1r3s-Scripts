@@ -6,12 +6,12 @@ function(script,require)
 script.Parent.Anchored = true
 local rotation = 359
 while true do
+	wait()
 	rotation+=1
 	if rotation == 360 then 
 		rotation = 1
 	end
-	wait()
-	script.Parent.CFrame = CFrame.new(script.Parent.Position) * CFrame.Angles(0,1,0)
+	script.Parent.CFrame = CFrame.new(script.Parent.CFrame) * CFrame.Angles(90,rotation,0)
 end
 end
 }
