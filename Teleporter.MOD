@@ -4,7 +4,7 @@
 local ScriptFunctions = {
 function(script,require)
 script.Parent.Anchored = true
-local Frames = 32
+local Frames = 31
 while true do
 	wait()
 	Frames+=1
