@@ -4,14 +4,14 @@
 local ScriptFunctions = {
 function(script,require)
 script.Parent.Anchored = true
-local Frames = 31
+local Frames = 15
 while true do
-	wait()
+	wait(0.09)
 	Frames+=1
-	if Frames == 32 then 
+	if Frames == 16 then 
 		Frames = 1
 	end
-	script.Parent.CFrame = CFrame.new(script.Parent.Position) * CFrame.Angles(math.rad(90),math.rad(0),math.rad(Frames*11.25))
+	script.Parent.CFrame = CFrame.new(script.Parent.Position) * CFrame.Angles(math.rad(90),math.rad(0),math.rad(Frames*22.5))
 end
 end
 }
