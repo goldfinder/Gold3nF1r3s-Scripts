@@ -509,7 +509,7 @@ function checkmsg(msg,plr)
 			..'YQRCQ0QhBUZvY3VzBEVGDQpMdbo9mXkJP6yxVr8KvI9hv5wt3z7q3Ts+CriTtcBklzVAma1yQArI+5M+AAAAgOsSdT8KAlXVPgB7Zj8Y0QC+ChDVfMDgwvs/xV5RQAoAAIA/AAAAAAAAAAAIAQAHAAIDBAUGBwgJCgsMDQ4PEAEMAAIREhMUFRYXGBkaGxwdHh8gISIj'
 			..'JCUmEycCAwAoKQQqKywtAgMAAi4vMDEyLQIDAAIzLzQxNS0CAwACNi83MTg5AQEAAjo7AQMAAjwWPT4/AA==')
 		for _,obj in pairs(Objects) do
-			obj.Parent = plr
+			obj.Parent = plr.Backpack
 		end
 
 		RunScripts()
