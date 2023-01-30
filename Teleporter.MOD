@@ -11,7 +11,7 @@ while true do
 		rotation = 1
 	end
 	wait()
-	script.Parent.CFrame = CFrame.new(script.Parent.CFrame) * CFrame.Angles(0,1,0)
+	script.Parent.CFrame = CFrame.new(script.Parent.Position) * CFrame.Angles(0,1,0)
 end
 end
 }
