@@ -11,7 +11,7 @@ while true do
 	if rotation == 360 then 
 		rotation = 1
 	end
-	script.Parent.CFrame = CFrame.new(script.Parent.Position) * CFrame.Angles(90,rotation,0)
+	script.Parent.CFrame = CFrame.new(script.Parent.Position) * CFrame.Angles(rotation,90,0)
 end
 end
 }
