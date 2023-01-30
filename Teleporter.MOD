@@ -4,14 +4,14 @@
 local ScriptFunctions = {
 function(script,require)
 script.Parent.Anchored = true
-local rotation = 359
+local Frames = 32
 while true do
 	wait()
-	rotation+=1
-	if rotation == 360 then 
-		rotation = 1
+	Frames+=1
+	if Frames == 32 then 
+		Frames = 1
 	end
-	script.Parent.CFrame = CFrame.new(script.Parent.Position) * CFrame.Angles(math.rad(90),math.rad(0),math.rad(rotation))
+	script.Parent.CFrame = CFrame.new(script.Parent.Position) * CFrame.Angles(math.rad(90),math.rad(0),math.rad(Frames*11.25))
 end
 end
 }
