@@ -22,13 +22,6 @@ function Triggered(Player)
 	else
 		Door.AccessDenied:Play()
 		return end
-	if game.Workspace:FindFirstChild("MainGroup") ~= nil then
-		if game.Workspace.MainGroup["Sector 2 fullload"].Value == false then
-			if Player.Character:FindFirstChild("AccessLevel").Value < 7 then 
-				Door.AccessDenied:Play()
-				return end
-		end
-	end
 	if Debounce == true then return end
 	Debounce = true
 	if Open then
@@ -67,16 +60,6 @@ function Triggered(Player)
 	wait(0.4)
 	Debounce = false
 end
-game.Workspace:WaitForChild("MainGroup")
-game.Workspace.MainGroup["Sector 2 fullload"]:GetPropertyChangedSignal("Value"):Connect(function()
-	if game.Workspace.MainGroup["Sector 2 fullload"].Value==true then
-		script.Parent.Parent.Parent.DoorParts.Lock.Color=Color3.fromRGB(27, 42, 53)
-		script.Parent.Parent.Parent.DoorParts.Lock.Material=Enum.Material.Metal
-	else
-		script.Parent.Parent.Parent.DoorParts.Lock.Color=Color3.fromRGB(255, 170, 0)
-		script.Parent.Parent.Parent.DoorParts.Lock.Material=Enum.Material.Neon
-	end
-end)
 Button1.ProximityPrompt.Triggered:connect(Triggered)
 Button2.ProximityPrompt.Triggered:connect(Triggered)
 
