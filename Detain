@@ -1,0 +1,108 @@
+local detainlocation = Instance.new("Attachment")
+detainlocation.Position = Vector3.new(0,1.5,-2.5)
+detainlocation.Parent = owner.Character.HumanoidRootPart
+
+local nocolfile = Instance.new("Folder")
+nocolfile.Parent = owner.Character.HumanoidRootPart
+
+local JID = math.random(-10000,10000)
+
+GetEvent = Instance.new("RemoteEvent")
+GetEvent.Parent = owner.Character
+GetEvent.Name = "GetKey"
+detain = false
+detainedplayer = nil
+timeuntildecuff = 30
+
+NLS([==[
+local plr = game.Players.LocalPlayer
+local events2 = script.Parent
+local mouse = plr:GetMouse()
+game:GetService("UserInputService").InputBegan:Connect(function(key,isTyping)
+	if isTyping == false then
+		if key.UserInputType == Enum.UserInputType.Keyboard then
+			events2:FireServer("Keyboard",key.KeyCode,mouse.Target,mouse.Hit)
+			return end
+	end
+end)]==],GetEvent)
+GetEvent.OnServerEvent:Connect(function(plr,type,key,targ,hit)
+	if plr.Name ~= owner.Name then return end
+	if type == "Keyboard" then
+		if key == Enum.KeyCode.G then
+			if detain == true then
+				detain = false
+			else
+				if targ == nil then print("No target") return end
+				local hitplr,tries = targ,20
+				repeat 
+					hitplr = hitplr.Parent 
+					tries-=1 
+				until 
+				game.Players:GetPlayerFromCharacter(hitplr) ~= nil or tries <=0
+				if game.Players:GetPlayerFromCharacter(hitplr) ~= nil then
+					if (hitplr.HumanoidRootPart.Position - owner.Character.HumanoidRootPart.Position).Magnitude >= 10 then print("Too far") return end
+					if game.Players:GetPlayerFromCharacter(hitplr).Team == game.Teams:FindFirstChild("Jailed") then return end
+					if game.Players:GetPlayerFromCharacter(hitplr):GetAttribute("Uncuffable") == true then return end
+					print(game.Players:GetPlayerFromCharacter(hitplr).Team)
+					detainedplayer = game.Players:GetPlayerFromCharacter(hitplr)
+					local parts1 = detainedplayer.Character:GetChildren()
+					local parts2 = owner.Character:GetChildren()
+					for i1=1,#parts1 do
+						for i2=1,#parts2 do
+							if parts1[i1].ClassName == "MeshPart" or parts1[i1].ClassName == "Part" then
+								if parts2[i2].ClassName == "MeshPart" or parts2[i2].ClassName == "Part" then
+									local nocol = Instance.new("NoCollisionConstraint")
+									nocol.Part0 = parts1[i1]
+									nocol.Part1 = parts2[i2]
+									nocol.Parent = nocolfile
+								end
+							end
+						end
+					end
+					detain = true
+					hitplr.Humanoid.PlatformStand = true
+					hitplr.HumanoidRootPart.Anchored = true
+					local time = 0
+					local decuff = false
+					local timedecuff = coroutine.create(function()
+						while time <= timeuntildecuff do
+							wait(1)
+							time+=1
+						end
+						decuff = true
+					end)
+					coroutine.resume(timedecuff)
+					repeat wait() hitplr:PivotTo(CFrame.new(detainlocation.WorldPosition) * owner.Character.HumanoidRootPart.CFrame.Rotation) until hitplr.Humanoid.Health <= 0 or detain == false or decuff
+					coroutine.close(timedecuff)
+					local parts = nocolfile:GetChildren()
+					for i=1,#parts do
+						parts[i]:Destroy()
+					end
+					local uncuffable = coroutine.create(function()
+						detainedplayer:SetAttribute("Uncuffable",true)
+						local timelist = 15
+						while timelist ~= 0 do
+							wait(1)
+							timelist-=1
+						end
+						detainedplayer:SetAttribute("Uncuffable",nil)
+					end)
+					coroutine.resume(uncuffable)
+					hitplr.Humanoid.PlatformStand = false
+					hitplr.HumanoidRootPart.Anchored = false
+					detain,detainedplayer = false,nil
+				else
+					print("No Character Found.")
+				end
+			end
+		elseif key == Enum.KeyCode.J then
+			local plr = detainedplayer
+			detain,detainedplayer = false,nil
+			local lastteam = nil
+			lastteam = plr.Team
+			plr.Team = game.Teams:FindFirstChild("Jailed")
+			wait(300)
+			plr.Team = lastteam
+		end
+	end
+end)
