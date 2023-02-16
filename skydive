@@ -1,0 +1,339 @@
+local Player = game.Players.LocalPlayer
+local UIS = game:GetService("UserInputService")
+local Run = game:GetService("RunService")
+local char = Player.Character or Player.CharacterAdded:Wait()
+local lowerTorso, rootPart = char:WaitForChild("LowerTorso"), char:WaitForChild("HumanoidRootPart")
+local Character = Player.Character or Player.CharacterAdded:Wait()
+local Sound = Instance.new("Sound",script)
+local Humanoid = Character:WaitForChild("Humanoid")
+local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
+local params = RaycastParams.new()
+local Camera = game.Workspace.CurrentCamera
+local Gyro = Instance.new("BodyGyro",HumanoidRootPart)
+local IsFalling = Instance.new("BoolValue",Character)
+local Settings = script:FindFirstChild("Settings")
+local FX = script:FindFirstChild("FX")
+local canslide = true
+local SkydivingMinHight = 1000
+local GliderHigh = SkydivingMinHight/2.5
+local AtmosphericPressureInfluence = true
+local EnableContrails = true
+local GliderAuto = true
+local MainAnimation
+local ForwardAnimation
+local RightAnimation
+local LeftAnimation
+local ContrailBodyPart1
+local ContrailBodyPart2
+local ContrailBodyPart3
+local ContrailBodyPart4
+local AttachmentPosition1 = Vector3.new(-0.3,0,0)
+local AttachmentPosition2 = Vector3.new(0.3,0,0)
+local InitialGravity = workspace.Gravity
+local DragRatio = 0.997
+local DragDiminish = 0
+local Drag = DragRatio
+local MinimumSpeed = -91.1344415
+local GlideLR = 0
+local GlideFB = 0
+local TiltLR = 0
+local TiltFB = 0
+local MinimumAltitude = math.huge
+Player.CharacterAdded:Connect(function(Char)
+	Character = Char
+	Humanoid = Char:WaitForChild("Humanoid")
+	HumanoidRootPart = Char:WaitForChild("HumanoidRootPart")
+end)
+Sound.SoundId = "rbxassetid://1330849332"
+Gyro.Name = "SkydiveGyro"
+IsFalling.Name = "IsFalling"
+IsFalling.Value = false
+Sound.Looped = true
+if Humanoid.RigType == Enum.HumanoidRigType.R6 then
+	MainAnimation = script.MainAnimationR6.AnimationId
+	ForwardAnimation = script.ForwardAnimationR6.AnimationId
+	RightAnimation = script.RightAnimationR6.AnimationId
+	LeftAnimation = script.LeftAnimationR6.AnimationId
+	ContrailBodyPart1 = Character:WaitForChild("Left Arm")
+	ContrailBodyPart2 = Character:WaitForChild("Right Arm")
+	ContrailBodyPart3 = Character:WaitForChild("Left Leg")
+	ContrailBodyPart4 = Character:WaitForChild("Right Leg")
+	AttachmentPosition1 = Vector3.new(-0.3,-0.9,0)
+	AttachmentPosition2 = Vector3.new(0.3,-0.9,0)
+elseif Humanoid.RigType == Enum.HumanoidRigType.R15 then
+	MainAnimation = script.MainAnimationR15.AnimationId
+	ForwardAnimation = script.ForwardAnimationR15.AnimationId
+	RightAnimation = script.RightAnimationR15.AnimationId
+	LeftAnimation = script.LeftAnimationR15.AnimationId
+	ContrailBodyPart1 = Character:WaitForChild("LeftHand")
+	ContrailBodyPart2 = Character:WaitForChild("RightHand")
+	ContrailBodyPart3 = Character:WaitForChild("LeftFoot")
+	ContrailBodyPart4 = Character:WaitForChild("RightFoot")
+	AttachmentPosition1 = Vector3.new(-0.3,0,0)
+	AttachmentPosition2 = Vector3.new(0.3,0,0)
+end
+local CameraShaker = require(script:WaitForChild("CameraShaker"))
+local camShake = CameraShaker.new(Enum.RenderPriority.Camera.Value, function(shakeCf)
+	Camera.CFrame = Camera.CFrame * shakeCf
+end)
+camShake:Start()
+local Animation = Instance.new("Animation",Character)
+Animation.AnimationId = MainAnimation
+local FreeFallAnimation = Humanoid:LoadAnimation(Animation)
+FreeFallAnimation.Priority = Enum.AnimationPriority.Core
+local Animation2 = Instance.new("Animation",Character)
+Animation2.AnimationId = ForwardAnimation
+local FreeFallAnimationForward = Humanoid:LoadAnimation(Animation2)
+local Animation3 = Instance.new("Animation",Character)
+Animation3.AnimationId = LeftAnimation
+local FreeFallAnimationLeft = Humanoid:LoadAnimation(Animation3)
+FreeFallAnimationLeft.Priority = Enum.AnimationPriority.Idle
+local Animation4 = Instance.new("Animation",Character)
+Animation4.AnimationId = RightAnimation
+local FreeFallAnimationRight = Humanoid:LoadAnimation(Animation4)
+FreeFallAnimationRight.Priority = Enum.AnimationPriority.Idle
+if EnableContrails == true then
+	local Attachment1A = Instance.new("Attachment",ContrailBodyPart1)
+	Attachment1A.Position = AttachmentPosition1
+	local Attachment2A = Instance.new("Attachment",ContrailBodyPart1)
+	Attachment2A.Position = AttachmentPosition2
+	ContrailsA = Instance.new("Trail",ContrailBodyPart1)
+	ContrailsA.Attachment0 = Attachment1A
+	ContrailsA.Attachment1 = Attachment2A
+	ContrailsA.Texture = "rbxassetid://3517446796"
+	ContrailsA.LightInfluence = 1
+	ContrailsA.TextureLength = 1
+	ContrailsA.FaceCamera = true
+	ContrailsA.Transparency = NumberSequence.new{
+		NumberSequenceKeypoint.new(0,1),
+		NumberSequenceKeypoint.new(0.1,0.7),
+		NumberSequenceKeypoint.new(1,1)
+	}
+	local Attachment1B = Instance.new("Attachment",ContrailBodyPart2)
+	Attachment1B.Position = AttachmentPosition1
+	local Attachment2B = Instance.new("Attachment",ContrailBodyPart2)
+	Attachment2B.Position = AttachmentPosition2
+	ContrailsB = Instance.new("Trail",ContrailBodyPart2)
+	ContrailsB.Attachment0 = Attachment1B
+	ContrailsB.Attachment1 = Attachment2B
+	ContrailsB.Texture = "rbxassetid://3517446796"
+	ContrailsB.LightInfluence = 1
+	ContrailsB.TextureLength = 1
+	ContrailsB.FaceCamera = true
+	ContrailsB.Transparency = NumberSequence.new{
+		NumberSequenceKeypoint.new(0,1),
+		NumberSequenceKeypoint.new(0.1,0.7),
+		NumberSequenceKeypoint.new(1,1)
+	}
+	local Attachment1C = Instance.new("Attachment",ContrailBodyPart3)
+	Attachment1C.Position = AttachmentPosition1
+	local Attachment2C = Instance.new("Attachment",ContrailBodyPart3)
+	Attachment2C.Position = AttachmentPosition2
+	ContrailsC = Instance.new("Trail",ContrailBodyPart3)
+	ContrailsC.Attachment0 = Attachment1C
+	ContrailsC.Attachment1 = Attachment2C
+	ContrailsC.Texture = "rbxassetid://3517446796"
+	ContrailsC.LightInfluence = 1
+	ContrailsC.TextureLength = 1
+	ContrailsC.FaceCamera = true
+	ContrailsC.Transparency = NumberSequence.new{
+		NumberSequenceKeypoint.new(0,1),
+		NumberSequenceKeypoint.new(0.1,0.7),
+		NumberSequenceKeypoint.new(1,1)
+	}
+	local Attachment1D = Instance.new("Attachment",ContrailBodyPart4)
+	Attachment1D.Position = AttachmentPosition1
+	local Attachment2D = Instance.new("Attachment",ContrailBodyPart4)
+	Attachment2D.Position = AttachmentPosition2
+	ContrailsD = Instance.new("Trail",ContrailBodyPart4)
+	ContrailsD.Attachment0 = Attachment1D
+	ContrailsD.Attachment1 = Attachment2D
+	ContrailsD.Texture = "rbxassetid://3517446796"
+	ContrailsD.LightInfluence = 1
+	ContrailsD.TextureLength = 1
+	ContrailsD.FaceCamera = true
+	ContrailsD.Transparency = NumberSequence.new{
+		NumberSequenceKeypoint.new(0,1),
+		NumberSequenceKeypoint.new(0.1,0.7),
+		NumberSequenceKeypoint.new(1,1)
+	}
+end
+
+Player:GetMouse().KeyDown:Connect(function(Key)
+	if Key:byte() == 119 or Key:byte() == 17 then -- W
+		TiltFB = -1
+		GlideFB = 2
+		Drag = DragRatio*(0.997+DragDiminish)
+		if IsFalling.Value == true then
+			FreeFallAnimationForward:Play(0.25)
+		end
+	elseif Key:byte() == 97 or Key:byte() == 20 then -- A
+		TiltLR = 1
+		GlideLR = -1
+		if IsFalling.Value == true then
+			FreeFallAnimationLeft:Play(0.25)
+		end
+	elseif Key:byte() == 100 or Key:byte() == 19 then -- D
+		TiltLR = -1
+		GlideLR = 1
+		if IsFalling.Value == true then
+			FreeFallAnimationRight:Play(0.25)
+		end 
+	elseif (Key:byte() == 97 and Key:byte() == 100) or (Key:byte() == 20 and Key:byte() == 19) then
+		TiltLR = 0
+		GlideLR = 0
+		FreeFallAnimationLeft:Stop()
+		FreeFallAnimationRight:Stop()
+	end
+end)
+
+Player:GetMouse().KeyUp:Connect(function(Key)
+	if Key:byte() == 119 or Key:byte() == 17 then -- W
+		TiltFB = 0
+		GlideFB = 0
+		Drag = DragRatio
+		FreeFallAnimationForward:Stop()
+	elseif (Key:byte() == 97 or Key:byte() == 20) or (Key:byte() == 100 or Key:byte() == 19) then -- A/D
+		TiltLR = 0
+		GlideLR = 0
+		FreeFallAnimationLeft:Stop()
+		FreeFallAnimationRight:Stop()
+	end
+end)
+IsFalling.Changed:Connect(function()
+	if IsFalling.Value == true then
+		FreeFallAnimation:Play(1)
+	else
+		FreeFallAnimation:Stop()
+		FreeFallAnimationForward:Stop()
+		FreeFallAnimationLeft:Stop()
+		FreeFallAnimationRight:Stop()
+	end
+end)
+function Eject(char,Hold)
+	local Part = Instance.new("Part",char)
+	Part.Transparency = 1
+	Part.CanCollide = false
+	Part.Anchored = false
+	Part.CFrame = Hold.CFrame
+	Part.BrickColor = BrickColor.new("Black")
+	Part.Material = Enum.Material.Sand
+	Part.Name = "Parachute"
+	local w = Instance.new('Weld')
+	w.Part0, w.Part1 = Part, Hold
+	w.C1 = Hold.CFrame:inverse() * Part.CFrame
+	w.Parent = Part
+	local BV = Instance.new("BodyVelocity")
+	BV.Parent = Part
+	BV.maxForce = Vector3.new(0,math.huge,0)
+	local Sound2 = FX.EjectSound:Clone()
+	Sound2.Parent = Part
+	Sound2:Play()
+	BV.velocity = Vector3.new(0,-30,0)	
+	BV.maxForce = Vector3.new(0,0,0)	
+	local Parachute = FX.ParachuteMesh:Clone()
+	Parachute.Parent = Part
+	Part.Transparency = 0
+	BV.maxForce = Vector3.new(0,math.huge,0)
+	BV.velocity = Vector3.new(0,-Settings.AutoGlider.Speed.Value,0)
+	for _,i in pairs(Character:GetChildren())do
+		if i:IsA("BasePart") then
+			i.Touched:Connect(function(hit)
+				if hit ~= script.Parent then
+					Part:Destroy()
+					Sound.Looped = false
+					Sound:Pause()
+					Sound.SoundId = ""
+					if script:FindFirstChild("SkyDivingGuiShow") then
+						script:FindFirstChild("SkyDivingGuiShow").Enabled = false
+					end
+				end	
+			end)
+		end
+	end
+end
+
+
+
+game:GetService("RunService").Heartbeat:Connect(function()
+	local Speed = HumanoidRootPart.Velocity.Y
+	local lookVector = Camera.CFrame.LookVector	
+	local SKyray = workspace:Raycast(rootPart.Position, Vector3.new(50, char.Humanoid.HipHeight - SkydivingMinHight*20, 50), params)
+	if SKyray and Humanoid.Health > 0 and  Speed <= MinimumSpeed  then
+	    local vector = rootPart.CFrame:VectorToObjectSpace(SKyray.Normal)
+		local GliderRay = workspace:Raycast(rootPart.Position, Vector3.new(50, char.Humanoid.HipHeight - GliderHigh, 50), params)
+		if GliderRay and Settings and Settings.AutoGlider.Value then
+			workspace.Gravity = InitialGravity
+			Gyro.MaxTorque = Vector3.new(0,0,0)
+			Humanoid.PlatformStand = false
+			Character.Animate.Disabled = false
+			ContrailsA.Enabled = false
+			ContrailsB.Enabled = false
+			ContrailsC.Enabled = false
+			ContrailsD.Enabled = false
+			if IsFalling and IsFalling.Value and not Character:FindFirstChild("Glider") then
+				char:FindFirstChild("IsFalling").Value = false
+				Eject(Character,rootPart)
+				Sound.SoundId = "rbxassetid://9120749306"
+				Sound.Looped = false
+				Sound:Play()
+				camShake:Shake(CameraShaker.Presets.BumpRemaked)
+			end
+		elseif Settings and Settings.AutoGlider.Value then
+			if script:FindFirstChild("SkyDivingGuiShow") then
+			    script:FindFirstChild("SkyDivingGuiShow").Enabled = false
+			end
+			if Character:FindFirstChild("Parachute") then
+				Character:FindFirstChild("Parachute"):Destroy()
+			end
+			if AtmosphericPressureInfluence == false then
+				DragDiminish = 0
+				MinimumAltitude = math.huge
+			else
+				DragDiminish = -((101.325*((((((86)-(0.00356*(HumanoidRootPart.Position.Y))+459.67)/(459.67+(86)))^5.256))))/101.325)*0.0015+0.0015
+				MinimumAltitude = (160000/(1+1.0001^HumanoidRootPart.Velocity.Y))-15000 
+			end
+			workspace.Gravity = 32.174
+			HumanoidRootPart.Velocity = HumanoidRootPart.Velocity*(Drag+DragDiminish)+Vector3.new(GlideLR,1,GlideLR)*HumanoidRootPart.CFrame.RightVector+Vector3.new(GlideFB,1,GlideFB)*HumanoidRootPart.CFrame.LookVector
+			Gyro.MaxTorque = Vector3.new(40000000,40000000,40000000)
+			Gyro.CFrame = CFrame.new(HumanoidRootPart.Position)*CFrame.Angles(0,math.atan2(-lookVector.X,-lookVector.Z),TiltLR/2)*CFrame.Angles(TiltFB,0,0)
+			Humanoid.PlatformStand = true
+			IsFalling.Value = true
+			Character.Animate.Disabled = true
+			ContrailsA.Enabled = true
+			ContrailsB.Enabled = true
+			ContrailsC.Enabled = true
+			ContrailsD.Enabled = true
+			if not Sound.Playing  and not Character:FindFirstChild("Glider") then
+				Sound:Play()
+			end
+			camShake:Shake(CameraShaker.Presets.Vibration)
+		end
+		params.FilterDescendantsInstances = {char}
+		params.FilterType = Enum.RaycastFilterType.Blacklist
+	else
+		if Character:FindFirstChild("Parachute") and Settings.AutoGlider.Gui.Value then
+			if script:FindFirstChild("SkyDivingGuiShow") then
+				local HeightGui = script:FindFirstChild("SkyDivingGuiShow")
+				local ImageLabel = HeightGui.Frame:FindFirstChild("ImageLabel")
+				local Height = math.ceil(rootPart.Position.Y )
+				ImageLabel.Position = UDim2.new(-1.347, 0, 0.865 - Height / GliderHigh, 0) 
+				HeightGui.Enabled = true
+				Sound:Pause()
+				Sound.SoundId = ""
+				if not Sound.Playing  and not Character:FindFirstChild("Glider") then
+					Sound:Play()
+				end
+			end
+		end
+		workspace.Gravity = InitialGravity
+		Gyro.MaxTorque = Vector3.new(0,0,0)
+		Humanoid.PlatformStand = false
+		IsFalling.Value = false
+		Character.Animate.Disabled = false
+		ContrailsA.Enabled = false
+		ContrailsB.Enabled = false
+		ContrailsC.Enabled = false
+		ContrailsD.Enabled = false
+	end
+end)
