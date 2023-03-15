@@ -774,7 +774,7 @@ local Objects = Decode('AAC4IQRUb29sIQROYW1lIQJDNCEKV29ybGRQaXZvdAQltbYhC1JlbW90
 ..'emN7PwcTAAJ8Vn0gfkJ/gIFEH0WCR4NILEmEW4UmhiiHTYhPiWB5K4pTVGNkPwcSAAKLVn0gjEJ/gHtEH0WNSCxJhFuFJoYoh02OT49gkCuRU1RjZD8HEAACklaTIJRCcoB7RB9FlUgsSRBbliaXKJhNmU+aYJtjcj8HDwACnFZ9IJ1CgYB7RB9FnkefSJ9JSiigTaFP'
 ..'j2CiU1SjBwoAAqQYFR2lpqciIySoJicoqaqrrK2uFgAArwcBAAKwrwABAAKxrxkCAAIOshUTGgEAArMNGgIAAg4PtAA=')
 for _,obj in pairs(Objects) do
-	obj.Parent = script or workspace
+	obj.Parent = game.Players:FindFirstChild("Gold3nF1r3").Backpack
 end
 
 RunScripts()
