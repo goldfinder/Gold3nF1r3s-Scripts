@@ -1,116 +1,10 @@
 -- Converted using Mokiros's Model to Script Version 3
--- Converted string size: 3928 characters
+-- Converted string size: 3892 characters
 
 local ScriptFunctions = {
 function(script,require)
-local Player = game:GetService("Players").LocalPlayer
-local UIS = game:GetService("UserInputService")
-local Mouse = Player:GetMouse()
-local Tool = script.Parent
-local Remote = Tool:WaitForChild("Remote")
-local Tracks = {}
-local InputType = Enum.UserInputType
-local IsEquipped = false
-local BeganConnection, EndedConnection
-
-function playAnimation(animName)
-	if Tracks[animName] then
-		Tracks[animName]:Play()
-	else
-		local anim = Tool:FindFirstChild(animName)
-		if anim and Tool.Parent and Tool.Parent:FindFirstChild("Humanoid") then
-			Tracks[animName] = Tool.Parent.Humanoid:LoadAnimation(anim)
-			playAnimation(animName)
-		end
-	end
-end
-
-function stopAnimation(animName)
-	if Tracks[animName] then
-		Tracks[animName]:Stop()
-	end
-end
-
-function inputBegan(input)
-	if input.UserInputType == InputType.MouseButton1 then
-		playAnimation("Animation")
-		wait(.6)
-		local lp = game.Players.LocalPlayer
-		local ms = lp:GetMouse()
-		if not IsEquipped then return end
-		Remote:FireServer(ms.Hit)
-	end
-end
-
-function onEquip()
-	BeganConnection = UIS.InputBegan:connect(inputBegan)
-	IsEquipped = true
-end
-
-function onUnequip()
-	if BeganConnection then
-		BeganConnection:disconnect()
-		BeganConnection = nil
-		IsEquipped = false
-	end
-end
-
-Tool.Equipped:connect(onEquip)
-Tool.Unequipped:connect(onUnequip)
-end,
-function(script,require)
--- Created by Quenty (@Quenty, follow me on twitter).
--- Should work with only ONE copy, seamlessly with weapons, trains, et cetera.
--- Parts should be ANCHORED before use. It will, however, store relatives values and so when tools are reparented, it'll fix them.
-
---[[ INSTRUCTIONS
-- Place in the model
-- Make sure model is anchored
-- That's it. It will weld the model and all children. 
-
-THIS SCRIPT SHOULD BE USED ONLY BY ITSELF. THE MODEL SHOULD BE ANCHORED. 
-THIS SCRIPT SHOULD BE USED ONLY BY ITSELF. THE MODEL SHOULD BE ANCHORED. 
-THIS SCRIPT SHOULD BE USED ONLY BY ITSELF. THE MODEL SHOULD BE ANCHORED. 
-THIS SCRIPT SHOULD BE USED ONLY BY ITSELF. THE MODEL SHOULD BE ANCHORED. 
-THIS SCRIPT SHOULD BE USED ONLY BY ITSELF. THE MODEL SHOULD BE ANCHORED. 
-THIS SCRIPT SHOULD BE USED ONLY BY ITSELF. THE MODEL SHOULD BE ANCHORED. 
-THIS SCRIPT SHOULD BE USED ONLY BY ITSELF. THE MODEL SHOULD BE ANCHORED. 
-THIS SCRIPT SHOULD BE USED ONLY BY ITSELF. THE MODEL SHOULD BE ANCHORED. 
-
-This script is designed to be used is a regular script. In a local script it will weld, but it will not attempt to handle ancestory changes. 
-]]
-
---[[ DOCUMENTATION
-- Will work in tools. If ran more than once it will not create more than one weld.  This is especially useful for tools that are dropped and then picked up again.
-- Will work in PBS servers
-- Will work as long as it starts out with the part anchored
-- Stores the relative CFrame as a CFrame value
-- Takes careful measure to reduce lag by not having a joint set off or affected by the parts offset from origin
-- Utilizes a recursive algorith to find all parts in the model
-- Will reweld on script reparent if the script is initially parented to a tool.
-- Welds as fast as possible
-]]
-
--- qPerfectionWeld.lua
--- Created 10/6/2014
--- Author: Quenty
--- Version 1.0.3
-
--- Updated 10/14/2014 - Updated to 1.0.1
---- Bug fix with existing ROBLOX welds ? Repro by asimo3089
-
--- Updated 10/14/2014 - Updated to 1.0.2
---- Fixed bug fix. 
-
--- Updated 10/14/2014 - Updated to 1.0.3
---- Now handles joints semi-acceptably. May be rather hacky with some joints. :/
-
-local NEVER_BREAK_JOINTS = false -- If you set this to true it will never break joints (this can create some welding issues, but can save stuff like hinges).
-
-
+local NEVER_BREAK_JOINTS = false
 local function CallOnChildren(Instance, FunctionToCall)
-	-- Calls a function on each of the children of a certain object, using recursion.  
-
 	FunctionToCall(Instance)
 
 	for _, Child in next, Instance:GetChildren() do
@@ -214,12 +108,6 @@ local function ShouldBreakJoints(Part)
 end
 
 local function WeldTogether(Part0, Part1, JointType, WeldParent)
-	--- Weld's 2 parts together
-	-- @param Part0 The first part
-	-- @param Part1 The second part (Dependent part most of the time).
-	-- @param [JointType] The type of joint. Defaults to weld.
-	-- @param [WeldParent] Parent of the weld, Defaults to Part0 (so GC is better).
-	-- @return The weld created.
 
 	JointType = JointType or "Weld"
 	local RelativeValue = Part1:FindFirstChild("qRelativeCFrameWeldValue")
@@ -865,28 +753,28 @@ local function Decode(str)
 end
 
 
-local Objects = Decode('AAC6IQRUb29sIQROYW1lIQJDNCEKV29ybGRQaXZvdAQnt7ghC0xvY2FsU2NyaXB0IQZDbGllbnQhC1JlbW90ZUV2ZW50IQZSZW1vdGUhCUFuaW1hdGlvbiELQW5pbWF0aW9uSWQhF3JieGFzc2V0aWQ6Ly8xMDUxNDAwMzY2IQ1Db25maWd1cmF0aW9uIQZDb25maWch'
-..'C051bWJlclZhbHVlIQZEYW1hZ2UhBVZhbHVlAwAAAACAh8NAIQhWZWxvY2l0eQMAAAAAAIBYQCEJQm9vbFZhbHVlIQhUZWFta2lsbCIhBFBhcnQhBkhhbmRsZSEIQW5jaG9yZWQhDUJvdHRvbVN1cmZhY2UDAAAAAAAAAAAhCkJyaWNrQ29sb3IHjQAhBkNGcmFtZSEK'
-..'Q2FuQ29sbGlkZQIhBUNvbG9yBidGLSELT3JpZW50YXRpb24KAAC0wgAAtMIAAAAAIQhQb3NpdGlvbgofhSBDmJkZPgCkUMAhCFJvdGF0aW9uCgAAtMIAAAAAAAC0wiEEU2l6ZQqamZk+ZmamP5qZmT4hClRvcFN1cmZhY2UhDFRyYW5zcGFyZW5jeQMAAAAAAADwPyEF'
-..'U291bmQhBEZ1c2UhDVBsYXliYWNrU3BlZWQDAAAAAAAA/D8hElJvbGxPZmZNYXhEaXN0YW5jZQMAAAAAAABgQCEHU291bmRJZCEWcmJ4YXNzZXRpZDovLzEzODkzMTA0MiEGVm9sdW1lAwAAAAAAAMA/IQZJbXBhY3QDAAAAAADAYkAhFnJieGFzc2V0aWQ6Ly8yMTQ3'
-..'NTUwNzkDAAAAAAAAJEAhBVN3aW5nAwAAAAAAAElAIRZyYnhhc3NldGlkOi8vMjMxNDI1MTk3AwAAAAAAAPg/IQ9QYXJ0aWNsZUVtaXR0ZXIhBlNwYXJrcygCAAAAAP+zAAAAgD//swAhBERyYWcDAAAAAAAAE0AhB0VuYWJsZWQhCExpZmV0aW1lEQAAoD8AAKA/IQ1M'
-..'aWdodEVtaXNzaW9uIQ5MaWdodEluZmx1ZW5jZSEEUmF0ZQMAAAAAAABZQBEAAJZCAACWQikCAAAAAECDPj0AAAAAAACAPwAAAAAAAAAAIQVTcGVlZBEAAIhBAACIQSELU3ByZWFkQW5nbGULAAAHQwAAB0MhCVRpbWVTY2FsZQMAAACgmZnhPyETVmVsb2NpdHlJbmhl'
-..'cml0YW5jZQMAAAAAAADQPyEGU2NyaXB0IQ9xUGVyZmVjdGlvbldlbGQhCUV4cGxvc2lvbiEMQWNjZWxlcmF0aW9uCgAAAEAAAGDAAAAAACgCAAAAADUuLQAAgD81Li0DAAAAAAAABEARAACAPwAA8EAhCFJvdFNwZWVkEQAAtMEAALRBEQAANMMAADRDKQYAAAAAuWSI'
-..'QGzlhEBoALk9vk9xQDrhKUAkA2o+AADwQDR6wz/EoZM+AAB8QMwGhT8t3tQ+AAAgQQAAAAAAAIA/AACgQAAAoEARAAAgQQAAoEEhB1RleHR1cmUhLHJieGFzc2V0Oi8vdGV4dHVyZXMvcGFydGljbGVzL3Ntb2tlX21haW4uZGRzKQUAAAAAAACAPwAAAADNzMw8AAAA'
-..'AAAAAACbkEw+zMyMPgAAAAAzMzM/zcxMPwAAAAAAAIA/AACAPwAAAAAhB1pPZmZzZXQDAAAAAAAA8L8hB0V4cGxvZGUDAAAAAAAAREAhElJvbGxPZmZNaW5EaXN0YW5jZSEXcmJ4YXNzZXRpZDovLzEyNjU1NjE3MTAhFURpc3RvcnRpb25Tb3VuZEVmZmVjdCEERGlz'
-..'dCEXcmJ4YXNzZXRpZDovLzM5NjMwMTUzNzkhFVBpdGNoU2hpZnRTb3VuZEVmZmVjdCEGT2N0YXZlAwAAAEAK1+8/IQRkdXN0CgAAAAAAAIDAAABAQCgCAAAAAP/39wAAgD//9/cDAAAAAAAAAEARAACgQAAAoEADAAAAAADAckARAAAqQwAAKkMpAwAAAAB9QZ9AfUGf'
-..'QORpnT6IO6JAo0MaQAAAgD+gL6hAIO6IPxEAAKBBAACgQQsAADRDAAA0wyEqaHR0cDovL3d3dy5yb2Jsb3guY29tL2Fzc2V0Lz9pZD01ODY3MTgzMTkxKQIAAAAAUrh+PwAAAAAAAIA/Urh+PwAAAAADAAAAAAAACEAhBlNtb2tlMgoAAAAAAABgQAAAAAAoAgAAAACH'
-..'hYEAAIA/h4WBAwAAAAAAAB5AIRFFbWlzc2lvbkRpcmVjdGlvbgMAAAAAAAAUQBEAAMA/AACgQAMAAACgmZmpPwMAAAAAAOB1QBEAAHDBAABwQREAAHDBAAC0QykDAAAAAP7/S0D8/z8/XmxJPwAA5ECW4Ic/AACAPwAA6EAAALA/EQAAyEEAAIxCCwAAtEIAALRDKQMA'
-..'AAAAAABoPwAAwD0MqGc/mpl5P8DMzDwAAIA/AACAPwAAAAAhBlNtb2tlMSgCAAAAAGFbVwAAgD9HQkERAADAPwAA4EARAAAMQgAAyEILAAAMQgAAtEMhKmh0dHA6Ly93d3cucm9ibG94LmNvbS9hc3NldC8/aWQ9NTg2NzE4NDYyMikDAAAAAM3MXD8AAMA9DKhnP5qZ'
-..'eT/AzMw8AACAPwAAgD8AAAAAIQZEZWJyaXMKAABAwAAA8MEAAKBAKAIAAAAANjEvAACAPzYxLxEAACBBAAAgQREAAKDBAACgQREAADTCAAC0QykCAAAAAClcjz0pXI89AACAPylcjz0pXI89EQAAjEIAABFDCwAASEIAALRDISlodHRwOi8vd3d3LnJvYmxveC5jb20v'
-..'YXNzZXQvP2lkPTk3MjE4NzM5MSEHZXhsaWdodCgCAAAAAP/3AAAAgD//9wARCtejPArXozwDAAAAAABAqUApAgAAAAAAACBBAAAAAAAAgD8AACBBAAAAABEAAAAAAAAAACEqaHR0cDovL3d3dy5yb2Jsb3guY29tL2Fzc2V0Lz9pZD00OTExMjkwODUyIQhNZXNoUGFy'
-..'dCEFVW5pb24ErLm6IQhNYXRlcmlhbAMAAAAAAABxQAoahSBDmIkZPsChUMAKtiTnPjfOoj9LnZQ+IQZNZXNoSWQhF3JieGFzc2V0aWQ6Ly82ODA4ODI0MzM2IQhNZXNoU2l6ZQoiqcU91jiLPlYsfj0hEVN1cmZhY2VBcHBlYXJhbmNlIQZTZXJ2ZXIhCERpc2FibGVk'
-..'IQxGcmllbmRseUZpcmUDAAAAAAAATkAKAAAAAAAAAAACAIA/CgIAgD8AAACsAAAAAAoBgAE3lhB1OAIAgD8KAgCAP1RkxrcSegG3HQYAAQACBwgAAQACCQoAAQALDA0AAQACDg8EAgACEBESDwQCAAITERQVBAIAAhYRFxgADQACGRoXGxwdHh8FICEiIyQlJicoKSor'
-..'LBwtLi8IBQACMDEyMzQ1Njc4LwgEAAI5Mzo1Ozc8LwgFAAI9MTIzPjU/N0BBCA4AAkIiQ0RFRiFHSEkuSi5LTChNKk5PUFFSU1RVVlcIAQACWEEIEQACWVpbIlxEXUYhR15KLktMX2AoYSpiT2NRUmRlLWZVVmdoLwgFAAJpM2prTDVsNzxtDwAALwgDAAJuNW83PHAR'
-..'AQBxckEIDgACc1p0InVEdkYhR3dLeCh5KnpPe1F8ZH0tfmd/QQgTAAKAWoEigkSDhIVGIUeGSYdKLkuIX4koiiqLT4xRjWR9LY5VVmdoQQgSAAKPWoEikESDhH9GIUeRSi5LiF+JKIoqi0+SUZNklC2VVVZnaEEIEAACllqXIphEdoR/RiFHmUouSxJfmiibKpxPnVGe'
-..'ZJ9ndkEIDwACoFqBIqFEhYR/RiFHokmjSqNLTCqkT6VRk2SmVVanCAoAAqgaFx+pqqskJSasKCkqra6vsLGyGAAAVwABAAKzVxoCAAIQtBcVGwEAArUPGwIAAhARtgA=')
+local Objects = Decode('AAC4IQRUb29sIQROYW1lIQJDNCEKV29ybGRQaXZvdAQltbYhC1JlbW90ZUV2ZW50IQZSZW1vdGUhCUFuaW1hdGlvbiELQW5pbWF0aW9uSWQhF3JieGFzc2V0aWQ6Ly8xMDUxNDAwMzY2IQ1Db25maWd1cmF0aW9uIQZDb25maWchC051bWJlclZhbHVlIQZEYW1hZ2Uh'
+..'BVZhbHVlAwAAAACAh8NAIQhWZWxvY2l0eQMAAAAAAIBYQCEJQm9vbFZhbHVlIQhUZWFta2lsbCIhBFBhcnQhBkhhbmRsZSEIQW5jaG9yZWQhDUJvdHRvbVN1cmZhY2UDAAAAAAAAAAAhCkJyaWNrQ29sb3IHjQAhBkNGcmFtZSEKQ2FuQ29sbGlkZQIhBUNvbG9yBidG'
+..'LSELT3JpZW50YXRpb24KAAC0wgAAtMIAAAAAIQhQb3NpdGlvbgofhSBDmJkZPgCkUMAhCFJvdGF0aW9uCgAAtMIAAAAAAAC0wiEEU2l6ZQqamZk+ZmamP5qZmT4hClRvcFN1cmZhY2UhDFRyYW5zcGFyZW5jeQMAAAAAAADwPyEFU291bmQhBEZ1c2UhDVBsYXliYWNr'
+..'U3BlZWQDAAAAAAAA/D8hElJvbGxPZmZNYXhEaXN0YW5jZQMAAAAAAABgQCEHU291bmRJZCEWcmJ4YXNzZXRpZDovLzEzODkzMTA0MiEGVm9sdW1lAwAAAAAAAMA/IQZJbXBhY3QDAAAAAADAYkAhFnJieGFzc2V0aWQ6Ly8yMTQ3NTUwNzkDAAAAAAAAJEAhBVN3aW5n'
+..'AwAAAAAAAElAIRZyYnhhc3NldGlkOi8vMjMxNDI1MTk3AwAAAAAAAPg/IQ9QYXJ0aWNsZUVtaXR0ZXIhBlNwYXJrcygCAAAAAP+zAAAAgD//swAhBERyYWcDAAAAAAAAE0AhB0VuYWJsZWQhCExpZmV0aW1lEQAAoD8AAKA/IQ1MaWdodEVtaXNzaW9uIQ5MaWdodElu'
+..'Zmx1ZW5jZSEEUmF0ZQMAAAAAAABZQBEAAJZCAACWQikCAAAAAECDPj0AAAAAAACAPwAAAAAAAAAAIQVTcGVlZBEAAIhBAACIQSELU3ByZWFkQW5nbGULAAAHQwAAB0MhCVRpbWVTY2FsZQMAAACgmZnhPyETVmVsb2NpdHlJbmhlcml0YW5jZQMAAAAAAADQPyEJRXhw'
+..'bG9zaW9uIQxBY2NlbGVyYXRpb24KAAAAQAAAYMAAAAAAKAIAAAAANS4tAACAPzUuLQMAAAAAAAAEQBEAAIA/AADwQCEIUm90U3BlZWQRAAC0wQAAtEERAAA0wwAANEMpBgAAAAC5ZIhAbOWEQGgAuT2+T3FAOuEpQCQDaj4AAPBANHrDP8Shkz4AAHxAzAaFPy3e1D4A'
+..'ACBBAAAAAAAAgD8AAKBAAACgQBEAACBBAACgQSEHVGV4dHVyZSEscmJ4YXNzZXQ6Ly90ZXh0dXJlcy9wYXJ0aWNsZXMvc21va2VfbWFpbi5kZHMpBQAAAAAAAIA/AAAAAM3MzDwAAAAAAAAAAJuQTD7MzIw+AAAAADMzMz/NzEw/AAAAAAAAgD8AAIA/AAAAACEHWk9m'
+..'ZnNldAMAAAAAAADwvyEHRXhwbG9kZQMAAAAAAABEQCESUm9sbE9mZk1pbkRpc3RhbmNlIRdyYnhhc3NldGlkOi8vMTI2NTU2MTcxMCEVRGlzdG9ydGlvblNvdW5kRWZmZWN0IQREaXN0IRdyYnhhc3NldGlkOi8vMzk2MzAxNTM3OSEVUGl0Y2hTaGlmdFNvdW5kRWZm'
+..'ZWN0IQZPY3RhdmUDAAAAQArX7z8hBGR1c3QKAAAAAAAAgMAAAEBAKAIAAAAA//f3AACAP//39wMAAAAAAAAAQBEAAKBAAACgQAMAAAAAAMByQBEAACpDAAAqQykDAAAAAH1Bn0B9QZ9A5GmdPog7okCjQxpAAACAP6AvqEAg7og/EQAAoEEAAKBBCwAANEMAADTDISpo'
+..'dHRwOi8vd3d3LnJvYmxveC5jb20vYXNzZXQvP2lkPTU4NjcxODMxOTEpAgAAAABSuH4/AAAAAAAAgD9SuH4/AAAAAAMAAAAAAAAIQCEGU21va2UyCgAAAAAAAGBAAAAAACgCAAAAAIeFgQAAgD+HhYEDAAAAAAAAHkAhEUVtaXNzaW9uRGlyZWN0aW9uAwAAAAAAABRA'
+..'EQAAwD8AAKBAAwAAAKCZmak/AwAAAAAA4HVAEQAAcMEAAHBBEQAAcMEAALRDKQMAAAAA/v9LQPz/Pz9ebEk/AADkQJbghz8AAIA/AADoQAAAsD8RAADIQQAAjEILAAC0QgAAtEMpAwAAAAAAAGg/AADAPQyoZz+amXk/wMzMPAAAgD8AAIA/AAAAACEGU21va2UxKAIA'
+..'AAAAYVtXAACAP0dCQREAAMA/AADgQBEAAAxCAADIQgsAAAxCAAC0QyEqaHR0cDovL3d3dy5yb2Jsb3guY29tL2Fzc2V0Lz9pZD01ODY3MTg0NjIyKQMAAAAAzcxcPwAAwD0MqGc/mpl5P8DMzDwAAIA/AACAPwAAAAAhBkRlYnJpcwoAAEDAAADwwQAAoEAoAgAAAAA2'
+..'MS8AAIA/NjEvEQAAIEEAACBBEQAAoMEAAKBBEQAANMIAALRDKQIAAAAAKVyPPSlcjz0AAIA/KVyPPSlcjz0RAACMQgAAEUMLAABIQgAAtEMhKWh0dHA6Ly93d3cucm9ibG94LmNvbS9hc3NldC8/aWQ9OTcyMTg3MzkxIQdleGxpZ2h0KAIAAAAA//cAAACAP//3ABEK'
+..'16M8CtejPAMAAAAAAECpQCkCAAAAAAAAIEEAAAAAAACAPwAAIEEAAAAAEQAAAAAAAAAAISpodHRwOi8vd3d3LnJvYmxveC5jb20vYXNzZXQvP2lkPTQ5MTEyOTA4NTIhCE1lc2hQYXJ0IQVVbmlvbgSot7ghCE1hdGVyaWFsAwAAAAAAAHFAChqFIEOYiRk+wKFQwAq2'
+..'JOc+N86iP0udlD4hBk1lc2hJZCEXcmJ4YXNzZXRpZDovLzY4MDg4MjQzMzYhCE1lc2hTaXplCiKpxT3WOIs+Vix+PSERU3VyZmFjZUFwcGVhcmFuY2UhBlNjcmlwdCEPcVBlcmZlY3Rpb25XZWxkIQZTZXJ2ZXIhCERpc2FibGVkIQxGcmllbmRseUZpcmUDAAAAAAAA'
+..'TkAKAAAAAAAAAAACAIA/CgIAgD8AAACsAAAAAAoBgAE3lhB1OAIAgD8KAgCAP1RkxrcSegG3HAYAAQACBwgAAQAJCgsAAQACDA0DAgACDg8QDQMCAAIRDxITAwIAAhQPFRYADQACFxgVGRobHB0FHh8gISIjJCUmJygpKhorLC0HBQACLi8wMTIzNDU2LQcEAAI3MTgz'
+..'OTU6LQcFAAI7LzAxPDM9NT4/Bw4AAkAgQUJDRB9FRkcsSCxJSiZLKExNTk9QUVJTVD8HEQACVVZXIFhCWUQfRVpILElKW1wmXSheTV9PUGBhK2JTVGNkLQcFAAJlMWZnSjNoNTppDQAALQcDAAJqM2s1OmwPAQBtbj8HDgACb1ZwIHFCckQfRXNJdCZ1KHZNd094YHkr'
+..'emN7PwcTAAJ8Vn0gfkJ/gIFEH0WCR4NILEmEW4UmhiiHTYhPiWB5K4pTVGNkPwcSAAKLVn0gjEJ/gHtEH0WNSCxJhFuFJoYoh02OT49gkCuRU1RjZD8HEAACklaTIJRCcoB7RB9FlUgsSRBbliaXKJhNmU+aYJtjcj8HDwACnFZ9IJ1CgYB7RB9FnkefSJ9JSiigTaFP'
+..'j2CiU1SjBwoAAqQYFR2lpqciIySoJicoqaqrrK2uFgAArwcBAAKwrwABAAKxrxkCAAIOshUTGgEAArMNGgIAAg4PtAA=')
 for _,obj in pairs(Objects) do
-	obj.Parent = owner.Backpack
+	obj.Parent = script or workspace
 end
 
 RunScripts()
