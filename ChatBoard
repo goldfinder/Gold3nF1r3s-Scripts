@@ -99,7 +99,9 @@ end
 
 
 local messages = 1
+local playercount = 0
 for i=1,#plrlist do
+	playercount +=1
 	plrlist[i].Chatted:Connect(function(msg)
 		if precheck(msg) == false then
 		else
@@ -152,8 +154,9 @@ game.Players.PlayerAdded:Connect(function(plr)
 	end)
 end)
 game.Players.PlayerRemoving:Connect(function(plr)
+	playercount -=1
 	local f = script.SYSTEM:Clone()
-	f.Message.Text = plr.Name.." Has left the server."
+	f.Message.Text = plr.Name.." Has left the server.  (Player count is at "..playercount.."/15)"
 	f.Message.TextColor3 = Color3.fromRGB(170, 0, 0)
 	f.Parent = board
 	wait(55)
@@ -163,8 +166,9 @@ game.Players.PlayerRemoving:Connect(function(plr)
 	f:Destroy()
 end)
 game.Players.PlayerAdded:Connect(function(plr)
+	playercount +=1
 	local f = script.SYSTEM:Clone()
-	f.Message.Text = plr.Name.." Has joined the server."
+	f.Message.Text = plr.Name.." Has joined the server.  (Player count is at "..playercount.."/15)"
 	f.Message.TextColor3 = Color3.fromRGB(85, 255, 0)
 	f.Parent = board
 	wait(55)
