@@ -1,127 +1,179 @@
 -- Converted using Mokiros's Model to Script Version 3
--- Converted string size: 3268 characters
+-- Converted string size: 3292 characters
 
 local ScriptFunctions = {
+function(script,require)
+local HTTPS = game:GetService("HttpService")
+local Httplink1 = "https://raw.githubusercontent.com/goldfinder/ChatBoardV2/main/V2.MainCons"
+local Httplink2 = "https://raw.githubusercontent.com/goldfinder/ChatBoardV2/main/V2.MainBlacklisted"
+local board = script.Parent.SurfaceGui.ScrollingFrame
+local selfcount = script.Parent.SurfaceGui.MSGCNT
+local plrlist = game.Players:GetChildren()
+local tweenService = game:GetService("TweenService")
+local tweenInfo = TweenInfo.new(
+	5, --Time
+	Enum.EasingStyle.Linear, --EasingStyle
+	Enum.EasingDirection.Out, --EasingDirection
+	0, --Repeat count
+	false, --Reverses if true
+	0 --Delay time
+)
 
-	function(script,require)
-		local HTTPS = game:GetService("HttpService")
-		local Httplink1 = "https://raw.githubusercontent.com/goldfinder/ChatBoardV2/main/V2.MainCons"
-		local Httplink2 = "https://raw.githubusercontent.com/goldfinder/ChatBoardV2/main/V2.MainBlacklisted"
-		function precheck(text)
-			local banlist = string.split(HTTPS:GetAsync(Httplink2,true),",")
-			for i=1,#banlist do
-				if text:find(banlist[i])==1 then
-					return false
-				end
-			end
-			return true
+--Colors
+local NAME_COLORS =
+	{
+		Color3.new(253/255, 41/255, 67/255), -- BrickColor.new("Bright red").Color,
+		Color3.new(1/255, 162/255, 255/255), -- BrickColor.new("Bright blue").Color,
+		Color3.new(2/255, 184/255, 87/255), -- BrickColor.new("Earth green").Color,
+		BrickColor.new("Bright violet").Color,
+		BrickColor.new("Bright orange").Color,
+		BrickColor.new("Bright yellow").Color,
+		BrickColor.new("Pink").Color,
+		BrickColor.new("Brick yellow").Color,
+	}
+
+local function GetNameValue(pName)
+	local value = 0
+	for index = 1, #pName do
+		local cValue = string.byte(string.sub(pName, index, index))
+		local reverseIndex = #pName - index + 1
+		if #pName%2 == 1 then
+			reverseIndex = reverseIndex - 1
 		end
-
-
-		--Roblox filter, and safety extra.
-		function filtertext(text,puid,issystem)
-			if game:GetService("RunService"):IsStudio() then
-				return text
-			end
-			if issystem then
-				return text
-			end
-			local succcess,filter = pcall(function()
-				return game:GetService("TextService"):FilterStringAsync(text,puid,1):GetChatForUserAsync(puid)
-			end)
-			if succcess then
-				return filter
-			else
-				return "Filter Failure."
-			end
+		if reverseIndex%4 >= 2 then
+			cValue = -cValue
 		end
-		local board = script.Parent.SurfaceGui.ScrollingFrame
-		local selfcount = script.Parent.SurfaceGui.MSGCNT
-		local plrlist = game.Players:GetChildren()
-		local tweenService = game:GetService("TweenService")
-		local tweenInfo = TweenInfo.new(
-			5, --Time
-			Enum.EasingStyle.Linear, --EasingStyle
-			Enum.EasingDirection.Out, --EasingDirection
-			0, --Repeat count
-			false, --Reverses if true
-			0 --Delay time
-		)
-
-		local messages = 1
-		for i=1,#plrlist do
-			plrlist[i].Chatted:Connect(function(msg)
-				if precheck(msg) == false then
-				else
-					local f = script.MSG:Clone()
-					if plrlist[i].UserId == 21490931 then
-						f.Message.TextColor3 = Color3.fromRGB(0,255,0)
-						f.PName.TextColor3 = Color3.fromRGB(255,204,51)
-					end
-					if plrlist[i].UserId == 13480417 then
-						f.Message.TextColor3 = Color3.fromRGB(255,215,0)
-					end
-					f.Message.Text = filtertext(msg,plrlist[i].UserId,false)
-					f.PName.Text = plrlist[i].Name
-					f.Parent=board
-					messages = messages+1
-					selfcount.Text = messages
-					wait(55)
-					local Tween = game:GetService("TweenService"):Create(f, TweenInfo.new(5), {Transparency = 0})
-					Tween:Play()
-					wait(5)
-					f:Destroy()
-				end
-			end)
-		end
-		game.Players.PlayerAdded:Connect(function(plr)
-			plr.Chatted:Connect(function(msg)
-				if precheck(msg) == false then
-				else
-					local f = script.MSG:Clone()
-					if plr.UserId == 21490931 then
-						f.Message.TextColor3 = Color3.fromRGB(0,255,0)
-						f.PName.TextColor3 = Color3.fromRGB(255,204,51)
-					end
-					if plr.UserId == 13480417 then
-						f.Message.TextColor3 = Color3.fromRGB(255,215,0)
-					end
-					f.Message.Text = filtertext(msg,plr.UserId,false)
-					f.PName.Text = plr.Name
-					f.Parent=board
-					messages = messages+1
-					selfcount.Text = messages
-					wait(55)
-					local Tween = game:GetService("TweenService"):Create(f, TweenInfo.new(5), {Transparency = 0})
-					Tween:Play()
-					wait(5)
-					f:Destroy()
-				end
-			end)
-		end)
-		game.Players.PlayerRemoving:Connect(function(plr)
-			local f = script.SYSTEM:Clone()
-			f.Message.Text = plr.Name.." Has left the server."
-			f.Message.TextColor3 = Color3.fromRGB(170, 0, 0)
-			f.Parent = board
-			wait(55)
-			local Tween = game:GetService("TweenService"):Create(f, TweenInfo.new(5), {Transparency = 0})
-			Tween:Play()
-			wait(5)
-			f:Destroy()
-		end)
-		game.Players.PlayerAdded:Connect(function(plr)
-			local f = script.SYSTEM:Clone()
-			f.Message.Text = plr.Name.." Has joined the server."
-			f.Message.TextColor3 = Color3.fromRGB(85, 255, 0)
-			f.Parent = board
-			wait(55)
-			local Tween = game:GetService("TweenService"):Create(f, TweenInfo.new(5), {Transparency = 0})
-			Tween:Play()
-			wait(5)
-			f:Destroy()
-		end)
+		value = value + cValue
 	end
+	return value
+end
+
+local color_offset = 0
+local function ComputeNameColor(pName)
+	return NAME_COLORS[((GetNameValue(pName) + color_offset) % #NAME_COLORS) + 1]
+end
+
+local function GetNameColor(plr)
+	return ComputeNameColor(plr.Name)
+end
+
+function precheck(text)
+	local banlist = string.split(HTTPS:GetAsync(Httplink2,true),",")
+	for i=1,#banlist do
+		if text:find(banlist[i])==1 then
+			return false
+		end
+	end
+	if text == "!source" then
+		local f = script.SYSTEM:Clone()
+		f.Message.Text = "SOURCE CODE: https://raw.githubusercontent.com/goldfinder/Gold3nF1r3s-Scripts/main/ChatBoard"
+		f.Message.TextColor3 = Color3.fromRGB(85, 255, 255)
+		f.Parent = board
+		wait(55)
+		local Tween = game:GetService("TweenService"):Create(f, TweenInfo.new(5), {Transparency = 0})
+		Tween:Play()
+		wait(5)
+		f:Destroy()
+	end
+	return true
+end
+
+
+--Roblox filter, and safety extra.
+function filtertext(text,puid,issystem)
+	if game:GetService("RunService"):IsStudio() then
+		return text
+	end
+	if issystem then
+		return text
+	end
+	local succcess,filter = pcall(function()
+		return game:GetService("TextService"):FilterStringAsync(text,puid,1):GetChatForUserAsync(puid)
+	end)
+	if succcess then
+		return filter
+	else
+		return "Filter Failure."
+	end
+end
+
+
+local messages = 1
+for i=1,#plrlist do
+	plrlist[i].Chatted:Connect(function(msg)
+		if precheck(msg) == false then
+		else
+			local f = script.MSG:Clone()
+			if plrlist[i].UserId == 21490931 then
+				f.Message.TextColor3 = Color3.fromRGB(0,255,0)
+				f.PName.TextColor3 = Color3.fromRGB(255,204,51)
+			elseif plrlist[i].UserId == 13480417 then
+				f.Message.TextColor3 = Color3.fromRGB(255,215,0)
+			else
+				f.PName.TextColor3 = ComputeNameColor(plrlist[i].Name)
+			end
+			f.Message.Text = filtertext(msg,plrlist[i].UserId,false)
+			f.PName.Text = plrlist[i].Name
+			f.Parent=board
+			messages = messages+1
+			selfcount.Text = messages
+			wait(55)
+			local Tween = game:GetService("TweenService"):Create(f, TweenInfo.new(5), {Transparency = 0})
+			Tween:Play()
+			wait(5)
+			f:Destroy()
+		end
+	end)
+end
+game.Players.PlayerAdded:Connect(function(plr)
+	plr.Chatted:Connect(function(msg)
+		if precheck(msg) == false then
+		else
+			local f = script.MSG:Clone()
+			if plr.UserId == 21490931 then
+				f.Message.TextColor3 = Color3.fromRGB(0,255,0)
+				f.PName.TextColor3 = Color3.fromRGB(255,204,51)
+			elseif plr.UserId == 13480417 then
+				f.Message.TextColor3 = Color3.fromRGB(255,215,0)
+			else
+				f.PName.TextColor3 = ComputeNameColor(plr.Name)
+			end
+			f.Message.Text = filtertext(msg,plr.UserId,false)
+			f.PName.Text = plr.Name
+			f.Parent=board
+			messages = messages+1
+			selfcount.Text = messages
+			wait(55)
+			local Tween = game:GetService("TweenService"):Create(f, TweenInfo.new(5), {Transparency = 0})
+			Tween:Play()
+			wait(5)
+			f:Destroy()
+		end
+	end)
+end)
+game.Players.PlayerRemoving:Connect(function(plr)
+	local f = script.SYSTEM:Clone()
+	f.Message.Text = plr.Name.." Has left the server."
+	f.Message.TextColor3 = Color3.fromRGB(170, 0, 0)
+	f.Parent = board
+	wait(55)
+	local Tween = game:GetService("TweenService"):Create(f, TweenInfo.new(5), {Transparency = 0})
+	Tween:Play()
+	wait(5)
+	f:Destroy()
+end)
+game.Players.PlayerAdded:Connect(function(plr)
+	local f = script.SYSTEM:Clone()
+	f.Message.Text = plr.Name.." Has joined the server."
+	f.Message.TextColor3 = Color3.fromRGB(85, 255, 0)
+	f.Parent = board
+	wait(55)
+	local Tween = game:GetService("TweenService"):Create(f, TweenInfo.new(5), {Transparency = 0})
+	Tween:Play()
+	wait(5)
+	f:Destroy()
+end)
+end
 }
 local ScriptIndex = 0
 local Scripts,ModuleScripts,ModuleCache = {},{},{}
@@ -132,7 +184,7 @@ function require(obj,...)
 		local a,b = pcall(_require,obj,...)
 		return not a and error(b,2) or b
 	end
-
+	
 	local res = ModuleCache[index]
 	if res then return res end
 	res = ScriptFunctions[index](obj,require)
@@ -145,6 +197,7 @@ local function Script(obj,ismodule)
 	local t = ismodule and ModuleScripts or Scripts
 	t[obj] = ScriptIndex
 end
+
 function RunScripts()
 	for script, index in pairs(Scripts) do
 		coroutine.wrap(function()
@@ -152,9 +205,11 @@ function RunScripts()
 		end)()
 	end
 end
+
+
 local function Decode(str)
 	local StringLength = #str
-
+	
 	-- Base64 decoding
 	do
 		local decoder = {}
@@ -181,14 +236,14 @@ local function Decode(str)
 		end
 		str = table.concat(t)
 	end
-
+	
 	local Position = 1
 	local function Parse(fmt)
 		local Values = {string.unpack(fmt,str,Position)}
 		Position = table.remove(Values)
 		return table.unpack(Values)
 	end
-
+	
 	local Settings = Parse('B')
 	local Flags = Parse('B')
 	Flags = {
@@ -198,16 +253,16 @@ local function Decode(str)
 		--[[MaxPropertiesLengthByteLength]] bit32.extract(Flags,0,2)+1,
 		--[[Use Double instead of Float]] bit32.band(Settings,0b1) > 0
 	}
-
+	
 	local ValueFMT = ('I'..Flags[1])
 	local InstanceFMT = ('I'..Flags[2])
 	local ConnectionFMT = ('I'..Flags[3])
 	local PropertyLengthFMT = ('I'..Flags[4])
-
+	
 	local ValuesLength = Parse(ValueFMT)
 	local Values = table.create(ValuesLength)
 	local CFrameIndexes = {}
-
+	
 	local ValueDecoders = {
 		--!!Start
 		[1] = function(Modifier)
@@ -293,7 +348,7 @@ local function Decode(str)
 		end
 		--!!End
 	}
-
+	
 	for i = 1,ValuesLength do
 		local TypeAndModifier = Parse('B')
 		local Type = bit32.band(TypeAndModifier,0b11111)
@@ -305,15 +360,15 @@ local function Decode(str)
 			Values[i] = Decoder[1](Parse(Decoder[2]))
 		end
 	end
-
+	
 	for i,t in pairs(CFrameIndexes) do
 		Values[t[1]] = CFrame.fromMatrix(Values[t[2]],Values[t[3]],Values[t[4]])
 	end
-
+	
 	local InstancesLength = Parse(InstanceFMT)
 	local Instances = {}
 	local NoParent = {}
-
+	
 	for i = 1,InstancesLength do
 		local ClassName = Values[Parse(ValueFMT)]
 		local obj
@@ -338,7 +393,7 @@ local function Decode(str)
 		Instances[i] = obj
 		for i = 1,PropertiesLength do
 			local Prop,Value = Values[Parse(ValueFMT)],Values[Parse(ValueFMT)]
-
+			
 			-- ok this looks awful
 			if MeshPartMesh then
 				if Prop == "MeshId" then
@@ -363,7 +418,7 @@ local function Decode(str)
 					continue
 				end
 			end
-
+			
 			obj[Prop] = Value
 		end
 		if MeshPartMesh then
@@ -383,34 +438,34 @@ local function Decode(str)
 			obj.Parent = Parent
 		end
 	end
-
+	
 	local ConnectionsLength = Parse(ConnectionFMT)
 	for i = 1,ConnectionsLength do
 		local a,b,c = Parse(InstanceFMT),Parse(ValueFMT),Parse(InstanceFMT)
 		Instances[a][Values[b]] = Instances[c]
 	end
-
+	
 	return NoParent
 end
 
 
-local Objects = Decode('AACcIQVNb2RlbCEKV29ybGRQaXZvdASPkJEhBFBhcnQhCEFuY2hvcmVkIiENQm90dG9tU3VyZmFjZQMAAAAAAAAAACEKQnJpY2tDb2xvcgfHACEGQ0ZyYW1lBBKSkyEFQ29sb3IGY19iIQtPcmllbnRhdGlvbgoAAJBCAAAAAAAAAAAhCFBvc2l0aW9uCgA8AMPARNQ+'
-	..'zEebwSEIUm90YXRpb24hBFNpemUKAACgPwAAwD4AAEA/IQpUb3BTdXJmYWNlBBiSkwoAPADDsAvoPlRUmsEKAADgPwAAAD4AAEA/BByUlQoAAHBCAAAAAAAAAAAKADwAw0i0jz/EtpzBBB6UlQoAPADDYLSHP3SUncEEIZaXCgAAQEIAAAAAAAAAAAoAPADDvOLQPzDn'
-	..'oMEEI5aXCgA8AMOEl9s/8CigwQQmmJkKAAAQQgAAAAAAAAAACgA8AMPatAZAvBqlwQQomJkKADwAw6otDUBEhKTBBCuQmgoAAMBBAAAAAAAAAAAKADwAwxJSHUAkAKrBBC2QmgoAPADDAqEkQASYqcEEMJCbCgAAQEEAAAAAAAAAAAoAPADDB0wrQJxgr8EEMpCbCgA8'
-	..'AMNEHzNAZCuvwQQ0kJEKADwAw0cGMEAAALXBBDaQkQoAPADDRwY4QAAAtcEEOJCRCgA8AMNHBjBAAIAIwgoAAKA/AADAPgAAskEEO5CRCgA8AMNHBjhAAIAIwgoAAOA/AAAAPgAAskEEPpCRCgA8AMOgDMA/AAA0wgoAAOA/AAA4QAAAAD8hBE5hbWUhBlNjcmVlbgRG'
-	..'nJEhCkNhbkNvbGxpZGUCCgAAAAAAALRCAAAAAAoADADDIAPoQAAA/MEKAABwQQAACkEAAMA9IQxUcmFuc3BhcmVuY3kDAAAAAAAA8D8hClN1cmZhY2VHdWkhDlpJbmRleEJlaGF2aW9yIRBDbGlwc0Rlc2NlbmRhbnRzIQRGYWNlAwAAAAAAAABAIQ5MaWdodEluZmx1'
-	..'ZW5jZSENUGl4ZWxzUGVyU3R1ZAMAAAAAAMByQCEKU2l6aW5nTW9kZSEOU2Nyb2xsaW5nRnJhbWUhBkFjdGl2ZSEQQmFja2dyb3VuZENvbG9yMwYAAAAMAACAPwAAAACAPwAAIQpDYW52YXNTaXplDAAAAAAAAAAAAEIAACESU2Nyb2xsQmFyVGhpY2tuZXNzAwAAAAAA'
-	..'ADhAIQxVSUxpc3RMYXlvdXQhCVNvcnRPcmRlciEHVGV4dEJveCEGTVNHQ05UBv///ww7328/6P8AAAAAAAAMJQaBPQAAJQaBPQAAIQRGb250AwAAAAAAAAhAIQRUZXh0IQhNU0dDT1VOVCEKVGV4dENvbG9yMyEKVGV4dFNjYWxlZCEIVGV4dFNpemUDAAAAAAAALEAh'
-	..'C1RleHRXcmFwcGVkIQZTY3JpcHQhBUZyYW1lIQNNU0cG/wAAIRZCYWNrZ3JvdW5kVHJhbnNwYXJlbmN5IQ9Cb3JkZXJTaXplUGl4ZWwMAACAPwAAAAAAAGQAIQVQTmFtZQwAAAA+AAAAAIA/AAAhEENsZWFyVGV4dE9uRm9jdXMhD1Nob3dOYXRpdmVJbnB1dCETVHdl'
-	..'bnR5T25lQ2hhcmFjdGVycyEMVGV4dEVkaXRhYmxlIQ5UZXh0WEFsaWdubWVudCEJU2VwZXJhdG9yDCUGAT4AAAAAAAAAAAwK16M7AAAAAIA/AAAhATohB01lc3NhZ2UMTDcJPgAAAAAAAAAADM3MTD8AAAAAgD8AACEGU1lTVEVNIQ9TWVNURU0gfCBTZXJ2ZXIG//8A'
-	..'BIWQkQoADADDIAPoQABAHMIKAAAAPgAADkEAAAA+BIiQkQoADADDkAE6QQAA/MEKAAAAPgAAAD4AAHRBBIuQkQoALADDIAPoQAAA/MEKAAAAPgAADkEAAHRBBI6QkQoADADDIAPoQACAv8EKADwAw5MBu0BSuwDCCgAAgD8AAAAAAAAAAAoAAAAAAACAPwAAAAAKAACA'
-	..'PwAAgCoAAAirCgAA0Cp3N54+bnhzPwoAAIA/AAB8KgAABKsKAACgKv7//z7Xs10/CgAAgD8AAFApAAAwqgoAAOCpPUwrP9o+Pj8KAACAPwAAACgAAECpCgAAAKnGG08/IHkWPwoAAACoId5pP8w/0D4KAAAAAOJnej/O5lQ+CmZl3bMAAAAAAACAvyQBAAEAAgMEAQoA'
-	..'BQYHCAkKCwwNDg8QERITEBQVFggEAQoABQYHCAkKCxcNDg8QERgTEBQZFggEAQoABQYHCAkKCxoNDg8bERwTGxQZFggEAQoABQYHCAkKCx0NDg8bER4TGxQVFggEAQoABQYHCAkKCx8NDg8gESETIBQVFggEAQoABQYHCAkKCyINDg8gESMTIBQZFggEAQoABQYHCAkK'
-	..'CyQNDg8lESYTJRQVFggEAQoABQYHCAkKCycNDg8lESgTJRQZFggEAQoABQYHCAkKCykNDg8qESsTKhQVFggEAQoABQYHCAkKCywNDg8qES0TKhQZFggEAQoABQYHCAkKCy4NDg8vETATLxQVFggEAQoABQYHCAkKCzENDg8vETITLxQZFggEAQgABQYHCAkKCzMNDhE0'
-	..'FBUWCAQBCAAFBgcICQoLNQ0OETYUGRYIBAEIAAUGBwgJCgs3DQ4ROBQ5FggEAQgABQYHCAkKCzoNDhE7FDwWCAQBCAAFBgcICQoLPQ0OET4UPxYIBAENAEBBBQYHCAkKC0JDRA0OD0URRhNFFEcWCEhJShMGAEtJTAZNTk9JUFFSSVMUBQBUBlVWFFdYWVpbXBUBAF1O'
-	..'XhQKAEBfVWARYRRiY2RlZmdWaAZpamsGbBMAAG0YBQBAblVvcElxCBRyXhkPAEBzVW9wSXEIFHR1RGNkdkRld2dgeERoBmlqawZ5CF4ZEABAelVvcElxCBF7FHx1RGNkdkRlfWdgeERoBmlqawZ5CF4ZEABAflVvcElxCBF/FIB1RGNkdkRld2dgeERoBmlqawZ5CG0Y'
-	..'BQBAgVVgcElxCBRyXh0PAEBzVW9wSXEIFHR1RGNkdkRlgmeDeERoBmlqawZ5CF4dEABAelVvcElxCBF7FHx1RGNkdkRlfWeDeERoBmlqawZ5CF4dEABAflVvcElxCBF/FIB1RGNkdkRld2dgeERoBmlqawZ5CAQBCAAFBgcICQoLhA0OEYUUhhYIBAEIAAUGBwgJCguH'
-	..'DQ4RiBSJFggEAQgABQYHCAkKC4oNDhGLFIwWCAQBCAAFBgcICQoLjQ0OEY4UhhYIAA==')
+local Objects = Decode('AACbIQVNb2RlbCEKV29ybGRQaXZvdASSk5QhBFBhcnQhCEFuY2hvcmVkIiENQm90dG9tU3VyZmFjZQMAAAAAAAAAACEKQnJpY2tDb2xvcgfHACEGQ0ZyYW1lBBKTlSEFQ29sb3IGY19iIQtPcmllbnRhdGlvbgoAAJBCAAAAAAAAAAAhCFBvc2l0aW9uCj6CrMLARNQ+'
+..'CuF+QSEIUm90YXRpb24hBFNpemUKAACgPwAAwD4AAEA/IQpUb3BTdXJmYWNlBBiTlQo+gqzCsAvoPv1jgEEKAADgPwAAAD4AAEA/BByTlgoAAHBCAAAAAAAAAAAKPoKswkS0jz8aA3xBBB6Tlgo+gqzCTLSHP7pHekEEIZOXCgAAQEIAAAAAAAAAAAo+gqzCsOLQP0Ki'
+..'c0EEI5OXCj6CrMJ4l9s/wh51QQQmk5gKAAAQQgAAAAAAAAAACj6CrMLZtAZAKjtrQQQok5gKPoKswqotDUAaaGxBBCuTmQoAAMBBAAAAAAAAAAAKPoKswglSHUBacGFBBC2TmQo+gqzC/aAkQJpAYkEEMJOaCgAAQEEAAAAAAAAAAAo+gqzCBkwrQGqvVkEEMpOaCj6C'
+..'rMJDHzNA2hlXQQQ0k5QKPoKswkIGMECicEtBBDaTlAo+gqzCQgY4QKJwS0EEOJOUCj6CrMJCBjBAEIWbPwoAAKA/AADAPgAAskEEO5OUCj6CrMJCBjhAEIWbPwoAAOA/AAAAPgAAskEEPpOUCj6CrMKcDMA/Xo8awQoAAOA/AAA4QAAAAD8hBE5hbWUhBlNjcmVlbgRG'
+..'m5QhCkNhbkNvbGxpZGUCCgAAAAAAALRCAAAAAAo+IqzCGQPoQIjCdUAKAABwQQAACkEAAMA9IQxUcmFuc3BhcmVuY3kDAAAAAAAA8D8hClN1cmZhY2VHdWkhDlpJbmRleEJlaGF2aW9yIRBDbGlwc0Rlc2NlbmRhbnRzIQRGYWNlAwAAAAAAAABAIQ5MaWdodEluZmx1'
+..'ZW5jZSENUGl4ZWxzUGVyU3R1ZAMAAAAAAMByQCEKU2l6aW5nTW9kZSEOU2Nyb2xsaW5nRnJhbWUhBkFjdGl2ZSEQQmFja2dyb3VuZENvbG9yMwYAAAAMAACAPwAAAACAPwAAIQpDYW52YXNTaXplDAAAAAAAAAAAAEIAACESU2Nyb2xsQmFyVGhpY2tuZXNzAwAAAAAA'
+..'ADhAIQxVSUxpc3RMYXlvdXQhCVNvcnRPcmRlciEHVGV4dEJveCEGTVNHQ05UBv///ww7328/6P8AAAAAAAAMJQaBPQAAJQaBPQAAIQRGb250AwAAAAAAAAhAIQRUZXh0IQhNU0dDT1VOVCEKVGV4dENvbG9yMyEKVGV4dFNjYWxlZCEIVGV4dFNpemUDAAAAAAAALEAh'
+..'C1RleHRXcmFwcGVkIQZTY3JpcHQhBUZyYW1lIQNNU0cG/wAAIRZCYWNrZ3JvdW5kVHJhbnNwYXJlbmN5IQ9Cb3JkZXJTaXplUGl4ZWwMAACAPwAAAAAAAGQAIQVQTmFtZQwAAAA+AAAAAIA/AAAhEENsZWFyVGV4dE9uRm9jdXMhD1Nob3dOYXRpdmVJbnB1dCETVHdl'
+..'bnR5T25lQ2hhcmFjdGVycyEMVGV4dEVkaXRhYmxlIQ5UZXh0WEFsaWdubWVudCEJU2VwZXJhdG9yDCUGAT4AAAAAAAAAAAwK16M7AAAAAIA/AAAhATohB01lc3NhZ2UMTDcJPgAAAAAAAAAADM3MTD8AAAAAgD8AACEKVUlHcmFkaWVudCgDAAAAAP8AAOxRuDwAAAAA'
+..'AIA/AAAAIQZTWVNURU0hD1NZU1RFTSB8IFNlcnZlcgb//wAoAwAAAAD////sUbg8AAAAAACAPwAAAASIk5QKPiKswhkD6EB8PW7ACgAAAD4AAA5BAAAAPgSLk5QKPiKswoYBOkGIwnVACgAAAD4AAAA+AAB0QQSOk5QKPmKswhkD6ECIwnVACgAAAD4AAA5BAAB0QQSR'
+..'k5QKPiKswhkD6ECicDZBCj6CrMKTAbtAaA1KQAoAAIA/AAAAAAAAAAAKAAAAAAAAgD8AAAAACgAAAAB5N54+cXhzPwoAAAAA////PtizXT8KAAAAACRMKz++Pj4/CgAAAAC9G08/GHkWPwoAAAAAHd5pP8k/0D4KAAAAAOJnej/O5lQ+Ci69O7MAAAAAAACAvyYBAAEA'
+..'AgMEAQoABQYHCAkKCwwNDg8QERITEBQVFggEAQoABQYHCAkKCxcNDg8QERgTEBQZFggEAQoABQYHCAkKCxoNDg8bERwTGxQZFggEAQoABQYHCAkKCx0NDg8bER4TGxQVFggEAQoABQYHCAkKCx8NDg8gESETIBQVFggEAQoABQYHCAkKCyINDg8gESMTIBQZFggEAQoA'
+..'BQYHCAkKCyQNDg8lESYTJRQVFggEAQoABQYHCAkKCycNDg8lESgTJRQZFggEAQoABQYHCAkKCykNDg8qESsTKhQVFggEAQoABQYHCAkKCywNDg8qES0TKhQZFggEAQoABQYHCAkKCy4NDg8vETATLxQVFggEAQoABQYHCAkKCzENDg8vETITLxQZFggEAQgABQYHCAkK'
+..'CzMNDhE0FBUWCAQBCAAFBgcICQoLNQ0OETYUGRYIBAEIAAUGBwgJCgs3DQ4ROBQ5FggEAQgABQYHCAkKCzoNDhE7FDwWCAQBCAAFBgcICQoLPQ0OET4UPxYIBAENAEBBBQYHCAkKC0JDRA0OD0URRhNFFEcWCEhJShMGAEtJTAZNTk9JUFFSSVMUBQBUBlVWFFdYWVpb'
+..'XBUBAF1OXhQKAEBfVWARYRRiY2RlZmdWaAZpamsGbBMAAG0YBQBAblVvcElxCBRyXhkPAEBzVW9wSXEIFHR1RGNkdkRld2dgeERoBmlqawZ5CF4ZEABAelVvcElxCBF7FHx1RGNkdkRlfWdgeERoBmlqawZ5CF4ZEABAflVvcElxCBF/FIB1RGNkdkRld2dgeERoBmlq'
+..'awZ5CIEZAQANgm0YBQBAg1VgcElxCBRyXh4PAEBzVW9wSXEIFHR1RGNkdkRlhGeFeERoBmlqawZ5CF4eEABAelVvcElxCBF7FHx1RGNkdkRlfWeFeERoBmlqawZ5CF4eEABAflVvcElxCBF/FIB1RGNkdkRld2dgeERoBmlqawZ5CIEeAQANhgQBCAAFBgcICQoLhw0O'
+..'EYgUiRYIBAEIAAUGBwgJCguKDQ4RixSMFggEAQgABQYHCAkKC40NDhGOFI8WCAQBCAAFBgcICQoLkA0OEZEUiRYIAA==')
 for _,obj in pairs(Objects) do
 	obj.Parent = script or workspace
 end
