@@ -20,6 +20,17 @@ local tweenInfo = TweenInfo.new(
 	false, --Reverses if true
 	0 --Delay time
 )
+local function SimpleTween(Object, Length, Style, Direction, Properties)
+	local Tween = tweenService:Create(
+		Object,
+		TweenInfo.new(Length, Enum.EasingStyle[Style].Value, Enum.EasingDirection[Direction].Value),
+		Properties
+	)
+
+	Tween:Play()
+	Tween.Completed:Wait()
+	Tween:Destroy()
+end
 
 --Colors
 local NAME_COLORS =
@@ -76,6 +87,7 @@ function precheck(text)
 		Tween:Play()
 		wait(5)
 		f:Destroy()
+		return false
 	end
 	if text == "!playercount" or text == "!pcount" or text == "!pcnt" then
 		local f = script.SYSTEM:Clone()
@@ -87,6 +99,7 @@ function precheck(text)
 		Tween:Play()
 		wait(5)
 		f:Destroy()
+		return false
 	end
 	return true
 end
@@ -106,7 +119,7 @@ function filtertext(text,puid,issystem)
 	if succcess then
 		return filter
 	else
-		return "Filter Failure."
+		return "Filter Failure.",true
 	end
 end
 
@@ -115,7 +128,9 @@ for i=1,#plrlist do
 	plrlist[i].Chatted:Connect(function(msg)
 		if precheck(msg) == false then
 		else
+			local messageexist = true
 			local f = script.MSG:Clone()
+			local colored = false
 			if plrlist[i].UserId == 21490931 then
 				f.Message.TextColor3 = Color3.fromRGB(0,255,0)
 				f.PName.TextColor3 = Color3.fromRGB(255,204,51)
@@ -124,15 +139,25 @@ for i=1,#plrlist do
 			else
 				f.PName.TextColor3 = ComputeNameColor(plrlist[i].Name)
 			end
-			f.Message.Text = filtertext(msg,plrlist[i].UserId,false)
+			f.Message.Text,colored = filtertext(msg,plrlist[i].UserId,false)
 			f.PName.Text = plrlist[i].Name
 			f.Parent=board
 			messages = messages+1
 			selfcount.Text = messages
+			if colored then
+				f.Message.TextColor3 = Color3.fromRGB(255, 0, 0)
+				coroutine.resume(coroutine.create(function()
+					while messageexist == true do
+						SimpleTween(f.Message,1,"Linear","Out",{TextColor3 = Color3.fromRGB(255, 0, 0)})
+						SimpleTween(f.Message,1,"Linear","Out",{TextColor3 = Color3.fromRGB(255, 255, 0)})
+					end
+				end))
+			end
 			wait(55)
 			local Tween = game:GetService("TweenService"):Create(f, TweenInfo.new(5), {Transparency = 0})
 			Tween:Play()
 			wait(5)
+			messageexist = false
 			f:Destroy()
 		end
 	end)
