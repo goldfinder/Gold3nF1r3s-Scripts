@@ -151,7 +151,8 @@ function filtertext(text,puid,issystem)
 	end
 end
 
-for i=1,#plrlist do
+		for i=1,#plrlist do
+			plrlist[i]:SetAttribute("Chat",false)
 	playercount +=1
 	plrlist[i].Chatted:Connect(function(msg)
 		if string.lower(msg) == "+chat" then
