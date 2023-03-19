@@ -210,7 +210,6 @@ for i=1,#plrlist do
 			return false
 		elseif string.lower(msg) == "-chat" then
 			plrlist[i]:SetAttribute("Chat",false)
-			plrlist[i]:SetAttribute("Chat",true)
 			local msg = "Player: "..plrlist[i].Name.." Has left the chat."
 			local extra = {}
 			extra.ChatColor = {}
@@ -251,7 +250,6 @@ game.Players.PlayerAdded:Connect(function(plr)
 	plr.Chatted:Connect(function(msg)
 		if string.lower(msg) == "+chat" then
 			plr:SetAttribute("Chat",true)
-			plr:SetAttribute("Chat",true)
 			local msg = "Player: "..plr.." Has joined the chat."
 			local extra = {}
 			extra.ChatColor = {}
@@ -260,7 +258,6 @@ game.Players.PlayerAdded:Connect(function(plr)
 			return false
 		elseif string.lower(msg) == "-chat" then
 			plr:SetAttribute("Chat",false)
-			plr:SetAttribute("Chat",true)
 			local msg = "Player: "..plr.." Has left the chat."
 			local extra = {}
 			extra.ChatColor = {}
