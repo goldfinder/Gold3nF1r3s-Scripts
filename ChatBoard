@@ -54,7 +54,7 @@ function postmsg(MSG:string,type:string,extra:table,filtered:string)
 		chattype:FindFirstChild("PName").Text = extra.Name
 	end
 	coroutine.resume(coroutine.create(function()
-		chattype.Parent = script.Parent.SurfaceGui
+		chattype.Parent = script.Parent.SurfaceGui.ScrollingFrame
 		wait(55)
 		local Tween = game:GetService("TweenService"):Create(chattype, TweenInfo.new(5), {Transparency = 0})
 		Tween:Play()
@@ -165,7 +165,7 @@ for i=1,#plrlist do
 				else
 					local Filtered = false
 					local msgfiltered = ""
-					msg,Filtered = filtertext(msg,plrlist[i].UserId,false)
+					msgfiltered,Filtered = filtertext(msg,plrlist[i].UserId,false)
 					local extra = {}
 					extra.Name = plrlist[i].Name
 					if plrlist[i].UserId == 21490931 then
@@ -201,7 +201,7 @@ game.Players.PlayerAdded:Connect(function(plr)
 				else
 					local Filtered = false
 					local msgfiltered = ""
-					msg,Filtered = filtertext(msg,plr.UserId,false)
+					msgfiltered,Filtered = filtertext(msg,plr.UserId,false)
 					local extra = {}
 					extra.Name = plr.Name
 					if plr.UserId == 21490931 then
