@@ -1,5 +1,5 @@
 -- Converted using Mokiros's Model to Script Version 3
--- Converted string size: 3268 characters
+-- Converted string size: 3496 characters
 
 local ScriptFunctions = {
 function(script,require)
@@ -30,6 +30,37 @@ local function SimpleTween(Object, Length, Style, Direction, Properties)
 	Tween:Play()
 	Tween.Completed:Wait()
 	Tween:Destroy()
+end
+
+function postmsg(MSG:string,type:string,extra:table,filtered:string)
+	local filtcolor = false
+	local filttype
+	filttype = tostring(filtered)
+	local chattype = nil
+	if script:FindFirstChild(type) then
+		local check = script:FindFirstChild(type)
+		if check then
+			chattype = check:Clone()
+		end
+	end
+	chattype:FindFirstChild("Message").Text = MSG
+	if extra.NameColor ~= nil then
+		chattype:FindFirstChild("PName").TextColor3 = extra.NameColor.Color
+	end
+	if extra.ChatColor ~= nil then
+		chattype:FindFirstChild("Message").TextColor3 = extra.ChatColor.Color
+	end
+	if extra.Name ~= nil then
+		chattype:FindFirstChild("PName").Text = extra.Name
+	end
+	coroutine.resume(coroutine.create(function()
+		chattype.Parent = script.Parent.SurfaceGui
+		wait(55)
+		local Tween = game:GetService("TweenService"):Create(chattype, TweenInfo.new(5), {Transparency = 0})
+		Tween:Play()
+		wait(5)
+		chattype:Destroy()
+	end))
 end
 
 --Colors
@@ -77,28 +108,25 @@ function precheck(text)
 			return false
 		end
 	end
-	if text == "!source" then
-		local f = script.SYSTEM:Clone()
-		f.Message.Text = "SOURCE CODE: https://raw.githubusercontent.com/goldfinder/Gold3nF1r3s-Scripts/main/ChatBoard"
-		f.Message.TextColor3 = Color3.fromRGB(85, 255, 255)
-		f.Parent = board
-		wait(55)
-		local Tween = game:GetService("TweenService"):Create(f, TweenInfo.new(5), {Transparency = 0})
-		Tween:Play()
-		wait(5)
-		f:Destroy()
+	if string.lower(text) == "!source" then
+		local msg = "SOURCE CODE: https://raw.githubusercontent.com/goldfinder/Gold3nF1r3s-Scripts/main/ChatBoard"
+		local extra = {}
+		extra.ChatColor.Color = Color3.fromRGB(85, 255, 255)
+		postmsg(msg,"CMD",extra,"Never")
 		return false
 	end
-	if text == "!playercount" or text == "!pcount" or text == "!pcnt" then
-		local f = script.SYSTEM:Clone()
-		f.Message.Text = "Player count: "..playercount.."/15"
-		f.Message.TextColor3 = Color3.fromRGB(85, 255, 255)
-		f.Parent = board
-		wait(55)
-		local Tween = game:GetService("TweenService"):Create(f, TweenInfo.new(5), {Transparency = 0})
-		Tween:Play()
-		wait(5)
-		f:Destroy()
+	if string.lower(text) == "!gcs" then
+		local msg = "Gold's Scripts: https://github.com/goldfinder/Gold3nF1r3s-Scripts"
+		local extra = {}
+		extra.ChatColor.Color = Color3.fromRGB(85, 255, 255)
+		postmsg(msg,"CMD",extra,"Never")
+		return false
+	end
+	if string.lower(text) == "!playercount" or text == "!pcount" or text == "!pcnt" then
+		local msg = "Player count: "..playercount.."/15"
+		local extra = {}
+		extra.ChatColor.Color = Color3.fromRGB(85, 255, 255)
+		postmsg(msg,"CMD",extra,"Never")
 		return false
 	end
 	return true
@@ -126,65 +154,60 @@ end
 for i=1,#plrlist do
 	playercount +=1
 	plrlist[i].Chatted:Connect(function(msg)
-		if precheck(msg) == false then
+		if string.lower(msg) == "+chat" then
+			plrlist[i]:SetAttribute("Chat",true)
+		elseif string.lower(msg) == "-chat" then
+			plrlist[i]:SetAttribute("Chat",false)
 		else
-			local messageexist = true
-			local f = script.MSG:Clone()
-			local colored = false
-			if plrlist[i].UserId == 21490931 then
-				f.Message.TextColor3 = Color3.fromRGB(0,255,0)
-				f.PName.TextColor3 = Color3.fromRGB(255,204,51)
-			elseif plrlist[i].UserId == 13480417 then
-				f.Message.TextColor3 = Color3.fromRGB(255,215,0)
-			else
-				f.PName.TextColor3 = ComputeNameColor(plrlist[i].Name)
-			end
-			f.Message.Text,colored = filtertext(msg,plrlist[i].UserId,false)
-			f.PName.Text = plrlist[i].Name
-			f.Parent=board
-			messages = messages+1
-			selfcount.Text = messages
-			if colored then
-				f.Message.TextColor3 = Color3.fromRGB(255, 0, 0)
-				coroutine.resume(coroutine.create(function()
-					while messageexist == true do
-						SimpleTween(f.Message,1,"Linear","Out",{TextColor3 = Color3.fromRGB(255, 0, 0)})
-						SimpleTween(f.Message,1,"Linear","Out",{TextColor3 = Color3.fromRGB(255, 255, 0)})
+			if plrlist[i]:GetAttibute("Chat") == true then
+				if precheck(msg) == false then
+				else
+					local Filtered = false
+					local msgfiltered = ""
+					msg,Filtered = filtertext(msg,plrlist[i].UserId,false)
+					local extra = {}
+					extra.Name = plrlist[i].Name
+					if plrlist[i].UserId == 21490931 then
+						extra.ChatColor.Color = Color3.fromRGB(0,255,0)
+						extra.NameColor.Color = Color3.fromRGB(255,204,51)
+					elseif plrlist[i].UserId == 13480417 then
+						extra.ChatColor.Color = Color3.fromRGB(255,215,0)
+					else
+						extra.NameColor.Color = ComputeNameColor(plrlist[i].Name)
 					end
-				end))
+					postmsg(msgfiltered,"MSG",extra,Filtered)
+				end
 			end
-			wait(55)
-			local Tween = game:GetService("TweenService"):Create(f, TweenInfo.new(5), {Transparency = 0})
-			Tween:Play()
-			wait(5)
-			messageexist = false
-			f:Destroy()
 		end
 	end)
 end
 game.Players.PlayerAdded:Connect(function(plr)
+	plr:SetAttribute("Chat",false)
 	plr.Chatted:Connect(function(msg)
-		if precheck(msg) == false then
+		if string.lower(msg) == "+chat" then
+			plr:SetAttribute("Chat",true)
+		elseif string.lower(msg) == "-chat" then
+			plr:SetAttribute("Chat",false)
 		else
-			local f = script.MSG:Clone()
-			if plr.UserId == 21490931 then
-				f.Message.TextColor3 = Color3.fromRGB(0,255,0)
-				f.PName.TextColor3 = Color3.fromRGB(255,204,51)
-			elseif plr.UserId == 13480417 then
-				f.Message.TextColor3 = Color3.fromRGB(255,215,0)
-			else
-				f.PName.TextColor3 = ComputeNameColor(plr.Name)
+			if plr:GetAttibute("Chat") == true then
+				if precheck(msg) == false then
+				else
+					local Filtered = false
+					local msgfiltered = ""
+					msg,Filtered = filtertext(msg,plr.UserId,false)
+					local extra = {}
+					extra.Name = plr.Name
+					if plr.UserId == 21490931 then
+						extra.ChatColor.Color = Color3.fromRGB(0,255,0)
+						extra.NameColor.Color = Color3.fromRGB(255,204,51)
+					elseif plr.UserId == 13480417 then
+						extra.ChatColor.Color = Color3.fromRGB(255,215,0)
+					else
+						extra.NameColor.Color = ComputeNameColor(plr.Name)
+					end
+					postmsg(msgfiltered,"MSG",extra,Filtered)
+				end
 			end
-			f.Message.Text = filtertext(msg,plr.UserId,false)
-			f.PName.Text = plr.Name
-			f.Parent=board
-			messages = messages+1
-			selfcount.Text = messages
-			wait(55)
-			local Tween = game:GetService("TweenService"):Create(f, TweenInfo.new(5), {Transparency = 0})
-			Tween:Play()
-			wait(5)
-			f:Destroy()
 		end
 	end)
 end)
@@ -488,23 +511,24 @@ local function Decode(str)
 end
 
 
-local Objects = Decode('AACaIQVNb2RlbCEKV29ybGRQaXZvdASRkpMhBFBhcnQhCEFuY2hvcmVkIiENQm90dG9tU3VyZmFjZQMAAAAAAAAAACEKQnJpY2tDb2xvcgfHACEGQ0ZyYW1lBBKSlCEFQ29sb3IGY19iIQtPcmllbnRhdGlvbgoAAJBCAAAAAAAAAAAhCFBvc2l0aW9uCj6CrMLARNQ+'
-..'CuF+QSEIUm90YXRpb24hBFNpemUKAACgPwAAwD4AAEA/IQpUb3BTdXJmYWNlBBiSlAo+gqzCsAvoPv1jgEEKAADgPwAAAD4AAEA/BBySlQoAAHBCAAAAAAAAAAAKPoKswkS0jz8aA3xBBB6SlQo+gqzCTLSHP7pHekEEIZKWCgAAQEIAAAAAAAAAAAo+gqzCsOLQP0Ki'
-..'c0EEI5KWCj6CrMJ4l9s/wh51QQQmkpcKAAAQQgAAAAAAAAAACj6CrMLZtAZAKjtrQQQokpcKPoKswqotDUAaaGxBBCuSmAoAAMBBAAAAAAAAAAAKPoKswglSHUBacGFBBC2SmAo+gqzC/aAkQJpAYkEEMJKZCgAAQEEAAAAAAAAAAAo+gqzCBkwrQGqvVkEEMpKZCj6C'
-..'rMJDHzNA2hlXQQQ0kpMKPoKswkIGMECicEtBBDaSkwo+gqzCQgY4QKJwS0EEOJKTCj6CrMJCBjBAEIWbPwoAAKA/AADAPgAAskEEO5KTCj6CrMJCBjhAEIWbPwoAAOA/AAAAPgAAskEEPpKTCj6CrMKcDMA/Xo8awQoAAOA/AAA4QAAAAD8hBE5hbWUhBlNjcmVlbgRG'
-..'mpMhCkNhbkNvbGxpZGUCCgAAAAAAALRCAAAAAAo+IqzCGQPoQIjCdUAKAABwQQAACkEAAMA9IQxUcmFuc3BhcmVuY3kDAAAAAAAA8D8hClN1cmZhY2VHdWkhDlpJbmRleEJlaGF2aW9yIRBDbGlwc0Rlc2NlbmRhbnRzIQRGYWNlAwAAAAAAAABAIQ1QaXhlbHNQZXJT'
+local Objects = Decode('AACeIQVNb2RlbCEKV29ybGRQaXZvdASVlpchBFBhcnQhCEFuY2hvcmVkIiENQm90dG9tU3VyZmFjZQMAAAAAAAAAACEKQnJpY2tDb2xvcgfHACEGQ0ZyYW1lBBKWmCEFQ29sb3IGY19iIQtPcmllbnRhdGlvbgoAAJBCAAAAAAAAAAAhCFBvc2l0aW9uCj6CrMLARNQ+'
+..'CuF+QSEIUm90YXRpb24hBFNpemUKAACgPwAAwD4AAEA/IQpUb3BTdXJmYWNlBBiWmAo+gqzCsAvoPv1jgEEKAADgPwAAAD4AAEA/BByWmQoAAHBCAAAAAAAAAAAKPoKswkS0jz8aA3xBBB6WmQo+gqzCTLSHP7pHekEEIZaaCgAAQEIAAAAAAAAAAAo+gqzCsOLQP0Ki'
+..'c0EEI5aaCj6CrMJ4l9s/wh51QQQmlpsKAAAQQgAAAAAAAAAACj6CrMLZtAZAKjtrQQQolpsKPoKswqotDUAaaGxBBCuWnAoAAMBBAAAAAAAAAAAKPoKswglSHUBacGFBBC2WnAo+gqzC/aAkQJpAYkEEMJadCgAAQEEAAAAAAAAAAAo+gqzCBkwrQGqvVkEEMpadCj6C'
+..'rMJDHzNA2hlXQQQ0lpcKPoKswkIGMECicEtBBDaWlwo+gqzCQgY4QKJwS0EEOJaXCj6CrMJCBjBAEIWbPwoAAKA/AADAPgAAskEEO5aXCj6CrMJCBjhAEIWbPwoAAOA/AAAAPgAAskEEPpaXCj6CrMKcDMA/Xo8awQoAAOA/AAA4QAAAAD8hBE5hbWUhBlNjcmVlbgRG'
+..'npchCkNhbkNvbGxpZGUCCgAAAAAAALRCAAAAAAo+IqzCGQPoQIjCdUAKAABwQQAACkEAAMA9IQxUcmFuc3BhcmVuY3kDAAAAAAAA8D8hClN1cmZhY2VHdWkhDlpJbmRleEJlaGF2aW9yIRBDbGlwc0Rlc2NlbmRhbnRzIQRGYWNlAwAAAAAAAABAIQ1QaXhlbHNQZXJT'
 ..'dHVkAwAAAAAAwHJAIQpTaXppbmdNb2RlIQ5TY3JvbGxpbmdGcmFtZSEGQWN0aXZlIRBCYWNrZ3JvdW5kQ29sb3IzBgAAAAwAAIA/AAAAAIA/AAAhCkNhbnZhc1NpemUMAAAAAAAAAAAAQgAAIRJTY3JvbGxCYXJUaGlja25lc3MDAAAAAAAAOEAhDFVJTGlzdExheW91'
 ..'dCEJU29ydE9yZGVyIQdUZXh0Qm94IQZNU0dDTlQG////DDvfbz/o/wAAAAAAAAwlBoE9AAAlBoE9AAAhBEZvbnQDAAAAAAAACEAhBFRleHQhCE1TR0NPVU5UIQpUZXh0Q29sb3IzIQpUZXh0U2NhbGVkIQhUZXh0U2l6ZQMAAAAAAAAsQCELVGV4dFdyYXBwZWQhBlNj'
 ..'cmlwdCEFRnJhbWUhA01TRwb/AAAhFkJhY2tncm91bmRUcmFuc3BhcmVuY3khD0JvcmRlclNpemVQaXhlbAwAAIA/AAAAAAAAZAAhBVBOYW1lDAAAAD4AAAAAgD8AACEQQ2xlYXJUZXh0T25Gb2N1cyEPU2hvd05hdGl2ZUlucHV0IRNUd2VudHlPbmVDaGFyYWN0ZXJz'
 ..'IQxUZXh0RWRpdGFibGUhDlRleHRYQWxpZ25tZW50IQlTZXBlcmF0b3IMJQYBPgAAAAAAAAAADArXozsAAAAAgD8AACEBOiEHTWVzc2FnZQxMNwk+AAAAAAAAAAAMzcxMPwAAAACAPwAAIQpVSUdyYWRpZW50KAMAAAAA/wAA7FG4PAAAAAAAgD8AAAAhBlNZU1RFTSEP'
-..'U1lTVEVNIHwgU2VydmVyBv//ACgDAAAAAP///+xRuDwAAAAAAIA/AAAABIeSkwo+IqzCGQPoQHw9bsAKAAAAPgAADkEAAAA+BIqSkwo+IqzChgE6QYjCdUAKAAAAPgAAAD4AAHRBBI2Skwo+YqzCGQPoQIjCdUAKAAAAPgAADkEAAHRBBJCSkwo+IqzCGQPoQKJwNkEK'
-..'PoKswpMBu0BoDUpACgAAgD8AAAAAAAAAAAoAAAAAAACAPwAAAAAKAAAAAHk3nj5xeHM/CgAAAAD///8+2LNdPwoAAAAAJEwrP74+Pj8KAAAAAL0bTz8YeRY/CgAAAAAd3mk/yT/QPgoAAAAA4md6P87mVD4KLr07swAAAAAAAIC/JgEAAQACAwQBCgAFBgcICQoLDA0O'
-..'DxAREhMQFBUWCAQBCgAFBgcICQoLFw0ODxARGBMQFBkWCAQBCgAFBgcICQoLGg0ODxsRHBMbFBkWCAQBCgAFBgcICQoLHQ0ODxsRHhMbFBUWCAQBCgAFBgcICQoLHw0ODyARIRMgFBUWCAQBCgAFBgcICQoLIg0ODyARIxMgFBkWCAQBCgAFBgcICQoLJA0ODyURJhMl'
-..'FBUWCAQBCgAFBgcICQoLJw0ODyURKBMlFBkWCAQBCgAFBgcICQoLKQ0ODyoRKxMqFBUWCAQBCgAFBgcICQoLLA0ODyoRLRMqFBkWCAQBCgAFBgcICQoLLg0ODy8RMBMvFBUWCAQBCgAFBgcICQoLMQ0ODy8RMhMvFBkWCAQBCAAFBgcICQoLMw0OETQUFRYIBAEIAAUG'
-..'BwgJCgs1DQ4RNhQZFggEAQgABQYHCAkKCzcNDhE4FDkWCAQBCAAFBgcICQoLOg0OETsUPBYIBAEIAAUGBwgJCgs9DQ4RPhQ/FggEAQ0AQEEFBgcICQoLQkNEDQ4PRRFGE0UURxYISElKEwUAS0lMBk1OT1BRSVIUBQBTBlRVFFZXWFlaWxUBAFxOXRQKAEBeVF8RYBRh'
-..'YmNkZWZVZwZoaWoGaxMAAGwYBQBAbVRub0lwCBRxXRkPAEByVG5vSXAIFHN0RGJjdURkdmZfd0RnBmhpagZ4CF0ZEABAeVRub0lwCBF6FHt0RGJjdURkfGZfd0RnBmhpagZ4CF0ZEABAfVRub0lwCBF+FH90RGJjdURkdmZfd0RnBmhpagZ4CIAZAQANgWwYBQBAglRf'
-..'b0lwCBRxXR4PAEByVG5vSXAIFHN0RGJjdURkg2aEd0RnBmhpagZ4CF0eEABAeVRub0lwCBF6FHt0RGJjdURkfGaEd0RnBmhpagZ4CF0eEABAfVRub0lwCBF+FH90RGJjdURkdmZfd0RnBmhpagZ4CIAeAQANhQQBCAAFBgcICQoLhg0OEYcUiBYIBAEIAAUGBwgJCguJ'
-..'DQ4RihSLFggEAQgABQYHCAkKC4wNDhGNFI4WCAQBCAAFBgcICQoLjw0OEZAUiBYIAA==')
+..'U1lTVEVNIHwgU2VydmVyBv//ACgDAAAAAP///+xRuDwAAAAAAIA/AAAAIQNDTUQhDVNZU1RFTSB8IENNRFIGzN//KAMAAAAAAP8A7FG4PAAAAAAAgD8AAAAEi5aXCj4irMIZA+hAfD1uwAoAAAA+AAAOQQAAAD4EjpaXCj4irMKGATpBiMJ1QAoAAAA+AAAAPgAAdEEE'
+..'kZaXCj5irMIZA+hAiMJ1QAoAAAA+AAAOQQAAdEEElJaXCj4irMIZA+hAonA2QQo+gqzCkwG7QGgNSkAKAACAPwAAAAAAAAAACgAAAAAAAIA/AAAAAAoAAAAAeTeePnF4cz8KAAAAAP///z7Ys10/CgAAAAAkTCs/vj4+PwoAAAAAvRtPPxh5Fj8KAAAAAB3eaT/JP9A+'
+..'CgAAAADiZ3o/zuZUPgouvTuzAAAAAAAAgL8rAQABAAIDBAEKAAUGBwgJCgsMDQ4PEBESExAUFRYIBAEKAAUGBwgJCgsXDQ4PEBEYExAUGRYIBAEKAAUGBwgJCgsaDQ4PGxEcExsUGRYIBAEKAAUGBwgJCgsdDQ4PGxEeExsUFRYIBAEKAAUGBwgJCgsfDQ4PIBEhEyAU'
+..'FRYIBAEKAAUGBwgJCgsiDQ4PIBEjEyAUGRYIBAEKAAUGBwgJCgskDQ4PJREmEyUUFRYIBAEKAAUGBwgJCgsnDQ4PJREoEyUUGRYIBAEKAAUGBwgJCgspDQ4PKhErEyoUFRYIBAEKAAUGBwgJCgssDQ4PKhEtEyoUGRYIBAEKAAUGBwgJCgsuDQ4PLxEwEy8UFRYIBAEK'
+..'AAUGBwgJCgsxDQ4PLxEyEy8UGRYIBAEIAAUGBwgJCgszDQ4RNBQVFggEAQgABQYHCAkKCzUNDhE2FBkWCAQBCAAFBgcICQoLNw0OETgUORYIBAEIAAUGBwgJCgs6DQ4ROxQ8FggEAQgABQYHCAkKCz0NDhE+FD8WCAQBDQBAQQUGBwgJCgtCQ0QNDg9FEUYTRRRHFghI'
+..'SUoTBQBLSUwGTU5PUFFJUhQFAFMGVFUUVldYWVpbFQEAXE5dFAoAQF5UXxFgFGFiY2RlZlVnBmhpagZrEwAAbBgFAEBtVG5vSXAIFHFdGQ8AQHJUbm9JcAgUc3REYmN1RGR2Zl93RGcGaGlqBngIXRkQAEB5VG5vSXAIEXoUe3REYmN1RGR8Zl93RGcGaGlqBngIXRkQ'
+..'AEB9VG5vSXAIEX4Uf3REYmN1RGR2Zl93RGcGaGlqBngIgBkBAA2BbBgFAECCVF9vSXAIFHFdHg8AQHJUbm9JcAgUc3REYmN1RGSDZoR3RGcGaGlqBngIXR4QAEB5VG5vSXAIEXoUe3REYmN1RGR8ZoR3RGcGaGlqBngIXR4QAEB9VG5vSXAIEX4Uf3REYmN1RGR2Zl93'
+..'RGcGaGlqBngIgB4BAA2FbBgFAECGVF9vSXAIFHFdIw8AQHJUbm9JcAgUc3REYmN1RGSHZoh3RGcGaGlqBngIXSMQAEB5VG5vSXAIEXoUe3REYmN1RGR8Zoh3RGcGaGlqBngIXSMQAEB9VG5vSXAIEX4Uf3REYmN1RGR2Zl93RGcGaGlqBngIgCMBAA2JBAEIAAUGBwgJ'
+..'CguKDQ4RixSMFggEAQgABQYHCAkKC40NDhGOFI8WCAQBCAAFBgcICQoLkA0OEZEUkhYIBAEIAAUGBwgJCguTDQ4RlBSMFggA')
 for _,obj in pairs(Objects) do
 	obj.Parent = script or workspace
 end
