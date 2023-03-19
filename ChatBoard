@@ -160,7 +160,7 @@ end
 		elseif string.lower(msg) == "-chat" then
 			plrlist[i]:SetAttribute("Chat",false)
 		else
-			if plrlist[i]:GetAttibute("Chat") == true then
+			if plrlist[i]:GetAttribute("Chat") == true then
 				if precheck(msg) == false then
 				else
 					local Filtered = false
@@ -190,7 +190,7 @@ game.Players.PlayerAdded:Connect(function(plr)
 		elseif string.lower(msg) == "-chat" then
 			plr:SetAttribute("Chat",false)
 		else
-			if plr:GetAttibute("Chat") == true then
+			if plr:GetAttribute("Chat") == true then
 				if precheck(msg) == false then
 				else
 					local Filtered = false
