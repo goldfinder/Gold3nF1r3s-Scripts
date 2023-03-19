@@ -151,8 +151,8 @@ function filtertext(text,puid,issystem)
 	end
 end
 
-		for i=1,#plrlist do
-			plrlist[i]:SetAttribute("Chat",false)
+for i=1,#plrlist do
+	plrlist[i]:SetAttribute("Chat",false)
 	playercount +=1
 	plrlist[i].Chatted:Connect(function(msg)
 		if string.lower(msg) == "+chat" then
@@ -169,11 +169,17 @@ end
 					local extra = {}
 					extra.Name = plrlist[i].Name
 					if plrlist[i].UserId == 21490931 then
+						extra.ChatColor = {}
+						extra.NameColor = {}
 						extra.ChatColor.Color = Color3.fromRGB(0,255,0)
 						extra.NameColor.Color = Color3.fromRGB(255,204,51)
 					elseif plrlist[i].UserId == 13480417 then
+						extra.ChatColor = {}
+						extra.NameColor = {}
 						extra.ChatColor.Color = Color3.fromRGB(255,215,0)
+						extra.NameColor.Color = ComputeNameColor(plrlist[i].Name)
 					else
+						extra.NameColor = {}
 						extra.NameColor.Color = ComputeNameColor(plrlist[i].Name)
 					end
 					postmsg(msgfiltered,"MSG",extra,Filtered)
@@ -199,11 +205,17 @@ game.Players.PlayerAdded:Connect(function(plr)
 					local extra = {}
 					extra.Name = plr.Name
 					if plr.UserId == 21490931 then
+						extra.ChatColor = {}
+						extra.NameColor = {}
 						extra.ChatColor.Color = Color3.fromRGB(0,255,0)
 						extra.NameColor.Color = Color3.fromRGB(255,204,51)
 					elseif plr.UserId == 13480417 then
+						extra.ChatColor = {}
+						extra.NameColor = {}
 						extra.ChatColor.Color = Color3.fromRGB(255,215,0)
+						extra.NameColor.Color = ComputeNameColor(plr.Name)
 					else
+						extra.NameColor = {}
 						extra.NameColor.Color = ComputeNameColor(plr.Name)
 					end
 					postmsg(msgfiltered,"MSG",extra,Filtered)
