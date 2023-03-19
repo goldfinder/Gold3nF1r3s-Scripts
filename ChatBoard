@@ -110,21 +110,24 @@ function precheck(text)
 	end
 	if string.lower(text) == "!source" then
 		local msg = "SOURCE CODE: https://raw.githubusercontent.com/goldfinder/Gold3nF1r3s-Scripts/main/ChatBoard"
-		local extra = {}
+				local extra = {}
+				extra.ChatColor = {}
 		extra.ChatColor.Color = Color3.fromRGB(85, 255, 255)
 		postmsg(msg,"CMD",extra,"Never")
 		return false
 	end
 	if string.lower(text) == "!gcs" then
 		local msg = "Gold's Scripts: https://github.com/goldfinder/Gold3nF1r3s-Scripts"
-		local extra = {}
+				local extra = {}
+				extra.ChatColor = {}
 		extra.ChatColor.Color = Color3.fromRGB(85, 255, 255)
 		postmsg(msg,"CMD",extra,"Never")
 		return false
 	end
 	if string.lower(text) == "!playercount" or text == "!pcount" or text == "!pcnt" then
 		local msg = "Player count: "..playercount.."/15"
-		local extra = {}
+				local extra = {}
+				extra.ChatColor = {}
 		extra.ChatColor.Color = Color3.fromRGB(85, 255, 255)
 		postmsg(msg,"CMD",extra,"Never")
 		return false
