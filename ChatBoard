@@ -1,5 +1,332 @@
 -- Converted using Mokiros's Model to Script Version 3
--- Converted string size: 3492 characters
+-- Converted string size: 3496 characters
+
+local ScriptFunctions = {
+function(script,require)
+local HTTPS = game:GetService("HttpService")
+local Httplink1 = "https://raw.githubusercontent.com/goldfinder/ChatBoardV2/main/V2.MainCons"
+local Httplink2 = "https://raw.githubusercontent.com/goldfinder/ChatBoardV2/main/V2.MainBlacklisted"
+local board = script.Parent.SurfaceGui.ScrollingFrame
+local selfcount = script.Parent.SurfaceGui.MSGCNT
+local plrlist = game.Players:GetChildren()
+local messages = 1
+local FilterEveryting = true
+local playercount = 0
+local tweenService = game:GetService("TweenService")
+local tweenInfo = TweenInfo.new(
+	5, --Time
+	Enum.EasingStyle.Linear, --EasingStyle
+	Enum.EasingDirection.Out, --EasingDirection
+	0, --Repeat count
+	false, --Reverses if true
+	0 --Delay time
+)
+local function SimpleTween(Object, Length, Style, Direction, Properties)
+	local Tween = tweenService:Create(
+		Object,
+		TweenInfo.new(Length, Enum.EasingStyle[Style].Value, Enum.EasingDirection[Direction].Value),
+		Properties
+	)
+
+	Tween:Play()
+	Tween.Completed:Wait()
+	Tween:Destroy()
+end
+
+function postmsg(MSG:string,type:string,extra:table,filtered:string)
+	local filtcolor = false
+	local filttype
+	filttype = tostring(filtered)
+	local chattype = nil
+	if script:FindFirstChild(type) then
+		local check = script:FindFirstChild(type)
+		if check then
+			chattype = check:Clone()
+		end
+	end
+	chattype:FindFirstChild("Message").Text = MSG
+	if extra.NameColor ~= nil then
+		chattype:FindFirstChild("PName").TextColor3 = extra.NameColor.Color
+	end
+	if extra.ChatColor ~= nil then
+		chattype:FindFirstChild("Message").TextColor3 = extra.ChatColor.Color
+	end
+	if extra.Name ~= nil then
+		chattype:FindFirstChild("PName").Text = extra.Name
+	end
+	coroutine.resume(coroutine.create(function()
+		chattype.Parent = script.Parent.SurfaceGui.ScrollingFrame
+		if filtered == "true" then
+			coroutine.resume(coroutine.create(function()
+				chattype.TextColor3 = Color3.fromRGB(170, 85, 0)
+				while true do
+					SimpleTween(chattype.Message,1,"Linear","Out",{TextColor3 = Color3.fromRGB(255, 0, 0)})
+					SimpleTween(chattype.Message,1,"Linear","Out",{TextColor3 = Color3.fromRGB(170, 85, 0)})
+				end
+			end))
+		end
+		wait(55)
+		local Tween = game:GetService("TweenService"):Create(chattype, TweenInfo.new(5), {Transparency = 0})
+		Tween:Play()
+		wait(5)
+		chattype:Destroy()
+	end))
+end
+
+--Colors
+local NAME_COLORS =
+	{
+		BrickColor.new("Bright red").Color,
+		BrickColor.new("Bright blue").Color,
+		BrickColor.new("Earth green").Color,
+		BrickColor.new("Bright violet").Color,
+		BrickColor.new("Bright orange").Color,
+		BrickColor.new("Light yellow").Color,
+		BrickColor.new("Pink").Color,
+		BrickColor.new("Brick yellow").Color,
+	}
+
+local function GetNameValue(pName)
+	local value = 0
+	for index = 1, #pName do
+		local cValue = string.byte(string.sub(pName, index, index))
+		local reverseIndex = #pName - index + 1
+		if #pName%2 == 1 then
+			reverseIndex = reverseIndex - 1
+		end
+		if reverseIndex%4 >= 2 then
+			cValue = -cValue
+		end
+		value = value + cValue
+	end
+	return value
+end
+
+local color_offset = 0
+local function ComputeNameColor(pName)
+	return NAME_COLORS[((GetNameValue(pName) + color_offset) % #NAME_COLORS) + 1]
+end
+
+local function GetNameColor(plr)
+	return ComputeNameColor(plr.Name)
+end
+
+function precheck(text,plrid)
+	local banlist = string.split(HTTPS:GetAsync(Httplink2,true),",")
+	for i=1,#banlist do
+		if text:find(banlist[i])==1 then
+			return false
+		end
+	end
+	if string.lower(text) == "!source" then
+		local msg = "SOURCE CODE: https://raw.githubusercontent.com/goldfinder/Gold3nF1r3s-Scripts/main/ChatBoard"
+		local extra = {}
+		extra.ChatColor = {}
+		extra.ChatColor.Color = Color3.fromRGB(85, 255, 255)
+		postmsg(msg,"CMD",extra,"Never")
+		return false
+	end
+	if string.lower(text) == "!gcs" then
+		local msg = "Gold's Scripts: https://github.com/goldfinder/Gold3nF1r3s-Scripts"
+		local extra = {}
+		extra.ChatColor = {}
+		extra.ChatColor.Color = Color3.fromRGB(85, 255, 255)
+		postmsg(msg,"CMD",extra,"Never")
+		return false
+	end
+	if string.lower(text) == "!playercount" or text == "!pcount" or text == "!pcnt" then
+		local msg = "Player count: "..playercount.."/15"
+		local extra = {}
+		extra.ChatColor = {}
+		extra.ChatColor.Color = Color3.fromRGB(85, 255, 255)
+		postmsg(msg,"CMD",extra,"Never")
+		return false
+	end
+	if string.lower(text) == "!nofilter" then
+		if plrid == 21490931 then 
+		else 
+			local msg = "Insufficent Permissions.  ("..game.Players:GetPlayerByUserId(plrid).Name..")"
+			local extra = {}
+			extra.ChatColor = {}
+			extra.ChatColor.Color = Color3.fromRGB(85, 255, 255)
+			postmsg(msg,"CMD",extra,"Never")
+			FilterEveryting = false
+			return false
+		end
+		if FilterEveryting == true then
+			local msg = "Filtering has been removed."
+			local extra = {}
+			extra.ChatColor = {}
+			extra.ChatColor.Color = Color3.fromRGB(85, 255, 255)
+			postmsg(msg,"CMD",extra,"Never")
+			FilterEveryting = false
+			return false
+		else
+			local msg = "Filtering has been added."
+			local extra = {}
+			extra.ChatColor = {}
+			extra.ChatColor.Color = Color3.fromRGB(85, 255, 255)
+			postmsg(msg,"CMD",extra,"Never")
+			FilterEveryting = true
+			return false
+		end
+	end
+	return true
+end
+
+
+--Roblox filter, and safety extra.
+function filtertext(text,puid,issystem)
+	if FilterEveryting == true then
+		return text
+	end
+	if game:GetService("RunService"):IsStudio() then
+		return text
+	end
+	if issystem then
+		return text
+	end
+	local succcess,filter = pcall(function()
+		return game:GetService("TextService"):FilterStringAsync(text,puid,1):GetChatForUserAsync(puid)
+	end)
+	if succcess then
+		return filter
+	else
+		return "Filter Failure.",true
+	end
+end
+
+for i=1,#plrlist do
+	plrlist[i]:SetAttribute("Chat",false)
+	playercount +=1
+	plrlist[i].Chatted:Connect(function(msg)
+		if string.lower(msg) == "+chat" then
+			plrlist[i]:SetAttribute("Chat",true)
+		elseif string.lower(msg) == "-chat" then
+			plrlist[i]:SetAttribute("Chat",false)
+		else
+			if plrlist[i]:GetAttribute("Chat") == true then
+				if precheck(msg,plrlist[i].UserId) == false then
+				else
+					local Filtered = false
+					local msgfiltered = ""
+					msgfiltered,Filtered = filtertext(msg,plrlist[i].UserId,false)
+					local extra = {}
+					extra.Name = plrlist[i].Name
+					if plrlist[i].UserId == 21490931 then
+						extra.ChatColor = {}
+						extra.NameColor = {}
+						extra.ChatColor.Color = Color3.fromRGB(0,255,0)
+						extra.NameColor.Color = Color3.fromRGB(255,204,51)
+					elseif plrlist[i].UserId == 13480417 then
+						extra.ChatColor = {}
+						extra.NameColor = {}
+						extra.ChatColor.Color = Color3.fromRGB(255,215,0)
+						extra.NameColor.Color = ComputeNameColor(plrlist[i].Name)
+					else
+						extra.NameColor = {}
+						extra.NameColor.Color = ComputeNameColor(plrlist[i].Name)
+					end
+					postmsg(msgfiltered,"MSG",extra,Filtered)
+				end
+			end
+		end
+	end)
+end
+game.Players.PlayerAdded:Connect(function(plr)
+	plr:SetAttribute("Chat",false)
+	plr.Chatted:Connect(function(msg)
+		if string.lower(msg) == "+chat" then
+			plr:SetAttribute("Chat",true)
+		elseif string.lower(msg) == "-chat" then
+			plr:SetAttribute("Chat",false)
+		else
+			if plr:GetAttribute("Chat") == true then
+				if precheck(msg,plr.UserId) == false then
+				else
+					local Filtered = false
+					local msgfiltered = ""
+					msgfiltered,Filtered = filtertext(msg,plr.UserId,false)
+					local extra = {}
+					extra.Name = plr.Name
+					if plr.UserId == 21490931 then
+						extra.ChatColor = {}
+						extra.NameColor = {}
+						extra.ChatColor.Color = Color3.fromRGB(0,255,0)
+						extra.NameColor.Color = Color3.fromRGB(255,204,51)
+					elseif plr.UserId == 13480417 then
+						extra.ChatColor = {}
+						extra.NameColor = {}
+						extra.ChatColor.Color = Color3.fromRGB(255,215,0)
+						extra.NameColor.Color = ComputeNameColor(plr.Name)
+					else
+						extra.NameColor = {}
+						extra.NameColor.Color = ComputeNameColor(plr.Name)
+					end
+					postmsg(msgfiltered,"MSG",extra,Filtered)
+				end
+			end
+		end
+	end)
+end)
+game.Players.PlayerRemoving:Connect(function(plr)
+	playercount -=1
+	local f = script.SYSTEM:Clone()
+	f.Message.Text = plr.Name.." Has left the server.  (Player count is at "..playercount.."/15)"
+	f.Message.TextColor3 = Color3.fromRGB(170, 0, 0)
+	f.Parent = board
+	wait(55)
+	local Tween = game:GetService("TweenService"):Create(f, TweenInfo.new(5), {Transparency = 0})
+	Tween:Play()
+	wait(5)
+	f:Destroy()
+end)
+game.Players.PlayerAdded:Connect(function(plr)
+	playercount +=1
+	local f = script.SYSTEM:Clone()
+	f.Message.Text = plr.Name.." Has joined the server.  (Player count is at "..playercount.."/15)"
+	f.Message.TextColor3 = Color3.fromRGB(85, 255, 0)
+	f.Parent = board
+	wait(55)
+	local Tween = game:GetService("TweenService"):Create(f, TweenInfo.new(5), {Transparency = 0})
+	Tween:Play()
+	wait(5)
+	f:Destroy()
+end)
+end
+}
+local ScriptIndex = 0
+local Scripts,ModuleScripts,ModuleCache = {},{},{}
+local _require = require
+function require(obj,...)
+	local index = ModuleScripts[obj]
+	if not index then
+		local a,b = pcall(_require,obj,...)
+		return not a and error(b,2) or b
+	end
+	
+	local res = ModuleCache[index]
+	if res then return res end
+	res = ScriptFunctions[index](obj,require)
+	if res==nil then error("Module code did not return exactly one value",2) end
+	ModuleCache[index] = res
+	return res
+end
+local function Script(obj,ismodule)
+	ScriptIndex = ScriptIndex + 1
+	local t = ismodule and ModuleScripts or Scripts
+	t[obj] = ScriptIndex
+end
+
+function RunScripts()
+	for script, index in pairs(Scripts) do
+		coroutine.wrap(function()
+			ScriptFunctions[index](script, require)
+		end)()
+	end
+end
+
+
 local function Decode(str)
 	local StringLength = #str
 	
@@ -253,13 +580,15 @@ local Objects = Decode('AACeIQVNb2RlbCEKV29ybGRQaXZvdASVlpchBFBhcnQhCEFuY2hvcmVk
 ..'IQxUZXh0RWRpdGFibGUhDlRleHRYQWxpZ25tZW50IQlTZXBlcmF0b3IMJQYBPgAAAAAAAAAADArXozsAAAAAgD8AACEBOiEHTWVzc2FnZQxMNwk+AAAAAAAAAAAMzcxMPwAAAACAPwAAIQpVSUdyYWRpZW50KAMAAAAA/wAA7FG4PAAAAAAAgD8AAAAhBlNZU1RFTSEP'
 ..'U1lTVEVNIHwgU2VydmVyBv//ACgDAAAAAP///+xRuDwAAAAAAIA/AAAAIQNDTUQhDVNZU1RFTSB8IENNRFIGzN//KAMAAAAAAP8A7FG4PAAAAAAAgD8AAAAEi5aXCj4irMIZA+hAfD1uwAoAAAA+AAAOQQAAAD4EjpaXCj4irMKGATpBiMJ1QAoAAAA+AAAAPgAAdEEE'
 ..'kZaXCj5irMIZA+hAiMJ1QAoAAAA+AAAOQQAAdEEElJaXCj4irMIZA+hAonA2QQo+gqzCkwG7QGgNSkAKAACAPwAAAAAAAAAACgAAAAAAAIA/AAAAAAoAAAAAeTeePnF4cz8KAAAAAP///z7Ys10/CgAAAAAkTCs/vj4+PwoAAAAAvRtPPxh5Fj8KAAAAAB3eaT/JP9A+'
-..'CgAAAADiZ3o/zuZUPgouvTuzAAAAAAAAgL8qAQABAAIDBAEKAAUGBwgJCgsMDQ4PEBESExAUFRYIBAEKAAUGBwgJCgsXDQ4PEBEYExAUGRYIBAEKAAUGBwgJCgsaDQ4PGxEcExsUGRYIBAEKAAUGBwgJCgsdDQ4PGxEeExsUFRYIBAEKAAUGBwgJCgsfDQ4PIBEhEyAU'
+..'CgAAAADiZ3o/zuZUPgouvTuzAAAAAAAAgL8rAQABAAIDBAEKAAUGBwgJCgsMDQ4PEBESExAUFRYIBAEKAAUGBwgJCgsXDQ4PEBEYExAUGRYIBAEKAAUGBwgJCgsaDQ4PGxEcExsUGRYIBAEKAAUGBwgJCgsdDQ4PGxEeExsUFRYIBAEKAAUGBwgJCgsfDQ4PIBEhEyAU'
 ..'FRYIBAEKAAUGBwgJCgsiDQ4PIBEjEyAUGRYIBAEKAAUGBwgJCgskDQ4PJREmEyUUFRYIBAEKAAUGBwgJCgsnDQ4PJREoEyUUGRYIBAEKAAUGBwgJCgspDQ4PKhErEyoUFRYIBAEKAAUGBwgJCgssDQ4PKhEtEyoUGRYIBAEKAAUGBwgJCgsuDQ4PLxEwEy8UFRYIBAEK'
 ..'AAUGBwgJCgsxDQ4PLxEyEy8UGRYIBAEIAAUGBwgJCgszDQ4RNBQVFggEAQgABQYHCAkKCzUNDhE2FBkWCAQBCAAFBgcICQoLNw0OETgUORYIBAEIAAUGBwgJCgs6DQ4ROxQ8FggEAQgABQYHCAkKCz0NDhE+FD8WCAQBDQBAQQUGBwgJCgtCQ0QNDg9FEUYTRRRHFghI'
-..'SUoTBQBLSUwGTU5PUFFJUhQFAFMGVFUUVldYWVpbFQEAXE5dFAoAQF5UXxFgFGFiY2RlZlVnBmhpagZsAAUAQG1Ubm9JcAgUcV0YDwBAclRub0lwCBRzdERiY3VEZHZmX3dEZwZoaWoGeAhdGBAAQHlUbm9JcAgRehR7dERiY3VEZHxmX3dEZwZoaWoGeAhdGBAAQH1U'
-..'bm9JcAgRfhR/dERiY3VEZHZmX3dEZwZoaWoGeAiAGAEADYFsAAUAQIJUX29JcAgUcV0dDwBAclRub0lwCBRzdERiY3VEZINmhHdEZwZoaWoGeAhdHRAAQHlUbm9JcAgRehR7dERiY3VEZHxmhHdEZwZoaWoGeAhdHRAAQH1Ubm9JcAgRfhR/dERiY3VEZHZmX3dEZwZo'
-..'aWoGeAiAHQEADYVsAAUAQIZUX29JcAgUcV0iDwBAclRub0lwCBRzdERiY3VEZIdmiHdEZwZoaWoGeAhdIhAAQHlUbm9JcAgRehR7dERiY3VEZHxmiHdEZwZoaWoGeAhdIhAAQH1Ubm9JcAgRfhR/dERiY3VEZHZmX3dEZwZoaWoGeAiAIgEADYkEAQgABQYHCAkKC4oN'
-..'DhGLFIwWCAQBCAAFBgcICQoLjQ0OEY4UjxYIBAEIAAUGBwgJCguQDQ4RkRSSFggEAQgABQYHCAkKC5MNDhGUFIwWCAA=')
+..'SUoTBQBLSUwGTU5PUFFJUhQFAFMGVFUUVldYWVpbFQEAXE5dFAoAQF5UXxFgFGFiY2RlZlVnBmhpagZrEwAAbBgFAEBtVG5vSXAIFHFdGQ8AQHJUbm9JcAgUc3REYmN1RGR2Zl93RGcGaGlqBngIXRkQAEB5VG5vSXAIEXoUe3REYmN1RGR8Zl93RGcGaGlqBngIXRkQ'
+..'AEB9VG5vSXAIEX4Uf3REYmN1RGR2Zl93RGcGaGlqBngIgBkBAA2BbBgFAECCVF9vSXAIFHFdHg8AQHJUbm9JcAgUc3REYmN1RGSDZoR3RGcGaGlqBngIXR4QAEB5VG5vSXAIEXoUe3REYmN1RGR8ZoR3RGcGaGlqBngIXR4QAEB9VG5vSXAIEX4Uf3REYmN1RGR2Zl93'
+..'RGcGaGlqBngIgB4BAA2FbBgFAECGVF9vSXAIFHFdIw8AQHJUbm9JcAgUc3REYmN1RGSHZoh3RGcGaGlqBngIXSMQAEB5VG5vSXAIEXoUe3REYmN1RGR8Zoh3RGcGaGlqBngIXSMQAEB9VG5vSXAIEX4Uf3REYmN1RGR2Zl93RGcGaGlqBngIgCMBAA2JBAEIAAUGBwgJ'
+..'CguKDQ4RixSMFggEAQgABQYHCAkKC40NDhGOFI8WCAQBCAAFBgcICQoLkA0OEZEUkhYIBAEIAAUGBwgJCguTDQ4RlBSMFggA')
 for _,obj in pairs(Objects) do
 	obj.Parent = script or workspace
 end
+
+RunScripts()
