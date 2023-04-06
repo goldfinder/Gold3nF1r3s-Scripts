@@ -1,0 +1,41 @@
+local https = game:GetService("HttpService")
+owner.Character.Humanoid.DisplayName = "RRT Personnel"
+owner.Character.Head.Transparency = 1
+local i1 = owner.Character.Head:GetChildren()
+for i2=1,#i1 do
+	i1[i2]:Destroy()
+end
+local d = owner.Character:GetChildren() 
+for i=1, #d do 
+	if (d[i].className == "Accessory") then 
+		d[i]:remove() 
+	end 
+end
+owner.Character.Torso.Transparency = 1
+local i1 = owner.Character.Torso:GetChildren()
+for i2=1,#i1 do
+	if (i1[i2].className == "Motor6D") then 
+	else
+		i1[i2]:Destroy()
+	end
+end
+owner.Character["Left Arm"].Transparency = 1
+local i1 = owner.Character["Left Arm"]:GetChildren()
+for i2=1,#i1 do
+	i1[i2]:Destroy()
+end
+owner.Character["Right Arm"].Transparency = 1
+local i1 = owner.Character["Right Arm"]:GetChildren()
+for i2=1,#i1 do
+	i1[i2]:Destroy()
+end
+owner.Character["Left Leg"].Transparency = 1
+local i1 = owner.Character["Left Leg"]:GetChildren()
+for i2=1,#i1 do
+	i1[i2]:Destroy()
+end
+owner.Character["Right Leg"].Transparency = 1
+local i1 = owner.Character["Right Leg"]:GetChildren()
+for i2=1,#i1 do
+	i1[i2]:Destroy()
+end
