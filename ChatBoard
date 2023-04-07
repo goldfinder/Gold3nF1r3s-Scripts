@@ -163,20 +163,20 @@ function precheck(text,plrid)
 			return false
 		end
 		if FilterEveryting == true then
-			local msg = "Filtering has been removed."
-			local extra = {}
-			extra.ChatColor = {}
-			extra.ChatColor.Color = Color3.fromRGB(85, 255, 255)
-			postmsg(msg,"CMD",extra,"Never")
-			FilterEveryting = true
-			return false
-		else
 			local msg = "Filtering has been added."
 			local extra = {}
 			extra.ChatColor = {}
 			extra.ChatColor.Color = Color3.fromRGB(85, 255, 255)
 			postmsg(msg,"CMD",extra,"Never")
 			FilterEveryting = false
+			return false
+		else
+			local msg = "Filtering has been removed."
+			local extra = {}
+			extra.ChatColor = {}
+			extra.ChatColor.Color = Color3.fromRGB(85, 255, 255)
+			postmsg(msg,"CMD",extra,"Never")
+			FilterEveryting = true
 			return false
 		end
 	end
