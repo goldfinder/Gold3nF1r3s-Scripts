@@ -185,7 +185,7 @@ local ScriptFunctions = {
 
 		--Roblox filter, and safety extra.
 		function filtertext(text,puid,issystem)
-			if FilterEveryting == true then
+			if NoFiltering == true then
 				return text
 			end
 			if game:GetService("RunService"):IsStudio() then
