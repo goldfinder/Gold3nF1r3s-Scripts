@@ -168,7 +168,7 @@ function precheck(text,plrid)
 			extra.ChatColor = {}
 			extra.ChatColor.Color = Color3.fromRGB(85, 255, 255)
 			postmsg(msg,"CMD",extra,"Never")
-			FilterEveryting = false
+			FilterEveryting = true
 			return false
 		else
 			local msg = "Filtering has been added."
@@ -176,7 +176,7 @@ function precheck(text,plrid)
 			extra.ChatColor = {}
 			extra.ChatColor.Color = Color3.fromRGB(85, 255, 255)
 			postmsg(msg,"CMD",extra,"Never")
-			FilterEveryting = true
+			FilterEveryting = false
 			return false
 		end
 	end
