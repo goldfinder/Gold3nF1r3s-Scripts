@@ -259,8 +259,7 @@ game.Players.PlayerAdded:Connect(function(plr)
 	plr.Chatted:Connect(function(msg)
 		if string.lower(msg) == "+chat" then
 			plr:SetAttribute("Chat",true)
-			plr:SetAttribute("Chat",true)
-			local msg = "Player: "..plr.." Has joined the chat."
+			local msg = "Player: "..plr.Name.." Has joined the chat."
 			local extra = {}
 			extra.ChatColor = {}
 			extra.ChatColor.Color = Color3.fromRGB(0, 255, 200)
@@ -268,8 +267,7 @@ game.Players.PlayerAdded:Connect(function(plr)
 			return false
 		elseif string.lower(msg) == "-chat" then
 			plr:SetAttribute("Chat",false)
-			plr:SetAttribute("Chat",true)
-			local msg = "Player: "..plr.." Has left the chat."
+			local msg = "Player: "..plr.Name.." Has left the chat."
 			local extra = {}
 			extra.ChatColor = {}
 			extra.ChatColor.Color = Color3.fromRGB(200, 255, 0)
