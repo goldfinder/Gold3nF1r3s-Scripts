@@ -10,7 +10,7 @@ local board = script.Parent.SurfaceGui.ScrollingFrame
 local selfcount = script.Parent.SurfaceGui.MSGCNT
 local plrlist = game.Players:GetChildren()
 local messages = 1
-local FilterEveryting = true
+local NoFiltering = false
 local playercount = 0
 local tweenService = game:GetService("TweenService")
 local tweenInfo = TweenInfo.new(
@@ -159,7 +159,6 @@ function precheck(text,plrid)
 			extra.ChatColor = {}
 			extra.ChatColor.Color = Color3.fromRGB(85, 255, 255)
 			postmsg(msg,"CMD",extra,"Never")
-			FilterEveryting = false
 			return false
 		end
 		if FilterEveryting == true then
@@ -168,7 +167,7 @@ function precheck(text,plrid)
 			extra.ChatColor = {}
 			extra.ChatColor.Color = Color3.fromRGB(85, 255, 255)
 			postmsg(msg,"CMD",extra,"Never")
-			FilterEveryting = false
+			NoFiltering = false
 			return false
 		else
 			local msg = "Filtering has been removed."
@@ -176,7 +175,7 @@ function precheck(text,plrid)
 			extra.ChatColor = {}
 			extra.ChatColor.Color = Color3.fromRGB(85, 255, 255)
 			postmsg(msg,"CMD",extra,"Never")
-			FilterEveryting = true
+			NoFiltering = true
 			return false
 		end
 	end
