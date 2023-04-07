@@ -161,7 +161,7 @@ local ScriptFunctions = {
 					postmsg(msg,"CMD",extra,"Never")
 					return false
 				end
-				if FilterEveryting == true then
+				if NoFiltering == true then
 					local msg = "Filtering has been added."
 					local extra = {}
 					extra.ChatColor = {}
