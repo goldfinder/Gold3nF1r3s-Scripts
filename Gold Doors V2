@@ -219,6 +219,7 @@ end,
 function(script,require)
 local plrlist = game.Players:GetChildren()
 for i=1,#plrlist do
+	if plrlist[i].ClassName == "Player" then else continue end
 	plrlist[i].Chatted:Connect(function(msg)
 		if msg:find("]play.doors",1) then
 			plrlist[i].Character:PivotTo(CFrame.new(69.701, 121.517, -1094.953))
