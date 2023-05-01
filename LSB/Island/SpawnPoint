@@ -11,17 +11,20 @@ game.Players.PlayerAdded:Connect(function(plr)
 		chr:PivotTo(CFrame.new(Vector3.new(-11.684, 9.534, 64.413)))
 	end)
 end)
-local plrlist = game.Players:GetChildren()
-for i=1,#plrlist do
-	if plrlist[i].ClassName == "Player" then
-		local plr = plrlist[i]
-		plr.Character:PivotTo(CFrame.new(Vector3.new(-11.684, 9.534, 64.413)))
-		plr.CharacterAdded:Connect(function(chr)
-			wait(0.8)
-			chr:PivotTo(CFrame.new(Vector3.new(-11.684, 9.534, 64.413)))
-		end)
+coroutine.resume(coroutine.create(function()
+	wait(5)
+	local plrlist = game.Players:GetChildren()
+	for i=1,#plrlist do
+		if plrlist[i].ClassName == "Player" then
+			local plr = plrlist[i]
+			plr.Character:PivotTo(CFrame.new(Vector3.new(-11.684, 9.534, 64.413)))
+			plr.CharacterAdded:Connect(function(chr)
+				wait(0.8)
+				chr:PivotTo(CFrame.new(Vector3.new(-11.684, 9.534, 64.413)))
+			end)
+		end
 	end
-end
+end))
 end,
 function(script,require)
 game.Workspace.Terrain:FillBlock(script.Parent.CFrame, script.Parent.Size, Enum.Material.Ground)
