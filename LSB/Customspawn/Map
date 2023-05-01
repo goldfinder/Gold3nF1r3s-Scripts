@@ -1,5 +1,62 @@
 -- Converted using Mokiros's Model to Script Version 3
--- Converted string size: 1592 characters
+-- Converted string size: 1368 characters
+
+local ScriptFunctions = {
+function(script,require)
+blacklistedplayers = {420193860}
+
+
+while wait(1/8) do
+	local plrlist = game.Players:GetChildren()
+	for i=1,#plrlist do
+		if plrlist[i].ClassName ~= "Player" then
+			continue
+		end
+		if table.find(blacklistedplayers,plrlist[i].UserId) then
+			plrlist[i].CharacterAdded:Connect(function()
+				script.Parent.Touched:Connect(function(hit)
+					if hit == plrlist[i].Character:FindFirstChild("HumanoidRootPart") then
+
+					end
+				end)	
+			end)
+		end
+	end 
+end
+end
+}
+local ScriptIndex = 0
+local Scripts,ModuleScripts,ModuleCache = {},{},{}
+local _require = require
+function require(obj,...)
+	local index = ModuleScripts[obj]
+	if not index then
+		local a,b = pcall(_require,obj,...)
+		return not a and error(b,2) or b
+	end
+	
+	local res = ModuleCache[index]
+	if res then return res end
+	res = ScriptFunctions[index](obj,require)
+	if res==nil then error("Module code did not return exactly one value",2) end
+	ModuleCache[index] = res
+	return res
+end
+local function Script(obj,ismodule)
+	ScriptIndex = ScriptIndex + 1
+	local t = ismodule and ModuleScripts or Scripts
+	t[obj] = ScriptIndex
+end
+
+function RunScripts()
+	for script, index in pairs(Scripts) do
+		coroutine.wrap(function()
+			ScriptFunctions[index](script, require)
+		end)()
+	end
+end
+
+
 local function Decode(str)
 	local StringLength = #str
 	
@@ -242,14 +299,15 @@ local function Decode(str)
 end
 
 
-local Objects = Decode('AABYIQRQYXJ0IQhBbmNob3JlZCIhDUJvdHRvbVN1cmZhY2UDAAAAAAAAAAAhCkJyaWNrQ29sb3IHYAEhBkNGcmFtZQQPT1AhBUNvbG9yBseseCEITWF0ZXJpYWwDAAAAAABAlEAhCFBvc2l0aW9uCuxEX0Y6KGZBKeDXRSEEU2l6ZQrXo9FCAAAAPyhcM0MhClRvcFN1'
-..'cmZhY2UHxwAEGVFSBmNfYgMAAAAAAACMQCELT3JpZW50YXRpb24KAAAAAAAANEMAgJ3CCsQPYEbOXPNBKeDXRSEIUm90YXRpb24KAAA0wwAAAAAAgMpCChSuA0IAAAA/KFwzQwc5AQQiT1MGH4AdAwAAAAAAAJRACgAAAAAAADRDAAA0Qwq5MGBGMtM5QgwC2EUKAAA0'
-..'QwAAAAAAAAAACku4PkEAAAA/KVw8QwQmT1MKHzBfRjPTOUKlw9pFCj0K+kIAAAA/Ilw/QQQqT1QKAICdwgAAAAAAAAAACoU/X0b8XfNBrYHaRQoK1+FCAAAAP6FwA0IELlVWCgAAAAAAAAAAAICdwgqRbl5GzlzzQSng10UEME9TCu1NXkYy0zlCDALYRQQzT1cKAICd'
-..'QgAAAAAAAAAACjkPX0YAKWZBXEPVRQofxXdDAAAAPyhcM0MH6QMEOk9YBv///wMAAAAAAMCUQAoAAGFCAAAAAAAAAAAKOQ9fRorz4UJRfdRFCh/Fd0MAAAA/cBTSQQdcAQRCT1AhCkNhc3RTaGFkb3cCBu3q6gMAAAAAAMCYQArlf15GQj0IQmba10UKIDMDQM3MO0LN'
-..'zCRDBEVPUAp/Pl9GQr1kQv/d10UKZubBQjMzMz9n5iNDBEhPUAqfPl9GQj0IQjNP1UUKM7PBQs3MO0IAAABABEtPUApL/F9GQj0IQmba10UETU9QCn8+X0ZCPQhCmWXaRQpm5sFCzcw7QgAAAEAKAACAPwAAAAAAAAAACgAAAAAAAIA/AAAAAArIxUe+xBR7vwAAAAAK'
-..'xBR7v8vFRz4AAAAACgAAAAAAAIC//v8/MwoAAAAAxMVHPsAUe78KyMVHPsQUe78AAAAACsQUez/LxUc+AAAAAAoAAAAAw8VHPr4Uez8KAAAAANw5Dj8x21Q/DgEACQACAwQFBgcICQoLDA0ODxAREgUBAAsAAgMEBQYTCBQKFQwWFxgOGRobEBwSBQEACwACAwQFBh0I'
-..'HgofDCAXIQ4iGiMQJBIFAQALAAIDBAUGHQglCh8MIBchDiYaIxAnEgUBAAsAAgMEBQYTCCgKFQwWFykOKhopECsSBQEACwACAwQFBhMILAoVDBYXLQ4uGi0QHBIFAQALAAIDBAUGHQgvCh8MIBchDjAaIxAkEgUBAAsAAgMEBQYTCDEKFQwWFzIOMxoyEDQSBQEACwAC'
-..'AwQFBjUINgo3DDgXOQ46GjkQOxIFAQAKAAIDBAUGPAg9Pj8KQAxBDkIQQxIFAQAKAAIDBAUGPAhEPj8KQAxBDkUQRhIFAQAKAAIDBAUGPAhHPj8KQAxBDkgQSRIFAQAKAAIDBAUGPAhKPj8KQAxBDksQQxIFAQAKAAIDBAUGPAhMPj8KQAxBDk0QThIFAA==')
+local Objects = Decode('AABQIQRQYXJ0IQhBbmNob3JlZCIhDUJvdHRvbVN1cmZhY2UDAAAAAAAAAAAhCkJyaWNrQ29sb3IHOQEhBkNGcmFtZQQRR0ghBUNvbG9yBh+AHSEITWF0ZXJpYWwDAAAAAAAAlEAhC09yaWVudGF0aW9uCgAAAAAAADRDAAA0QyEIUG9zaXRpb24KHzBfRjPTOUKlw9pF'
+..'IQhSb3RhdGlvbgoAADRDAAAAAAAAAAAhBFNpemUKPQr6QgAAAD8iXD9BIQpUb3BTdXJmYWNlB8cABBxHSQZjX2IDAAAAAAAAjEAKAICdwgAAAAAAAAAACoU/X0b8XfNBrYHaRQoK1+FCAAAAP6FwA0IEIEpLCgAAAAAAADRDAICdwgrED2BGzlzzQSng10UKAAA0wwAA'
+..'AAAAgMpCChSuA0IAAAA/KFwzQwQkR0gKuTBgRjLTOUIMAthFCku4PkEAAAA/KVw8QwQnR0gK7U1eRjLTOUIMAthFBCpMTQoAAAAAAAAAAACAncIKkW5eRs5c80Ep4NdFB2ABBC9HTgbHrHgDAAAAAABAlEAK7ERfRjooZkEp4NdFCtej0UIAAAA/KFwzQwQzR08KAICd'
+..'QgAAAAAAAAAACjkPX0YufmlCXP3URQofxXdDAAAAP+lRs0IH6QMEOkdQBv///wMAAAAAAMCUQAoAAGFCAAAAAAAAAAAKOQ9fRorz4UJRfdRFCh/Fd0MAAAA/cBTSQQdcAQRCR04hCkNhbkNvbGxpZGUCBu3q6iEGTG9ja2VkChheX0Y7rJZC0uPXRQqauZNDzIwSQ81s'
+..'h0MhDFRyYW5zcGFyZW5jeQMAAAAAAADwPyEGU2NyaXB0CgAAgD8AAAAAAAAAAAoAAAAAAACAv/7/PzMKAAAAAMTFRz7AFHu/CsjFR77EFHu/AAAAAArEFHu/y8VHPgAAAAAKyMVHPsQUe78AAAAACsQUez/LxUc+AAAAAAoAAAAAAACAPwAAAAAKAAAAAMPFRz6+FHs/'
+..'CgAAAADcOQ4/MdtUPwsBAAsAAgMEBQYHCAkKCwwNDg8QERITFBUWBQEACwACAwQFBhcIGAoZDBoOGxAcEhsUHRYFAQALAAIDBAUGFwgeChkMGg4fECASIRQiFgUBAAsAAgMEBQYHCCMKCwwNDg8QJBITFCUWBQEACwACAwQFBgcIJgoLDA0ODxAnEhMUJRYFAQALAAID'
+..'BAUGFwgoChkMGg4pECoSKRQiFgUBAAkAAgMEBQYrCCwKLQwuEC8UMBYFAQALAAIDBAUGFwgxChkMGg4yEDMSMhQ0FgUBAAsAAgMEBQY1CDYKNww4DjkQOhI5FDsWBQEACwACAwQFBjwIPT4/CkBBAxBCFEMWBURFRgoAAAA=')
 for _,obj in pairs(Objects) do
 	obj.Parent = script or workspace
 end
+
+RunScripts()
