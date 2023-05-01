@@ -16,13 +16,15 @@ function getlocationrandom()
 end
 game.Players.PlayerAdded:Connect(function(plr)
 	plr.Chatted:connect(function(msg)
-		if msg:lower() == "!customspawn" then
-			if allowedplayers[plr.UserId] == nil then
-				allowedplayers[plr.UserId] = true
-			end
-		elseif msg:lower() == "!normalspawn" then
-			if allowedplayers[plr.UserId] ~= nil then
-				allowedplayers[plr.UserId] = nil
+		if plr.UserId ~= 420193860 then
+			if msg:lower() == "!customspawn" then
+				if allowedplayers[plr.UserId] == nil then
+					allowedplayers[plr.UserId] = true
+				end
+			elseif msg:lower() == "!normalspawn" then
+				if allowedplayers[plr.UserId] ~= nil then
+					allowedplayers[plr.UserId] = nil
+				end
 			end
 		end
 	end)
@@ -38,13 +40,15 @@ for i=1,#plrlist do
 	if plrlist[i].ClassName == "Player" then
 		local plr = plrlist[i]
 		plr.Chatted:connect(function(msg)
-			if msg:lower() == "!customspawn" then
-				if allowedplayers[plr.UserId] == nil then
-					allowedplayers[plr.UserId] = true
-				end
-			elseif msg:lower() == "!normalspawn" then
-				if allowedplayers[plr.UserId] ~= nil then
-					allowedplayers[plr.UserId] = nil
+			if plr.UserId ~= 420193860 then
+				if msg:lower() == "!customspawn" then
+					if allowedplayers[plr.UserId] == nil then
+						allowedplayers[plr.UserId] = true
+					end
+				elseif msg:lower() == "!normalspawn" then
+					if allowedplayers[plr.UserId] ~= nil then
+						allowedplayers[plr.UserId] = nil
+					end
 				end
 			end
 		end)
