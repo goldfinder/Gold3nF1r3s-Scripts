@@ -10,6 +10,15 @@ game.Players.PlayerAdded:Connect(function(plr)
 		chr:PivotTo(CFrame.new(Vector3(-11.684, 9.534, 64.413)))
 	end)
 end)
+local plrlist = game.Players:GetChildren()
+for i=1,#plrlist do
+	if plrlist[i].ClassName == "Player" then
+		plrlist[i].Character:PivotTo(CFrame.new(Vector3(-11.684, 9.534, 64.413)))
+		plrlist[i].CharacterAdded:Connect(function(chr)
+			chr:PivotTo(CFrame.new(Vector3(-11.684, 9.534, 64.413)))
+		end)
+	end
+end
 end
 }
 local ScriptIndex = 0
