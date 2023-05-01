@@ -1,62 +1,5 @@
 -- Converted using Mokiros's Model to Script Version 3
--- Converted string size: 1368 characters
-
-local ScriptFunctions = {
-function(script,require)
-blacklistedplayers = {420193860}
-
-
-while wait(1/8) do
-	local plrlist = game.Players:GetChildren()
-	for i=1,#plrlist do
-		if plrlist[i].ClassName ~= "Player" then
-			continue
-		end
-		if table.find(blacklistedplayers,plrlist[i].UserId) then
-			plrlist[i].CharacterAdded:Connect(function()
-				script.Parent.Touched:Connect(function(hit)
-					if hit == plrlist[i].Character:FindFirstChild("HumanoidRootPart") then
-
-					end
-				end)	
-			end)
-		end
-	end 
-end
-end
-}
-local ScriptIndex = 0
-local Scripts,ModuleScripts,ModuleCache = {},{},{}
-local _require = require
-function require(obj,...)
-	local index = ModuleScripts[obj]
-	if not index then
-		local a,b = pcall(_require,obj,...)
-		return not a and error(b,2) or b
-	end
-	
-	local res = ModuleCache[index]
-	if res then return res end
-	res = ScriptFunctions[index](obj,require)
-	if res==nil then error("Module code did not return exactly one value",2) end
-	ModuleCache[index] = res
-	return res
-end
-local function Script(obj,ismodule)
-	ScriptIndex = ScriptIndex + 1
-	local t = ismodule and ModuleScripts or Scripts
-	t[obj] = ScriptIndex
-end
-
-function RunScripts()
-	for script, index in pairs(Scripts) do
-		coroutine.wrap(function()
-			ScriptFunctions[index](script, require)
-		end)()
-	end
-end
-
-
+-- Converted string size: 1208 characters
 local function Decode(str)
 	local StringLength = #str
 	
@@ -299,15 +242,13 @@ local function Decode(str)
 end
 
 
-local Objects = Decode('AABQIQRQYXJ0IQhBbmNob3JlZCIhDUJvdHRvbVN1cmZhY2UDAAAAAAAAAAAhCkJyaWNrQ29sb3IHOQEhBkNGcmFtZQQRR0ghBUNvbG9yBh+AHSEITWF0ZXJpYWwDAAAAAAAAlEAhC09yaWVudGF0aW9uCgAAAAAAADRDAAA0QyEIUG9zaXRpb24KHzBfRjPTOUKlw9pF'
-..'IQhSb3RhdGlvbgoAADRDAAAAAAAAAAAhBFNpemUKPQr6QgAAAD8iXD9BIQpUb3BTdXJmYWNlB8cABBxHSQZjX2IDAAAAAAAAjEAKAICdwgAAAAAAAAAACoU/X0b8XfNBrYHaRQoK1+FCAAAAP6FwA0IEIEpLCgAAAAAAADRDAICdwgrED2BGzlzzQSng10UKAAA0wwAA'
-..'AAAAgMpCChSuA0IAAAA/KFwzQwQkR0gKuTBgRjLTOUIMAthFCku4PkEAAAA/KVw8QwQnR0gK7U1eRjLTOUIMAthFBCpMTQoAAAAAAAAAAACAncIKkW5eRs5c80Ep4NdFB2ABBC9HTgbHrHgDAAAAAABAlEAK7ERfRjooZkEp4NdFCtej0UIAAAA/KFwzQwQzR08KAICd'
-..'QgAAAAAAAAAACjkPX0YufmlCXP3URQofxXdDAAAAP+lRs0IH6QMEOkdQBv///wMAAAAAAMCUQAoAAGFCAAAAAAAAAAAKOQ9fRorz4UJRfdRFCh/Fd0MAAAA/cBTSQQdcAQRCR04hCkNhbkNvbGxpZGUCBu3q6iEGTG9ja2VkChheX0Y7rJZC0uPXRQqauZNDzIwSQ81s'
-..'h0MhDFRyYW5zcGFyZW5jeQMAAAAAAADwPyEGU2NyaXB0CgAAgD8AAAAAAAAAAAoAAAAAAACAv/7/PzMKAAAAAMTFRz7AFHu/CsjFR77EFHu/AAAAAArEFHu/y8VHPgAAAAAKyMVHPsQUe78AAAAACsQUez/LxUc+AAAAAAoAAAAAAACAPwAAAAAKAAAAAMPFRz6+FHs/'
-..'CgAAAADcOQ4/MdtUPwsBAAsAAgMEBQYHCAkKCwwNDg8QERITFBUWBQEACwACAwQFBhcIGAoZDBoOGxAcEhsUHRYFAQALAAIDBAUGFwgeChkMGg4fECASIRQiFgUBAAsAAgMEBQYHCCMKCwwNDg8QJBITFCUWBQEACwACAwQFBgcIJgoLDA0ODxAnEhMUJRYFAQALAAID'
-..'BAUGFwgoChkMGg4pECoSKRQiFgUBAAkAAgMEBQYrCCwKLQwuEC8UMBYFAQALAAIDBAUGFwgxChkMGg4yEDMSMhQ0FgUBAAsAAgMEBQY1CDYKNww4DjkQOhI5FDsWBQEACwACAwQFBjwIPT4/CkBBAxBCFEMWBURFRgoAAAA=')
+local Objects = Decode('AABFIQRQYXJ0IQhBbmNob3JlZCIhDUJvdHRvbVN1cmZhY2UDAAAAAAAAAAAhCkJyaWNrQ29sb3IHxwAhBkNGcmFtZQQRPD0hBUNvbG9yBmNfYiEITWF0ZXJpYWwDAAAAAAAAjEAhC09yaWVudGF0aW9uCgCAncIAAAAAAAAAACEIUG9zaXRpb24KhT9fRvxd80GtgdpF'
+..'IQhSb3RhdGlvbiEEU2l6ZQoK1+FCAAAAP6FwA0IhClRvcFN1cmZhY2UHOQEEGzw+Bh+AHQMAAAAAAACUQAoAAAAAAAA0QwAANEMKHzBfRjPTOUKlw9pFCgAANEMAAAAAAAAAAAo9CvpCAAAAPyJcP0EEID9ACgAAAAAAAAAAAICdwgqRbl5GzlzzQSng10UKFK4DQgAA'
+..'AD8oXDNDBCM8PgrtTV5GMtM5QgwC2EUKS7g+QQAAAD8pXDxDBCdBQgoAAAAAAAA0QwCAncIKxA9gRs5c80Ep4NdFCgAANMMAAAAAAIDKQgQqPD4KuTBgRjLTOUIMAthFBC08QwoAgJ1CAAAAAAAAAAAKOQ9fRi5+aUJc/dRFCh/Fd0MAAAA/6VGzQgfpAwQ0PEQG////'
+..'AwAAAAAAwJRACgAAYUIAAAAAAAAAAAo5D19GivPhQlF91EUKH8V3QwAAAD9wFNJBB2ABBDo8RQbHrHgDAAAAAABAlEAK7ERfRjooZkEp4NdFCtej0UIAAAA/KFwzQwoAAIA/AAAAAAAAAAAKAAAAAMTFRz7AFHu/CgAAAAAAAIC//v8/MwrIxUc+xBR7vwAAAAAKxBR7'
+..'P8vFRz4AAAAACsjFR77EFHu/AAAAAArEFHu/y8VHPgAAAAAKAAAAAMPFRz6+FHs/CgAAAADcOQ4/MdtUPwoAAAAAAACAPwAAAAAJAQALAAIDBAUGBwgJCgsMDQ4PEBESDxMUFQUBAAsAAgMEBQYWCBcKGAwZDhoQGxIcEx0VBQEACwACAwQFBgcIHgoLDA0OHxAgEh8T'
+..'IRUFAQALAAIDBAUGFggiChgMGQ4aECMSHBMkFQUBAAsAAgMEBQYHCCUKCwwNDiYQJxIoEyEVBQEACwACAwQFBhYIKQoYDBkOGhAqEhwTJBUFAQALAAIDBAUGBwgrCgsMDQ4sEC0SLBMuFQUBAAsAAgMEBQYvCDAKMQwyDjMQNBIzEzUVBQEACQACAwQFBjYINwo4DDkQ'
+..'OhM7FQUA')
 for _,obj in pairs(Objects) do
 	obj.Parent = script or workspace
 end
-
-RunScripts()
