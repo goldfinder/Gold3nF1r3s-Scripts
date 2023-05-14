@@ -1,0 +1,3993 @@
+-- Converted using Mokiros's Model to Script Version 3
+-- Converted string size: 23824 characters
+
+local ScriptFunctions = {
+function(script,require)
+--[[
+
+	Plugins for this gun kit are basically functions that will run at specific times, i.e. When a key is pressed, when the gun is
+	fired, when the gun is aimed, etc.
+	
+	HOW TO USE IT:
+	
+		KEYDOWN PLUGIN:
+		
+			Let's say you wanted to toggle a laser whenever you press the "v" key:
+			
+			You would create a table like the example below
+			The first element would be "Key = INSERT_KEY_HERE"
+			The second element would be "Description = INSERT_DESCRIPTION_HERE"
+			The third element would be "Plugin = INSERT_FUNCTION_HERE"
+			
+			So whenever you press the "v" key, the plugin function will run
+			
+			Pretty useful if you want to add extra code to the script without actually having to modify the script
+		
+			NOTE: Only the keydown plugin requires this table. Every other plugin just needs a function
+			
+		EVERY OTHER PLUGIN:
+		
+			Let's say you wanted to make a shell eject whenever the gun was fired:
+			
+			You would add function called "Plugin = INSERT_FUNCTION_HERE"
+			
+			That's it; If you want other stuff to happen when the gun is fired, you would either put it all into 1 function, or
+			you would add more Plugins to the "Firing" table. Like so:
+			
+			Firing = {
+				Plugin = function()
+					--Code
+				end;
+				Plugin = function()
+					--Code
+				end;
+				Plugin = function()
+					--Code
+				end;
+			};
+	
+	That's really it, you just need to know some basic scripting to use it. If you have more questions, pm me.
+	
+	NOTE: The plugins run seperate from the code in the Gun_Main. For example, if you have a plugin that ejects a shell 1 second
+	after the gun is fired, the gun's firing speed won't be affected in any way.
+	
+--]]
+
+local Gun = script.Parent.Parent.Parent
+local player = game.Players.LocalPlayer
+
+local Plugins = {
+	
+	KeyDown = {
+		{ --This is a plugin for a toggleable laser
+			Key = "g"; --This is the key you press to activate the plugin
+			Description = "Toggle Laser"; --This is what the description of the key will be in the controls
+			Plugin = function() --This is the actual plugin function
+				local Laser = Gun:WaitForChild("LaserLight") --These few lines wait for the necessary bricks/models
+				local Handle = Gun:WaitForChild("Grip")
+				local ignoreCode = Gun.Program_Client:WaitForChild("ignoreCode")
+				local ignoreModel = game.Workspace:WaitForChild("BulletModel: " .. player.Name)
+				local ignoreList = {}
+				
+				local PlyrName = game.Players:GetPlayerFromCharacter(Gun.Parent).Name
+				local playerFolder = ignoreModel
+				
+				local RS = game:GetService("RunService")
+				
+				local function createLaserDot() --This function creates the red laser dot
+					local laserDot = Instance.new("Part")
+					laserDot.Transparency = 1
+					laserDot.Name = "laserDot"
+					laserDot.Anchored = true
+					laserDot.CanCollide = false
+					laserDot.FormFactor = Enum.FormFactor.Custom
+					laserDot.Size = Vector3.new(0.25, 0.25, 1)
+					
+					local laserGui = Instance.new("SurfaceGui")
+					laserGui.CanvasSize = Vector2.new(100, 100)
+					laserGui.Parent = laserDot
+					
+					local laserImage = Instance.new("ImageLabel")
+					laserImage.BackgroundTransparency = 1
+					laserImage.Size = UDim2.new(1, 0, 1, 0)
+					laserImage.Image = "http://www.roblox.com/asset/?id=131394739"
+					laserImage.Parent = laserGui
+					
+					--[[local laserLight = Instance.new("SurfaceLight")
+					laserLight.Angle = 180
+					laserLight.Brightness = math.huge
+					laserLight.Color = Color3.new(1, 0, 0)
+					laserLight.Face = Enum.NormalId.Back
+					laserLight.Range = 5
+					laserLight.Shadows = true
+					laserLight.Parent = laserDot]]
+					
+					return laserDot
+				end
+				
+				local function getHitSurfaceCFrame(Pos, Obj) --This function returns the proper cframe based on the face that the position is on
+					local surfaceCF = {
+						{"Back", Obj.CFrame * CFrame.new(0, 0, Obj.Size.z)};
+						{"Bottom", Obj.CFrame * CFrame.new(0, -Obj.Size.y, 0)};
+						{"Front", Obj.CFrame * CFrame.new(0, 0, -Obj.Size.z)};
+						{"Left", Obj.CFrame * CFrame.new(-Obj.Size.x, 0, 0)};
+						{"Right", Obj.CFrame * CFrame.new(Obj.Size.x, 0, 0)};
+						{"Top", Obj.CFrame * CFrame.new(0, Obj.Size.y, 0)}
+					}
+					local closestDist = math.huge
+					local closestSurface = nil
+					for _,v in pairs(surfaceCF) do
+						local surfaceDist = (Pos - v[2].p).magnitude
+						if surfaceDist < closestDist then
+							closestDist = surfaceDist
+							closestSurface = v
+						end
+					end
+					
+					local surfaceDir = CFrame.new(Obj.CFrame.p, closestSurface[2].p)
+					local surfaceDist = surfaceDir.lookVector * ((Obj.CFrame.p - closestSurface[2].p).magnitude / 2 - 0.25)
+					local surfaceOffset = Pos - closestSurface[2].p + surfaceDist
+					local surfaceCFrame = surfaceDir + surfaceDist + surfaceOffset
+					
+					return surfaceCFrame
+				end
+				
+				local laserDot = createLaserDot() --The code is cleaner when the laser creating code is in a function
+				
+				Laser.Transparency = (Laser.Transparency == 1 and 0 or 1) --Toggles the laser on or off
+				
+				while math.floor(Laser.Transparency) == 0 do --This loop will keep running as long as the laser is visible
+					if (not game.Players:GetPlayerFromCharacter(Gun.Parent)) then break end --This checks if the gun is a child of the character
+					
+					local newRay = Ray.new(Laser.Position, Handle.CFrame.lookVector * 999)
+					local H, P = game.Workspace:FindPartOnRayWithIgnoreList(newRay, ignoreList)
+					
+					if H and (H and H.Transparency >= 1 or H.CanCollide == false) then
+						table.insert(ignoreList, H)
+					end
+					
+					local Distance = (P - Laser.Position).magnitude
+					Laser.Mesh.Offset = Vector3.new(0, Distance / 2, 0)
+					Laser.Mesh.Scale = Vector3.new(0.075, Distance / 0.2, 0.075)
+					
+					if H then
+						laserDot.CFrame = getHitSurfaceCFrame(P, H) --If the laser hits a part then position the dot on the part
+						laserDot.Parent = playerFolder
+					else
+						laserDot.Parent = nil --If the laser doesn't hit a part then temporarily remove the laser dor
+					end
+					
+					RS.RenderStepped:wait()
+				end
+				
+				laserDot:Destroy() --These lines reset the laser if the laser is transparent or the gun was deselected
+				Laser.Transparency = 1
+				Laser.Mesh.Offset = Vector3.new()
+				Laser.Mesh.Scale = Vector3.new(0.075, 0, 0.075)
+			end;
+		};
+		
+	};
+	
+}
+
+return Plugins
+end,
+function(script,require)
+repeat wait() until game.Players.LocalPlayer.Character
+local rs = game:GetService('RunService').RenderStepped
+local cam = workspace.CurrentCamera
+local player = game.Players.LocalPlayer
+local char = player.Character
+_G.tweeningFov = false
+
+local Utilities = {}
+
+--[[Utilities.tweenFoV = function(FOV,step)
+	coroutine.resume(coroutine.create(function()
+   		local fv0 = cam.FieldOfView
+    	for i = 0,90,step do
+        	local r = ((math.sin(math.rad(i))+1)/2)
+        	cam.FieldOfView = (Vector3.new(fv0,0,0):Lerp(Vector3.new(FOV,0,0),r).X)
+        	rs:wait()
+    	end
+	end))
+end]]--
+
+Utilities.tweenFoV = function(goal, frames)
+	if not _G.tweeningFov then
+		coroutine.resume(coroutine.create(function()
+			SFn = SFn and SFn + 1 or 0 
+			local SFn_S = SFn
+			for i = 1, frames do
+				if SFn ~= SFn_S then break end
+					cam.FieldOfView = cam.FieldOfView + (goal - cam.FieldOfView) * (i / frames)
+					game:GetService("RunService").RenderStepped:wait()
+					--_G.tweeningFov = true
+				end
+			--_G.tweeningFov = false
+		end))
+	end
+end
+
+Utilities.tweenRoll = function(Roll,step)
+	coroutine.resume(coroutine.create(function()
+   		local r0 = cam:GetRoll()
+    	for i = -90,90,step do
+        	local r = ((math.sin(math.rad(i))+1)/2)
+        	cam:SetRoll(Vector3.new(r0,0,0):Lerp(Vector3.new(Roll,0,0),r).X)
+        	rs:wait()
+    	end
+	end))
+end
+
+Utilities.Fade = function(target, goal, frames, IsGui)
+	coroutine.resume(coroutine.create(function()
+		for i = 1, frames do
+			if IsGui == true then
+				target.TextTransparency = target.TextTransparency + (goal - target.TextTransparency) * (i / frames)
+				rs:wait()
+			elseif IsGui == false then
+				target.Size = target.Size + (goal - target.Size) * (i / frames)
+				rs:wait()
+			end
+		end
+	end))
+end
+
+Utilities.FixCam = function()
+	cam.CameraSubject = player.Character.Humanoid
+	cam.CameraType = "Custom"
+	player.Character.Humanoid.WalkSpeed = 16
+end
+
+Utilities.SpawnCam = function(Target)
+	cam.CameraType = "Attach"
+	cam.CameraSubject = Target
+	wait(.05)
+	cam.CoordinateFrame = Target.CFrame
+	cam.CameraType = "Scriptable"
+	player.Character.Humanoid.WalkSpeed = 0
+end
+
+Utilities.tweenCam = function(CO, t)
+ coroutine.resume(coroutine.create(function()
+  COn = COn and COn + 1 or 0 local COn_S = COn
+  for i = 1, t do
+   if COn ~= COn_S then break end
+   char.Humanoid.CameraOffset = char.Humanoid.CameraOffset + (CO - char.Humanoid.CameraOffset) * (i / t)
+   rs:wait()
+  end
+ end))
+end
+
+Utilities.TweenJoint = function(Joint, newC0, newC1, Alpha, Duration)
+	spawn(function()
+		local newCode = math.random(-1e9, 1e9) --This creates a random code between -1000000000 and 1000000000
+		local tweenIndicator = nil
+		if (not Joint:findFirstChild("tweenCode")) then --If the joint isn't being tweened, then
+			tweenIndicator = Instance.new("IntValue")
+			tweenIndicator.Name = "tweenCode"
+			tweenIndicator.Value = newCode
+			tweenIndicator.Parent = Joint
+		else
+			tweenIndicator = Joint.tweenCode
+			tweenIndicator.Value = newCode --If the joint is already being tweened, this will change the code, and the tween loop will stop
+		end
+		if Duration <= 0 then --If the duration is less than or equal to 0 then there's no need for a tweening loop
+			if newC0 then Joint.C0 = newC0 end
+			if newC1 then Joint.C1 = newC1 end
+		else
+			local Increment = 1.5 / Duration --Calculate the increment here so it doesn't need to be calculated in the loop
+			local startC0 = Joint.C0
+			local startC1 = Joint.C1
+			local X = 0
+			while true do
+				rs:wait() --This makes the for loop step every 1/60th of a second
+				local newX = X + Increment
+				X = (newX > 90 and 90 or newX) --Makes sure the X never goes above 90
+				if tweenIndicator.Value ~= newCode then break end --This makes sure that another tween wasn't called on the same joint
+				if newC0 then Joint.C0 = startC0:lerp(newC0, Alpha(X)) end
+				if newC1 then Joint.C1 = startC1:lerp(newC1, Alpha(X)) end
+				if X == 90 then break end --If the tweening is done...
+			end
+		end
+		if tweenIndicator.Value == newCode then --If this tween functions was the last one called on a joint then it will remove the code
+			tweenIndicator:Destroy()
+		end
+	end)	
+end
+
+Utilities.Weld = function(p1, p2, c0)
+	local w = Instance.new("Motor6D", p1)
+	w.Part0 = p1
+	w.Part1 = p2
+	w.Name = p1.Name
+	w.C0 = c0 or p1.CFrame:inverse() * p2.CFrame
+	return w
+end
+
+return Utilities
+end,
+function(script,require)
+local Spring = {}
+
+function Spring.new(Initial)
+	local t0 = tick()
+	local p0 = Initial or 0
+	local v0 = Initial and Vector3.new() or 0
+	local t	= Initial or 0
+	local d	= 1
+	local s	= 1
+
+	local function positionVelocity(Tick)
+		local x	= Tick - t0
+		local c0 = p0 - t
+		if s == 0 then
+			return p0, 0
+		elseif d < 1 then
+			local c	= math.sqrt(1 - d ^ 2)
+			local c1 = (v0 / s + d * c0) / c
+			local co = math.cos(c * s * x)
+			local si = math.sin(c * s * x)
+			local e	= math.exp(d * s * x)
+			return t + (c0 * co + c1 * si) / e,
+				s * ((c * c1 - d * c0) * co - (c * c0 + d * c1) * si) / e
+		else
+			local c1 = v0 / s + c0
+			local e	= math.exp(s * x)
+			return t + (c0 + c1 * s * x) / e,
+				s * (c1 - c0 - c1 * s * x) / e
+		end
+	end
+
+	return setmetatable(
+		{
+			accelerate = function(_, acceleration)
+				local T = tick()
+				local p, v = positionVelocity(T)
+				p0 = p
+				v0 = v + acceleration
+				t0 = T
+			end;
+		},
+		{
+			__index = function(_, index)
+				if index == "value" or index == "position" or index == "p" then
+					local p, v = positionVelocity(tick())
+					return p
+				elseif index == "velocity" or index == "v" then
+					local p, v = positionVelocity(tick())
+					return v
+				elseif index == "acceleration" or index == "a" then
+					local x	= tick() - t0
+					local c0 = p0 - t
+					if s == 0 then
+						return 0
+					elseif d < 1 then
+						local c = math.sqrt(1 - d ^ 2)
+						local c1 = (v0 / s + d * c0) / c
+						local cs = (c0 * d ^ 2 - 2 * c * d * c1 - c0 * c ^ 2) * math.cos(c * s * x)
+						local sn = (c1 * d ^ 2 + 2 * c * d * c0 - c1 * c ^ 2) * math.sin(c * s * x)
+						return s ^ 2 *(cs + sn) / math.exp(d * s * x)
+					else
+						local c1 = v0 / s + c0
+						return s ^ 2 * (c0 - 2 * c1 + c1 * s * x) / math.exp(s * x)
+					end
+				elseif index == "target" or index == "t" then
+					return t
+				elseif index == "damper" or index == "d" then
+					return d
+				elseif index == "speed" or index == "s" then
+					return s
+				elseif index == "magnitude" or index == "m" then
+					local p, v = positionVelocity(tick())
+					return p.magnitude
+				else
+					error(index.." is not a valid member of spring", 0)
+				end
+			end;
+			
+			__newindex = function(_, index, value)
+				local T = tick()
+				if index == "value" or index == "position" or index == "p" then
+					local p, v = positionVelocity(T)
+					p0, v0 = value, v
+				elseif index == "velocity" or index == "v" then
+					local p, v = positionVelocity(T)
+					p0, v0 = p, value
+				elseif index == "acceleration" or index == "a" then
+					local p, v = positionVelocity(T)
+					p0, v0 = p, v + value
+				elseif index == "target" or index == "t" then
+					p0, v0 = positionVelocity(T)
+					t = value
+				elseif index == "damper" or index == "d" then
+					p0, v0 = positionVelocity(T)
+					d = value < 0 and 0 or value < 1 and value or 1
+				elseif index == "speed" or index == "s" then
+					p0, v0 = positionVelocity(T)
+					s = value < 0 and 0 or value
+				else
+					error(index.." is not a valid member of spring", 0)
+				end
+				t0 = T
+			end;
+		}
+	)
+end
+
+return Spring
+end,
+function(script,require)
+return function(s,t, frames)
+	s = {s:components()}
+	t = {t:components()}
+	for i = 1, 12 do
+		s[i] = s[i] + (t[i] - s[i]) * frames
+	end
+	return CFrame.new(unpack(s))
+end
+end,
+function(script,require)
+local Tool = script.Parent.Parent.Parent
+
+local Settings = {
+
+--// Positioning
+	RightArmPos = CFrame.new(-0.902175903, 0.295501232, -1.32277012, 1, 0, 0, 0, 1.19248806e-08, 1, 0, -1, 1.19248806e-08);
+	LeftArmPos = CFrame.new(1.06851184, 0.973718464, -2.29667926, 0.787567914, -0.220087856, 0.575584888, -0.615963876, -0.308488727, 0.724860668, 0.0180283934, -0.925416589, -0.378522098);
+	GunPos = CFrame.new(0.284460306, -0.318524063, 1.06423128, 1, 0, 0, 0, -2.98023224e-08, -0.99999994, 0, 0.99999994, -2.98023224e-08);
+	
+--// Holstering
+	HolsteringEnabled = false;
+	HolsterPos = CFrame.new(0.340751064, 0.1, 0.616261482, -4.10752676e-08, -0.342020065, 0.939692616, -1.49501727e-08, 0.939692557, 0.342020094, -0.99999994, 0, -4.37113847e-08);
+
+--// Explosive Settings
+	BlastPressue = 500000;
+	BlastRadius = 10;
+	DestroyJointRadius = 10;
+	ExplosionType = Enum.ExplosionType.NoCraters; -- Might wanna leave it like this
+
+	}
+
+return Settings
+
+end,
+function(script,require)
+local Tool = script.Parent.Parent.Parent
+local Utilize = require(script.Parent.Parent:WaitForChild("Modules"):WaitForChild("Utilities"))
+local TweenJoint = Utilize.TweenJoint
+local ts = game:GetService('TweenService')
+
+local Settings = {
+
+--// Positioning
+	RestPos = CFrame.new(0.41808939, 0, -0.0273852348, 0.704155862, -0.0188415907, 0.709795356, -0.314750254, 0.887783766, 0.335815758, -0.636472106, -0.459874928, 0.61920774);
+	
+	SprintPos = CFrame.new(0, 0, 0, 0.844756603, -0.251352191, 0.472449303, 0.103136979, 0.942750931, 0.317149073, -0.525118113, -0.219186768, 0.822318792);			
+
+--// Ammo Settings			
+	Ammo = 500;
+	StoredAmmo = 500;
+	MagCount = math.huge; --  If you want infinate ammo, set to math.huge EX. MagCount = math.huge;
+	ExplosiveAmmo = 0;
+	
+--// Damage Settings	
+	BaseDamage = 22; -- Torso Damage
+	LimbDamage = 19; -- Arms and Legs
+	ArmorDamage = 19; -- How much damage is dealt against armor (Name the armor "Armor")
+	HeadDamage = 27; -- If you set this to 100, there's a chance the player won't die because of the heal script	
+	
+--// Recoil Settings	
+	gunrecoil = -0.32; -- How much the gun recoils backwards when not aiming
+	camrecoil = 0.056; -- How much the camera flicks when not aiming
+	AimGunRecoil = -0.14; -- How much the gun recoils backwards when aiming
+	AimCamRecoil = 0.023; -- How much the camera flicks when aiming
+	
+	Kickback = 0.10; -- Upward gun rotation when not aiming
+	AimKickback = 0.10; -- Upward gun rotation when aiming
+	
+--// Handling Settings		
+	Firerate = 60 / 5500; -- 60 = 1 Minute, 5500 = Rounds per that 60 seconds. DO NOT TOUCH THE 60!
+	
+	FireMode = 2; -- 1 = Semi, 2 = Auto, 3 = Burst, 4 = Bolt Action, 5 = Shot, 6 = Explosive
+	
+--// Firemode Settings
+	CanSelectFire = false;
+	BurstEnabled = false;
+	SemiEnabled = false;
+	AutoEnabled = true;
+	BoltAction = false;
+	ExplosiveEnabled = false;
+	
+--// Firemode Shot Customization
+	BurstNum = 3; -- How many bullets per burst
+	ShotNum = 5; -- How many bullets per shot
+	
+--// Aim|Zoom|Sensitivity Customization
+	ZoomSpeed = 0.23; -- The lower the number the slower and smoother the tween
+	AimZoom = 40; -- Default zoom
+	AimSpeed = 0.23;
+	UnaimSpeed = 0.23;
+	CycleAimZoom = 55; -- Cycled zoom
+	MouseSensitivity = 0.5; -- Number between 0.1 and 1
+	SensitivityIncrement = 0.05; -- No touchy
+	
+--// Bullet Physics
+	BulletPhysics = Vector3.new(0,55,0); -- Drop fixation: Lower number = more drop
+	BulletSpeed = 2000; -- Bullet Speed
+	BulletSpread = 0; -- How much spread the bullet has
+	
+	ExploPhysics = Vector3.new(0,20,0); -- Drop for explosive rounds
+	ExploSpeed = 600; -- Speed for explosive rounds
+	
+	BulletDecay = 10000; -- How far the bullet travels before slowing down and being deleted (BUGGY)
+	
+--// Probabilities
+	JamChance = 0; -- This is percent scaled. For 100% Chance of jamming, put 100, for 0%, 0; and everything inbetween
+	TracerChance = 70; -- This is the percen scaled. For 100% Chance of showing tracer, put 100, for 0%, 0; and everything inbetween
+	
+--// Tracer Vars
+	TracerTransparency = 0;	
+	TracerLightEmission = 1;
+	TracerTextureLength = 0.1;
+	TracerLifetime = 0.05;
+	TracerFaceCamera = true;
+	TracerColor = BrickColor.new('White');
+
+--// Dev Vars
+	CameraGo = true; -- No touchy
+	FirstPersonOnly = false; -- SET THIS TO FALSE TO ENABLE THIRD PERSON, TRUE FOR FIRST PERSON ONLY
+	TPSMouseIcon = 1415957732; -- Image used as the third person reticle
+	
+--// Extras
+	WalkAnimEnabled = true; -- Set to false to disable walking animation, true to enable
+	SwayEnabled = true;	 -- Set to false to disable sway, true to enable
+
+-- Customization
+	AntiTK = false; -- Set to false to allow TK and damaging of NPC, true for no TK. (To damage NPC, this needs to be false)
+	
+	MouseSense = 0.5;
+
+	CanAim = false; -- Allows player to aim
+	CanBolt = false; -- When shooting, if this is enabled, the bolt will move (SCAR-L, ACR, AK Series)
+	
+	LaserAttached = true;
+	LightAttached = true;
+	TracerEnabled = true;
+	
+	SprintSpeed = 22;
+
+--// KeyBindings
+	FireSelectKey = Enum.KeyCode.V;
+	CycleSightKey = Enum.KeyCode.T;
+	LaserKey = Enum.KeyCode.L;
+	LightKey = Enum.KeyCode.G;
+	InteractKey = Enum.KeyCode.E;
+	AlternateAimKey = Enum.KeyCode.Z;
+	InspectionKey = Enum.KeyCode.H;
+	AttachmentKey = Enum.KeyCode.LeftControl;
+	
+--// Unused (Don't delete)
+	RestMode = true;
+	AttachmentsEnabled = true;
+	UIScope = false;
+	CanSlideLock = false;
+		
+--// Animations
+	
+	-- Idle Anim
+	IdleAnim = function(char, speed, objs)
+		TweenJoint(objs[2],  nil , CFrame.new(-0.902175903, 0.295501232, -1.32277012, 1, 0, 0, 0, 1.19248806e-08, 1, 0, -1, 1.19248806e-08), function(X) return math.sin(math.rad(X)) end, 0.25)
+		TweenJoint(objs[3],  nil , CFrame.new(1.06851184, 0.973718464, -2.29667926, 0.787567914, -0.220087856, 0.575584888, -0.615963876, -0.308488727, 0.724860668, 0.0180283934, -0.925416589, -0.378522098), function(X) return math.sin(math.rad(X)) end, 0.25)
+		wait(0.18)	
+	end;
+	
+	-- FireMode Anim
+	FireModeAnim = function(char, speed, objs)
+		TweenJoint(objs[1],  nil , CFrame.new(0.340285569, 0, -0.0787199363, 0.962304771, 0.271973342, 0, -0.261981696, 0.926952124, -0.268561482, -0.0730415657, 0.258437991, 0.963262498), function(X) return math.sin(math.rad(X)) end, 0.25)
+		wait(0.1)
+		TweenJoint(objs[2],  nil , CFrame.new(0.67163527, -0.310947895, -1.34432662, 0.766044378, -2.80971371e-008, 0.642787576, -0.620885074, -0.258818865, 0.739942133, 0.166365519, -0.965925872, -0.198266774), function(X) return math.sin(math.rad(X)) end, 0.25)
+		wait(0.25)
+		objs[4]:WaitForChild("Click"):Play()		
+	end;
+	
+	-- Reload Anim
+	ReloadAnim = function(char, speed, objs)
+		TweenJoint(objs[2],  nil , CFrame.new(-0.630900264, 0.317047596, -1.27966166, 0.985866964, -0.167529628, -7.32295247e-09, 0, -4.37113883e-08, 1, -0.167529613, -0.985867023, -4.30936176e-08), function(X) return math.sin(math.rad(X)) end, 0.5)
+		TweenJoint(objs[3],  nil , CFrame.new(0.436954767, 0.654289246, -1.82817471, 0.894326091, -0.267454475, 0.358676374, -0.413143814, -0.185948789, 0.891479254, -0.171734676, -0.945458114, -0.276796043), function(X) return math.sin(math.rad(X)) end, 0.5)
+		wait(0.4)		
+		
+		local MagC = Tool:WaitForChild("Mag"):clone()
+		MagC:FindFirstChild("Mag"):Destroy()
+		MagC.Parent = Tool
+		MagC.Name = "MagC"
+		local MagCW = Instance.new("Motor6D")
+		MagCW.Part0 = MagC
+		MagCW.Part1 = workspace.CurrentCamera:WaitForChild("Arms"):WaitForChild("Left Arm")
+		MagCW.Parent = MagC
+		MagCW.C1 = MagC.CFrame:toObjectSpace(objs[4].CFrame)
+		objs[4].Transparency = 1
+		
+		objs[6]:WaitForChild("MagOut"):Play()		
+		
+		TweenJoint(objs[3],  nil , CFrame.new(0.436954767, 0.654289246, -3.00337243, 0.894326091, -0.267454475, 0.358676374, -0.413143814, -0.185948789, 0.891479254, -0.171734676, -0.945458114, -0.276796043), function(X) return math.sin(math.rad(X)) end, 0.3)
+		TweenJoint(objs[2],  nil , CFrame.new(-0.630900264, 0.317047596, -1.27966166, 0.985866964, -0.167529628, -7.32295247e-09, 0.0120280236, 0.0707816631, 0.997419298, -0.16709727, -0.983322799, 0.0717963576), function(X) return math.sin(math.rad(X)) end, 0.1)
+		wait(0.5)
+		TweenJoint(objs[2],  nil , CFrame.new(-1.11434817, 0.317047596, -0.672240019, 0.658346057, -0.747599542, -0.0876094475, 0.0672011375, -0.0575498641, 0.996078312, -0.749709547, -0.661651671, 0.0123518109), function(X) return math.sin(math.rad(X)) end, 0.3)
+		wait(0.6)
+		objs[6]:WaitForChild('MagIn'):Play()
+		TweenJoint(objs[3],  nil , CFrame.new(-0.273085892, 0.654289246, -1.48434556, 0.613444746, -0.780330896, 0.121527649, -0.413143814, -0.185948789, 0.891479254, -0.673050761, -0.597081661, -0.43645826), function(X) return math.sin(math.rad(X)) end, 0.3)
+		wait(0.12)
+		MagC:Destroy()
+		objs[4].Transparency = 0
+	end;
+
+	-- Bolt Anim
+		BoltBackAnim = function(char, speed, objs)
+			TweenJoint(objs[3],  nil , CFrame.new(0.881299615, 1.13334632, -1.28885138, 0.173648149, 0.98480773, -1.17437144e-08, 0, 1.19248806e-08, 1, 0.98480773, -0.173648149, 2.07073336e-09), function(X) return math.sin(math.rad(X)) end, 0.25)
+			wait(0.2)
+			TweenJoint(objs[2],  nil , CFrame.new(0.886063039, -0.192576975, -1.25888276, 0.529399753, -0.312324286, 0.788789809, -0.848180771, -0.2146101, 0.48428458, 0.0180283934, -0.925416589, -0.378522098), function(X) return math.sin(math.rad(X)) end, 0.25)
+			wait(0.2)
+			objs[5]:WaitForChild("BoltBack"):Play()
+			TweenJoint(objs[2],  nil , CFrame.new(0.0553048849, -0.575121164, -1.07748175, 0.529399753, -0.312324286, 0.788789809, -0.848180771, -0.2146101, 0.48428458, 0.0180283934, -0.925416589, -0.378522098), function(X) return math.sin(math.rad(X)) end, 0.25)
+			TweenJoint(objs[1],  nil , CFrame.new(0, 0, 0.430387408, 1, 0, 0, 0, 1, 0, 0, 0, 1), function(X) return math.sin(math.rad(X)) end, 0.25)
+			TweenJoint(objs[3],  nil , CFrame.new(0.944218755, 0.740618229, -1.28885138, 0.173648149, 0.98480773, -1.17437144e-08, 0, 1.19248806e-08, 1, 0.98480773, -0.173648149, 2.07073336e-09), function(X) return math.sin(math.rad(X)) end, 0.25)
+			wait(0.2)
+		end;
+		
+		BoltForwardAnim = function(char, speed, objs)
+			objs[5]:WaitForChild("BoltForward"):Play()
+			TweenJoint(objs[1],  nil , CFrame.new(), function(X) return math.sin(math.rad(X)) end, 0.1)
+			TweenJoint(objs[2],  nil , CFrame.new(0.0553048849, -0.874324203, -1.07748175, 0.529399753, -0.312324286, 0.788789809, -0.848180771, -0.2146101, 0.48428458, 0.0180283934, -0.925416589, -0.378522098), function(X) return math.sin(math.rad(X)) end, 0.1)
+			TweenJoint(objs[3],  nil , CFrame.new(0.944218755, 1.18022871, -1.28885138, 0.173648149, 0.98480773, -1.17437144e-08, 0, 1.19248806e-08, 1, 0.98480773, -0.173648149, 2.07073336e-09), function(X) return math.sin(math.rad(X)) end, 0.2)
+			wait(0.2)
+		end;
+		
+		-- Bolting Back
+		BoltingBackAnim = function(char, speed, objs)
+			TweenJoint(objs[1],  nil , CFrame.new(0, 0, 0.273770154, 1, 0, 0, 0, 1, 0, 0, 0, 1), function(X) return math.sin(math.rad(X)) end, 0.001)
+		end;
+		
+		BoltingForwardAnim = function(char, speed, objs)
+			TweenJoint(objs[1],  nil , CFrame.new(), function(X) return math.sin(math.rad(X)) end, 0.001)
+		end;
+		
+		InspectAnim = function(char, speed, objs)
+			ts:Create(objs[1],TweenInfo.new(1),{C1 = CFrame.new(0.805950999, 0.654529691, -1.92835355, 0.999723792, 0.0109803826, 0.0207702816, -0.0223077796, 0.721017241, 0.692557871, -0.00737112388, -0.692829967, 0.721063137)}):Play()
+			ts:Create(objs[2],TweenInfo.new(1),{C1 = CFrame.new(-1.49363565, -0.699174881, -1.32277012, 0.66716975, -8.8829113e-09, -0.74490571, 0.651565909, -0.484672248, 0.5835706, -0.361035138, -0.874695837, -0.323358655)}):Play()
+			wait(1)
+			ts:Create(objs[2],TweenInfo.new(1),{C1 = CFrame.new(1.37424219, -0.699174881, -1.03685927, -0.204235911, 0.62879771, 0.750267386, 0.65156585, -0.484672219, 0.58357054, 0.730581641, 0.60803473, -0.310715646)}):Play()
+			wait(1)
+			ts:Create(objs[2],TweenInfo.new(1),{C1 = CFrame.new(-0.902175903, 0.295501232, -1.32277012, 0.935064793, -0.354476899, 4.22709467e-09, -0.110443868, -0.291336805, 0.950223684, -0.336832345, -0.888520718, -0.311568588)}):Play()
+			ts:Create(objs[1],TweenInfo.new(1),{C1 = CFrame.new(0.447846293, 0.654529572, -1.81345785, 0.761665463, -0.514432132, 0.393986136, -0.560285628, -0.217437655, 0.799250066, -0.325492471, -0.82950604, -0.453843832)}):Play()
+			wait(1)
+			local MagC = Tool:WaitForChild("Mag"):clone()
+			MagC:FindFirstChild("Mag"):Destroy()
+			MagC.Parent = Tool
+			MagC.Name = "MagC"
+			local MagCW = Instance.new("Motor6D")
+			MagCW.Part0 = MagC
+			MagCW.Part1 = workspace.CurrentCamera:WaitForChild("Arms"):WaitForChild("Left Arm")
+			MagCW.Parent = MagC
+			MagCW.C1 = MagC.CFrame:toObjectSpace(Tool:WaitForChild('Mag').CFrame)
+			Tool.Mag.Transparency = 1
+			Tool:WaitForChild('Grip'):WaitForChild("MagOut"):Play()
+			
+			ts:Create(objs[2],TweenInfo.new(0.15),{C1 = CFrame.new(-0.902175903, 0.295501232, -1.55972552, 0.935064793, -0.354476899, 4.22709467e-09, -0.110443868, -0.291336805, 0.950223684, -0.336832345, -0.888520718, -0.311568588)}):Play()
+			ts:Create(objs[1],TweenInfo.new(0.3),{C1 = CFrame.new(0.447846293, 0.654529572, -2.9755671, 0.761665463, -0.514432132, 0.393986136, -0.568886042, -0.239798605, 0.786679745, -0.31021595, -0.823320091, -0.475299776)}):Play()
+			wait(0.13)
+			ts:Create(objs[2],TweenInfo.new(0.20),{C1 = CFrame.new(-0.902175903, 0.295501232, -1.28149843, 0.935064793, -0.354476899, 4.22709467e-09, -0.110443868, -0.291336805, 0.950223684, -0.336832345, -0.888520718, -0.311568588)}):Play()
+			wait(0.20)			
+			ts:Create(objs[1],TweenInfo.new(0.5),{C1 = CFrame.new(0.447846293, -0.650498748, -1.82401526, 0.761665463, -0.514432132, 0.393986136, -0.646156013, -0.55753684, 0.521185875, -0.0484529883, -0.651545882, -0.75706023)}):Play()
+			wait(0.8)
+			ts:Create(objs[1],TweenInfo.new(0.6),{C1 = CFrame.new(0.447846293, 0.654529572, -2.9755671, 0.761665463, -0.514432132, 0.393986136, -0.568886042, -0.239798605, 0.786679745, -0.31021595, -0.823320091, -0.475299776)}):Play()
+			wait(0.5)
+			Tool:WaitForChild('Grip'):WaitForChild("MagIn"):Play()
+			ts:Create(objs[1],TweenInfo.new(0.3),{C1 = CFrame.new(0.447846293, 0.654529572, -1.81345785, 0.761665463, -0.514432132, 0.393986136, -0.560285628, -0.217437655, 0.799250066, -0.325492471, -0.82950604, -0.453843832)}):Play()			
+			wait(0.3)
+			MagC:Destroy()
+			Tool.Mag.Transparency = 0
+			wait(0.1)
+		end;
+		
+		nadeReload = function(char, speed, objs)
+			script.Parent.Parent.Parent.Rocket.Transparency = 1
+			ts:Create(objs[1], TweenInfo.new(0.6), {C1 = CFrame.new(-0.902175903, -1.15645337, -1.32277012, 0.984807789, -0.163175702, -0.0593911409, 0, -0.342020363, 0.939692557, -0.17364797, -0.925416529, -0.336824328)}):Play()
+			ts:Create(objs[2], TweenInfo.new(0.6), {C1 = CFrame.new(0.805950999, 0.654529691, -1.92835355, 0.787567914, -0.220087856, 0.575584888, -0.323594928, 0.647189975, 0.690240026, -0.524426222, -0.72986728, 0.438486755)}):Play()
+			wait(0.6)
+			ts:Create(objs[2], TweenInfo.new(0.6), {C1 = CFrame.new(0.805950999, 0.559619546, -1.73060048, 0.802135408, -0.348581612, 0.484839559, -0.597102284, -0.477574915, 0.644508123, 0.00688350201, -0.806481719, -0.59121877)}):Play()
+			wait(0.2)
+			Tool:WaitForChild('Grip'):WaitForChild("RocketInsert"):Play()
+			wait(0.1)
+			script.Parent.Parent.Parent.Rocket.Transparency = 0
+			Tool:WaitForChild('Grip'):WaitForChild("RocketClick"):Play()
+			wait(0.6)	
+		end;
+		
+		AttachAnim = function(char, speed, objs)
+			TweenJoint(objs[1],  nil , CFrame.new(-2.05413628, -0.386312962, -0.955676377, 0.5, 0, -0.866025329, 0.852868497, -0.17364797, 0.492403895, -0.150383547, -0.984807789, -0.086823985), function(X) return math.sin(math.rad(X)) end, 0.25)
+			TweenJoint(objs[2],  nil , CFrame.new(0.931334019, 1.66565645, -1.2231313, 0.787567914, -0.220087856, 0.575584888, -0.0180282295, 0.925416708, 0.378521889, -0.615963817, -0.308488399, 0.724860728), function(X) return math.sin(math.rad(X)) end, 0.25)
+			wait(0.18)	
+		end;
+		
+		-- Patrol Anim
+		PatrolAnim = function(char, speed, objs)
+			TweenJoint(objs[1],  nil , sConfig.PatrolPosR, function(X) return math.sin(math.rad(X)) end, 0.25)
+			TweenJoint(objs[2],  nil , sConfig.PatrolPosL, function(X) return math.sin(math.rad(X)) end, 0.25)
+			wait(0.18)
+		end;
+	
+	}
+
+return Settings
+
+end,
+function(script,require)
+-- params : ...
+
+local sp = script.Parent
+update = function()
+  
+  sp.Scope.Position = UDim2.new(0.5, -10 - sp.AbsoluteSize.y / 2, 0, -26)
+  sp.Scope.Size = UDim2.new(0, 20 + sp.AbsoluteSize.y, 0, 20 + sp.AbsoluteSize.y)
+  sp.ScopeId.Position = UDim2.new(0.5, -10 - sp.AbsoluteSize.y / 2, 0, -26)
+  sp.ScopeId.Size = UDim2.new(0, 20 + sp.AbsoluteSize.y, 0, 20 + sp.AbsoluteSize.y)
+  sp.F1.Size = UDim2.new(0, 20 + (sp.AbsoluteSize.x - sp.AbsoluteSize.y) / 2, 1, 20)
+  sp.F2.Size = UDim2.new(0, 20 + (sp.AbsoluteSize.x - sp.AbsoluteSize.y) / 2, 1, 20)
+  sp.F2.Position = UDim2.new(1, -10 - (sp.AbsoluteSize.x - sp.AbsoluteSize.y) / 2, 0, -10)
+end
+
+wait()
+sp.Changed:connect(update)
+update()
+
+end,
+function(script,require)
+NLS([==[
+repeat
+	wait()
+until game.Players.LocalPlayer.Character
+wait(0.5)
+
+--// Variables
+local L_1_ = script.Parent
+local L_2_ = game.Players.LocalPlayer
+local L_3_ = L_2_.Character
+local L_4_ = L_2_:GetMouse()
+local L_5_ = workspace.CurrentCamera
+
+local L_6_ = L_3_:WaitForChild('Torso')
+local L_7_ = L_3_:WaitForChild('Head')
+local L_8_ = L_3_:WaitForChild('HumanoidRootPart')
+local L_9_ = L_8_:WaitForChild('RootJoint')
+local L_10_ = L_6_:WaitForChild('Right Hip')
+local L_11_ = L_6_:WaitForChild('Left Hip')
+
+--// Services
+local L_12_ = game:GetService('UserInputService')
+local L_13_ = game:GetService('RunService')
+local L_14_ = game:GetService('TweenService')
+
+--// Declarables
+local L_15_ = false
+
+local L_16_ = false
+local L_17_ = true
+
+local L_18_ = L_1_:WaitForChild('Resource')
+local L_19_ = L_18_:WaitForChild('FX')
+local L_20_ = L_18_:WaitForChild('Events')
+local L_21_ = L_18_:WaitForChild('HUD')
+local L_22_ = L_18_:WaitForChild('Modules')
+local L_23_ = L_18_:WaitForChild('SettingsModule')
+local L_24_ = require(L_23_:WaitForChild("ClientConfig"))
+local L_25_ = L_18_:WaitForChild('Vars')
+local L_26_
+local L_27_
+local L_28_
+local L_29_ 
+local L_30_ 
+local L_33_
+local L_34_
+local L_35_
+local L_36_
+local L_37_
+local L_38_
+local L_39_
+local L_40_
+local L_41_
+local L_42_
+local L_43_
+local L_44_
+local L_45_
+local L_46_
+local L_47_
+local L_48_
+local L_49_
+
+local L_50_ = L_24_.AimZoom
+
+local L_51_ = L_24_.MouseSensitivity
+local L_52_ = L_12_.MouseDeltaSensitivity
+
+--// Weapon Parts
+local L_53_ = L_1_:WaitForChild('AimPart')
+local L_54_
+local L_55_ = L_1_:WaitForChild('Grip')
+local L_56_ = L_1_:WaitForChild('FirePart')
+local L_57_
+local L_58_ = L_1_:WaitForChild('Mag')
+local L_59_ = L_1_:WaitForChild('Bolt')
+
+--// Probability
+local L_60_
+
+--// States
+local L_61_ = false
+local L_62_ = false
+local L_63_ = false
+local L_64_ = false
+local L_65_ = false
+local L_66_ = true
+local L_67_ = false
+local L_68_ = false
+local L_69_ = false
+local L_70_ = false
+local L_71_ = false
+local L_72_ = false
+local L_73_ = false
+local L_74_ = false
+local L_75_ = false
+local L_76_ = false
+
+local L_77_ = false
+local L_78_ = false
+local L_79_ = false
+
+local L_80_ = false
+local L_81_ = true
+local L_82_ = true
+
+local L_83_ = false
+
+local L_84_
+local L_85_
+
+local L_86_
+local L_87_
+local L_88_
+
+local L_89_ = L_24_.FireMode
+
+local L_90_ = 0
+local L_91_ = false
+local L_92_ = true
+local L_93_ = false
+
+local L_94_ = 70
+
+--// Tables
+local L_95_ = {
+	
+	"285421759";
+	"151130102";
+	"151130171";
+	"285421804";
+	"287769483";
+	"287769415";
+	"285421687";
+	"287769261";
+	"287772525";
+	"287772445";
+	"287772351";
+	"285421819";
+	"287772163";
+	
+}
+
+local L_96_ = {
+	
+	"";
+	"";
+	"";
+	"";
+	"";
+	"";
+	"";
+	"";
+	"";
+	"";
+	"";
+	"";
+	"";
+	"";
+	"";
+	"";
+	"";
+	"";
+	"";
+	"";
+	"";
+		
+}
+
+local L_97_ = {
+	
+	"";
+	"";
+	"";
+	"";
+	"";
+	"";
+	"";
+	"";
+	"";
+	"";
+	"";
+	"";
+	"";
+	"";
+	"";
+	"";
+	"";
+	"";
+	"";
+	"";
+	"";
+	"";
+	"";
+	
+}
+
+local L_98_ = workspace:FindFirstChild("BulletModel: " .. L_2_.Name) or Instance.new("Folder", workspace)
+L_98_.Name = "BulletModel: " .. L_2_.Name
+
+local L_99_
+
+local L_100_ = L_24_.Ammo
+local L_101_ = L_24_.StoredAmmo * L_24_.MagCount
+
+local L_102_ = L_24_.ExplosiveAmmo
+
+IgnoreList = {
+	L_3_,
+	L_98_,
+	L_5_
+}
+
+--// Services
+local L_103_ = game:GetService('RunService').RenderStepped
+local L_104_ = game:GetService('UserInputService')
+
+--// Events
+local L_105_ = L_20_:WaitForChild('Equipped')
+local L_106_ = L_20_:WaitForChild('ShootEvent')
+local L_107_ = L_20_:WaitForChild('DamageEvent')
+local L_108_ = L_20_:WaitForChild('CreateOwner')
+local L_109_ = L_20_:WaitForChild('Stance')
+local L_110_ = L_20_:WaitForChild('HitEvent')
+local L_111_ = L_20_:WaitForChild('KillEvent')
+local L_112_ = L_20_:WaitForChild('AimEvent')
+local L_113_ = L_20_:WaitForChild('ExploEvent')
+local L_114_ = L_20_:WaitForChild('AttachEvent')
+local L_115_ = L_20_:WaitForChild('ServerFXEvent')
+local L_116_ = L_20_:WaitForChild('ChangeIDEvent')
+
+--// Modules
+local L_117_ = require(L_22_:WaitForChild("Utilities"))
+local L_118_ = require(L_22_:WaitForChild("Spring"))
+local L_119_ = require(L_22_:WaitForChild("Plugins"))
+local L_120_ = require(L_22_:WaitForChild("easing"))
+
+local L_121_ = L_117_.Fade
+local L_122_ = L_117_.SpawnCam
+local L_123_ = L_117_.FixCam
+local L_124_ = L_117_.tweenFoV
+local L_125_ = L_117_.tweenCam
+local L_126_ = L_117_.tweenRoll
+local L_127_ = L_117_.TweenJoint
+
+local L_128_ = L_117_.Weld
+
+--// Math
+local L_129_ = function(L_166_arg1, L_167_arg2, L_168_arg3)
+	if L_166_arg1 > L_168_arg3 then
+		return L_168_arg3
+	elseif L_166_arg1 < L_167_arg2 then
+		return L_167_arg2
+	end
+	return L_166_arg1
+end
+
+local L_130_ = L_118_.new(Vector3.new())
+L_130_.s = 30
+L_130_.d = 0.55
+	
+local L_131_ = CFrame.Angles(0, 0, 0)
+
+--// Functions
+function MakeFakeArms()
+	Arms = Instance.new("Model")
+	Arms.Name = "Arms"
+	Arms.Parent = L_5_
+
+	local L_169_ = Instance.new("Humanoid")
+	L_169_.MaxHealth = 0
+	L_169_.Health = 0
+	L_169_.Name = ""
+	L_169_.Parent = Arms
+		
+	if L_3_:FindFirstChild("Shirt") then
+		local L_174_ = L_3_:FindFirstChild("Shirt"):clone()
+		L_174_.Parent = Arms
+	end
+	
+	local L_170_ = L_3_:FindFirstChild("Right Arm"):clone()
+	for L_175_forvar1, L_176_forvar2 in pairs(L_170_:GetChildren()) do
+		if L_176_forvar2:IsA('Motor6D') then
+			L_176_forvar2:Destroy()
+		end
+	end
+	L_170_.Name = "Right Arm"
+	L_170_.FormFactor = "Custom"
+	L_170_.Size = Vector3.new(0.8, 2.5, 0.8)
+	L_170_.Transparency = 0.0
+	
+	local L_171_ = Instance.new("Motor6D")
+	L_171_.Part0 = L_170_
+	L_171_.Part1 = L_3_:FindFirstChild("Right Arm")
+	L_171_.C0 = CFrame.new()
+	L_171_.C1 = CFrame.new()
+	L_171_.Parent = L_170_	
+	L_170_.Parent = Arms
+		
+	local L_172_ = L_3_:FindFirstChild("Left Arm"):clone()
+	L_172_.Name = "Left Arm"
+	L_172_.FormFactor = "Custom"
+	L_172_.Size = Vector3.new(0.8, 2.5, 0.8)
+	L_172_.Transparency = 0.0	
+	
+	local L_173_ = Instance.new("Motor6D")
+	L_173_.Part0 = L_172_
+	L_173_.Part1 = L_3_:FindFirstChild("Left Arm")
+	L_173_.C0 = CFrame.new()
+	L_173_.C1 = CFrame.new()
+	L_173_.Parent = L_172_	
+	L_172_.Parent = Arms
+end
+
+function RemoveArmModel()
+	if Arms then
+		Arms:Destroy()
+		Arms = nil
+	end
+end
+
+local L_132_
+
+function CreateShell()
+	L_132_ = time()
+	local L_177_ = L_1_.Shell:clone()
+	if L_177_:FindFirstChild('Shell') then
+		L_177_.Shell:Destroy()
+	end
+	L_177_.CFrame =  L_1_.Chamber.CFrame
+	L_177_.Velocity = L_1_.Chamber.CFrame.lookVector * 30 + Vector3.new(0, 4, 0)
+	--shell.RotVelocity = Vector3.new(-10,40,30)
+	L_177_.Parent = L_98_
+	L_177_.CanCollide = false
+	game:GetService("Debris"):addItem(L_177_, 1)
+	delay(0.5, function()
+		if L_19_:FindFirstChild('ShellCasing') then
+			local L_178_ = L_19_.ShellCasing:clone()
+			L_178_.Parent = L_2_.PlayerGui
+			L_178_:Play()
+			game:GetService('Debris'):AddItem(L_178_, L_178_.TimeLength)
+		end
+	end)
+end
+
+-- 100 == 1  0 == 0  1/0.5
+
+function JamCalculation()
+	local L_179_
+	if (math.random(1, 100) <= L_24_.JamChance) then	
+		L_179_ = true
+		L_72_ = true
+	else
+		L_179_ = false
+	end
+	return L_179_
+end
+
+function TracerCalculation()
+	local L_180_
+	if (math.random(1, 100) <= L_24_.TracerChance) then	
+		L_180_ = true
+	else
+		L_180_ = false
+	end
+	return L_180_
+end
+
+function ScreamCalculation()
+	local L_181_
+	if (math.random(1, 100) <= L_24_.SuppressCalloutChance) then	
+		L_181_ = true
+	else
+		L_181_ = false
+	end
+	return L_181_
+end
+
+function SearchResupply(L_182_arg1)
+	local L_183_ = false
+	local L_184_ = nil
+	
+	if L_182_arg1:FindFirstChild('ResupplyVal') or L_182_arg1.Parent:FindFirstChild('ResupplyVal') then
+		L_183_ = true
+		if L_182_arg1:FindFirstChild('ResupplyVal') then
+			L_184_ = L_182_arg1.ResupplyVal
+		elseif L_182_arg1.Parent:FindFirstChild('ResupplyVal') then
+			L_184_ = L_182_arg1.Parent.ResupplyVal
+		end
+	end
+	return L_183_, L_184_
+end
+
+function CheckReverb()
+	local L_185_, L_186_ = workspace:FindPartOnRayWithIgnoreList(Ray.new(L_6_.CFrame.p, (L_6_.CFrame.upVector).unit * 30), IgnoreList);
+		
+	if L_185_ then
+		local L_187_ = L_56_:WaitForChild('Fire'):FindFirstChild('ReverbSoundEffect') or Instance.new("ReverbSoundEffect", L_56_:WaitForChild('Fire'))
+	elseif not L_185_ then
+		if L_56_:WaitForChild('Fire'):FindFirstChild('ReverbSoundEffect') then
+			L_56_.Fire.ReverbSoundEffect:Destroy()
+		end
+	end
+end
+
+function UpdateAmmo()
+	L_29_.Text = L_100_
+	L_30_.Text = L_29_.Text
+	
+	L_31_.Text = '| ' .. math.ceil(L_101_ / L_24_.StoredAmmo)
+	L_32_.Text = L_31_.Text
+	
+	if L_90_ == 0 then
+		L_40_.Image = 'rbxassetid://' .. 1868007495
+	elseif L_90_ == 1 then
+		L_40_.Image = 'rbxassetid://' .. 1868007947
+	elseif L_90_ == 2 then
+		L_40_.Image = 'rbxassetid://' .. 1868008584
+	end
+	
+	if L_89_ == 1 then
+		L_35_.BackgroundTransparency = 0
+		L_36_.BackgroundTransparency = 0.7
+		L_37_.BackgroundTransparency = 0.7
+		L_38_.BackgroundTransparency = 0.7
+		L_39_.BackgroundTransparency = 0.7
+	elseif L_89_ == 2 then
+		L_35_.BackgroundTransparency = 0
+		L_36_.BackgroundTransparency = 0
+		L_37_.BackgroundTransparency = 0
+		L_38_.BackgroundTransparency = 0
+		L_39_.BackgroundTransparency = 0
+	elseif L_89_ == 3 then
+		L_35_.BackgroundTransparency = 0
+		L_36_.BackgroundTransparency = 0
+		L_37_.BackgroundTransparency = 0
+		L_38_.BackgroundTransparency = 0.7
+		L_39_.BackgroundTransparency = 0.7
+	elseif L_89_ == 4 then
+		L_35_.BackgroundTransparency = 0
+		L_36_.BackgroundTransparency = 0
+		L_37_.BackgroundTransparency = 0
+		L_38_.BackgroundTransparency = 0
+		L_39_.BackgroundTransparency = 0.7
+	elseif L_89_ == 5 then
+		L_35_.BackgroundTransparency = 0
+		L_36_.BackgroundTransparency = 0.7
+		L_37_.BackgroundTransparency = 0
+		L_38_.BackgroundTransparency = 0.7
+		L_39_.BackgroundTransparency = 0.7
+	elseif L_89_ == 6 then
+		L_35_.BackgroundTransparency = 0
+		L_36_.BackgroundTransparency = 0.7
+		L_37_.BackgroundTransparency = 0
+		L_38_.BackgroundTransparency = 0
+		L_39_.BackgroundTransparency = 0.7
+	end
+	
+end
+
+--// Connections
+L_105_.OnClientEvent:connect(function(L_188_arg1, L_189_arg2, L_190_arg3, L_191_arg4, L_192_arg5, L_193_arg6, L_194_arg7)
+	if L_188_arg1 and not L_15_ then
+		MakeFakeArms()
+		
+		L_42_ = L_2_.PlayerGui.MainGui
+		L_26_ = L_42_:WaitForChild('Others')
+		L_27_ = L_26_:WaitForChild('Kill')
+		L_28_ = L_42_:WaitForChild('GameGui'):WaitForChild('AmmoFrame')
+		L_29_ = L_28_:WaitForChild('Ammo')
+		L_30_ = L_28_:WaitForChild('AmmoBackground')
+		L_31_ = L_28_:WaitForChild('MagCount')
+		L_32_ = L_28_:WaitForChild('MagCountBackground')
+		L_33_ = L_28_:WaitForChild('DistDisp')
+		L_34_ = L_28_:WaitForChild('Title')
+		L_35_ = L_28_:WaitForChild('Mode1')
+		L_36_ = L_28_:WaitForChild('Mode2')
+		L_37_ = L_28_:WaitForChild('Mode3')
+		L_38_ = L_28_:WaitForChild('Mode4')
+		L_39_ = L_28_:WaitForChild('Mode5')
+		L_40_ = L_28_:WaitForChild('Stances')
+		L_41_ = L_42_:WaitForChild('Shading')
+		L_41_.Visible = false
+		
+		L_34_.Text = L_1_.Name
+		UpdateAmmo()
+		
+		L_43_ = L_189_arg2
+		L_44_ = L_190_arg3
+		L_45_ = L_191_arg4
+		L_46_ = L_192_arg5
+		L_47_ = L_193_arg6
+		L_48_ = L_194_arg7	
+		L_49_ = L_59_.Bolt
+		
+		L_84_ = L_48_.C1
+		L_85_ = L_48_.C0
+		
+		if L_1_:FindFirstChild('AimPart2') then
+			L_54_ = L_1_:WaitForChild('AimPart2')
+		end
+		
+		if L_1_:FindFirstChild('FirePart2') then
+			L_57_ = L_1_.FirePart2
+		end
+		
+		if L_24_.FirstPersonOnly then
+			L_2_.CameraMode = Enum.CameraMode.LockFirstPerson
+		end
+		--uis.MouseIconEnabled = false
+		L_5_.FieldOfView = 70
+		L_15_ = true
+	elseif L_15_ then
+		if L_3_ and L_3_.Humanoid and L_3_.Humanoid.Health > 0 and L_9_ then
+			Stand()
+			Unlean()
+		end	
+		
+		L_90_ = 0
+		L_77_ = false
+		L_78_ = false
+		L_79_ = false
+		L_61_ = false
+		L_64_ = false
+		L_63_ = false
+		Shooting = false
+		
+		L_94_ = 70
+		
+		RemoveArmModel()
+		
+		L_42_:Destroy()	
+		
+		for L_195_forvar1, L_196_forvar2 in pairs(IgnoreList) do
+			if L_196_forvar2 ~= L_3_ and L_196_forvar2 ~= L_5_ and L_196_forvar2 ~= L_98_ then
+				table.remove(IgnoreList, L_195_forvar1)
+			end
+		end
+		
+		if L_3_:FindFirstChild('Right Arm') and L_3_:FindFirstChild('Left Arm') then
+			L_3_['Right Arm'].LocalTransparencyModifier = 0
+			L_3_['Left Arm'].LocalTransparencyModifier = 0
+		end	
+
+		L_75_ = false
+		L_66_ = true
+		
+		L_2_.CameraMode = Enum.CameraMode.Classic
+		L_104_.MouseIconEnabled = true		
+		L_5_.FieldOfView = 70
+		L_15_ = false
+		L_104_.MouseDeltaSensitivity = L_52_
+		L_15_ = false
+	end
+end)
+
+--// Firemode Functions
+function CreateBullet(L_197_arg1)
+	local L_198_ = L_56_.Position
+	local L_199_ = (L_4_.Hit.p - L_198_).unit
+	local L_200_ = CFrame.Angles(math.rad(math.random(-L_197_arg1, L_197_arg1)), math.rad(math.random(-L_197_arg1, L_197_arg1)), math.rad(math.random(-L_197_arg1, L_197_arg1)))
+	L_199_ = L_200_ * L_199_	
+	local L_201_ = CFrame.new(L_198_, L_198_ + L_199_)	
+		
+	local L_202_ = Instance.new("Part", L_98_)
+	game.Debris:AddItem(L_202_, 10)
+	L_202_.Shape = Enum.PartType.Ball
+	L_202_.Size = Vector3.new(1, 1, 12)
+	L_202_.Name = "Bullet"
+	L_202_.TopSurface = "Smooth"
+	L_202_.BottomSurface = "Smooth"
+	L_202_.BrickColor = BrickColor.new("Bright green")
+	L_202_.Material = "Neon"
+	L_202_.CanCollide = false
+		--Bullet.CFrame = FirePart.CFrame + (Grip.CFrame.p - Grip.CFrame.p)
+	L_202_.CFrame = L_201_
+		
+	local L_203_ = Instance.new("Sound")
+	L_203_.SoundId = "rbxassetid://341519743"
+	L_203_.Looped = true
+	L_203_:Play()
+	L_203_.Parent = L_202_
+	L_203_.Volume = 0.4
+	L_203_.MaxDistance = 30
+	
+	L_202_.Transparency = 1
+	local L_204_ = L_202_:GetMass()
+	local L_205_ = Instance.new('BodyForce', L_202_)
+		
+	if not L_80_ then
+		L_205_.Force = L_24_.BulletPhysics
+		L_202_.Velocity = L_199_ * L_24_.BulletSpeed
+	else
+		L_205_.Force = L_24_.ExploPhysics
+		L_202_.Velocity = L_199_ * L_24_.ExploSpeed
+	end
+		
+	local L_206_ = Instance.new('Attachment', L_202_)
+	L_206_.Position = Vector3.new(0.1, 0, 0)
+	local L_207_ = Instance.new('Attachment', L_202_)
+	L_207_.Position = Vector3.new(-0.1, 0, 0)
+			
+	local L_208_ = TracerCalculation()
+		
+	if L_24_.TracerEnabled == true and L_208_ then
+		local L_209_ = Instance.new('Trail', L_202_)
+		L_209_.Attachment0 = L_206_
+		L_209_.Attachment1 = L_207_
+		L_209_.Transparency = NumberSequence.new(L_24_.TracerTransparency)
+		L_209_.LightEmission = L_24_.TracerLightEmission
+		L_209_.TextureLength = L_24_.TracerTextureLength
+		L_209_.Lifetime = L_24_.TracerLifetime
+		L_209_.FaceCamera = L_24_.TracerFaceCamera
+		L_209_.Color = ColorSequence.new(L_24_.TracerColor.Color)
+	end
+		
+	if L_1_:FindFirstChild('Shell') and not L_80_ then	
+		CreateShell()	
+	end	
+		
+	delay(0.2, function()
+		L_202_.Transparency = 0
+	end)
+	
+	return L_202_
+end
+
+function CheckForHumanoid(L_210_arg1)
+	local L_211_
+	local L_212_
+	if (L_210_arg1.Parent:FindFirstChild("Humanoid") or L_210_arg1.Parent.Parent:FindFirstChild("Humanoid")) then
+		L_211_ = true
+		if L_210_arg1.Parent:FindFirstChild('Humanoid') then
+			L_212_ = L_210_arg1.Parent.Humanoid
+		elseif L_210_arg1.Parent.Parent:FindFirstChild('Humanoid') then
+			L_212_ = L_210_arg1.Parent.Parent.Humanoid
+		end
+	else
+		L_211_ = false
+	end	
+	return L_211_, L_212_
+end
+
+function CastRay(L_213_arg1)
+	local L_214_, L_215_, L_216_
+	local L_217_ = L_53_.Position;
+	local L_218_ = L_213_arg1.Position;
+	local L_219_ = 0
+
+	local L_220_ = L_80_	
+	
+	while true do
+		L_103_:wait()
+		L_218_ = L_213_arg1.Position;
+		L_219_ = L_219_ + (L_218_ - L_217_).magnitude
+		L_214_, L_215_, L_216_ = workspace:FindPartOnRayWithIgnoreList(Ray.new(L_217_, (L_218_ - L_217_)), IgnoreList);
+		local L_221_ = Vector3.new(0, 1, 0):Cross(L_216_)
+		local L_222_ = math.asin(L_221_.magnitude) -- division by 1 is redundant
+		if L_219_ > L_24_.BulletDecay then
+			L_213_arg1:Destroy()
+			break
+		end
+		if L_214_ and (L_214_ and L_214_.Transparency >= 1 or L_214_.CanCollide == false) and L_214_.Name ~= 'Right Arm' and L_214_.Name ~= 'Left Arm' and L_214_.Name ~= 'Right Leg' and L_214_.Name ~= 'Left Leg' and L_214_.Name ~= 'Armor' then
+			table.insert(IgnoreList, L_214_)
+		end
+	
+		if L_214_ then
+			L_221_ = Vector3.new(0, 1, 0):Cross(L_216_)
+			L_222_ = math.asin(L_221_.magnitude) -- division by 1 is redundant
+		
+			L_115_:FireServer(L_215_)
+		
+			local L_223_ = CheckForHumanoid(L_214_)
+			if L_223_ == false then
+				L_213_arg1:Destroy()
+				local L_224_ = L_110_:InvokeServer(L_215_, L_221_, L_222_, L_216_, "Part", L_214_)
+			elseif L_223_ == true then
+				L_213_arg1:Destroy()
+				local L_225_ = L_110_:InvokeServer(L_215_, L_221_, L_222_, L_216_, "Human", L_214_)
+			end
+		end
+	
+		if L_214_ and L_220_ then
+			L_113_:FireServer(L_215_)
+		end
+	
+		if L_214_ and (L_214_.Parent:FindFirstChild("Humanoid") or L_214_.Parent.Parent:FindFirstChild("Humanoid")) then
+			local L_226_, L_227_ = CheckForHumanoid(L_214_)
+			if L_226_ then
+				L_108_:FireServer(L_227_)
+				if L_24_.AntiTK then
+					if game.Players:FindFirstChild(L_227_.Parent.Name) and game.Players:FindFirstChild(L_227_.Parent.Name).TeamColor ~= L_2_.TeamColor then
+						if L_214_.Name == 'Head' then
+							L_107_:FireServer(L_227_, L_24_.HeadDamage)
+							local L_228_ = L_19_:WaitForChild('BodyHit'):clone()
+							L_228_.Parent = L_2_.PlayerGui
+							L_228_:Play()
+							game:GetService("Debris"):addItem(L_228_, L_228_.TimeLength)
+						end
+						if L_214_.Name ~= 'Head' and not (L_214_.Parent:IsA('Accessory') or L_214_.Parent:IsA('Hat')) then
+							if L_214_.Name ~= 'Torso' and L_214_.Name ~= 'HumanoidRootPart' and L_214_.Name ~= 'Armor' then
+								L_107_:FireServer(L_227_, L_24_.LimbDamage)
+							elseif L_214_.Name == 'Torso' or L_214_.Name == 'HumanoidRootPart' and L_214_.Name ~= 'Armor'  then
+								L_107_:FireServer(L_227_, L_24_.BaseDamage)
+							elseif L_214_.Name == 'Armor' then
+								L_107_:FireServer(L_227_, L_24_.ArmorDamage)
+							end
+							local L_229_ = L_19_:WaitForChild('BodyHit'):clone()
+							L_229_.Parent = L_2_.PlayerGui
+							L_229_:Play()
+							game:GetService("Debris"):addItem(L_229_, L_229_.TimeLength)
+						end
+						if (L_214_.Parent:IsA('Accessory') or L_214_.Parent:IsA('Hat')) then
+							L_107_:FireServer(L_227_, L_24_.HeadDamage)
+							local L_230_ = L_19_:WaitForChild('BodyHit'):clone()
+							L_230_.Parent = L_2_.PlayerGui
+							L_230_:Play()
+							game:GetService("Debris"):addItem(L_230_, L_230_.TimeLength)
+						end
+					end
+				else
+					if L_214_.Name == 'Head' then
+						L_107_:FireServer(L_227_, L_24_.HeadDamage)
+						local L_231_ = L_19_:WaitForChild('BodyHit'):clone()
+						L_231_.Parent = L_2_.PlayerGui
+						L_231_:Play()
+						game:GetService("Debris"):addItem(L_231_, L_231_.TimeLength)
+					end
+					if L_214_.Name ~= 'Head' and not (L_214_.Parent:IsA('Accessory') or L_214_.Parent:IsA('Hat')) then
+						if L_214_.Name ~= 'Torso' and L_214_.Name ~= 'HumanoidRootPart' and L_214_.Name ~= 'Armor' then
+							L_107_:FireServer(L_227_, L_24_.LimbDamage)
+						elseif L_214_.Name == 'Torso' or L_214_.Name == 'HumanoidRootPart' and L_214_.Name ~= 'Armor' then
+							L_107_:FireServer(L_227_, L_24_.BaseDamage)
+						elseif L_214_.Name == 'Armor' then
+							L_107_:FireServer(L_227_, L_24_.ArmorDamage)
+						end
+						local L_232_ = L_19_:WaitForChild('BodyHit'):clone()
+						L_232_.Parent = L_2_.PlayerGui
+						L_232_:Play()
+						game:GetService("Debris"):addItem(L_232_, L_232_.TimeLength)
+					end
+					if (L_214_.Parent:IsA('Accessory') or L_214_.Parent:IsA('Hat')) then
+						L_107_:FireServer(L_227_, L_24_.HeadDamage)
+						local L_233_ = L_19_:WaitForChild('BodyHit'):clone()
+						L_233_.Parent = L_2_.PlayerGui
+						L_233_:Play()
+						game:GetService("Debris"):addItem(L_233_, L_233_.TimeLength)
+					end
+				end	
+			end
+		end
+	
+		if L_214_ and L_214_.Parent:FindFirstChild("Humanoid") then
+			return L_214_, L_215_;
+		end
+		L_217_ = L_218_;
+	end
+end
+
+function fireSemi()
+	if L_15_ then
+		L_66_ = false
+		Recoiling = true
+		Shooting = true
+		
+		--CheckReverb()
+		
+		L_56_:WaitForChild('Fire'):Play()	
+		L_106_:FireServer()
+		L_99_ = CreateBullet(L_24_.BulletSpread)
+		L_100_ = L_100_ - 1
+		UpdateAmmo()
+		RecoilFront = true
+		local L_234_, L_235_ = spawn(function()
+			CastRay(L_99_)
+		end)
+		
+		if L_24_.CanBolt == true then
+			BoltingBackAnim()
+			delay(L_24_.Firerate / 2, function()
+				if L_24_.CanSlideLock == false then
+					BoltingForwardAnim()
+				elseif L_24_.CanSlideLock == true then
+					if L_100_ > 0 then
+						BoltingForwardAnim()
+					end
+				end
+			end)
+		end
+		
+		delay(L_24_.Firerate / 2, function()
+			Recoiling = false
+			RecoilFront = false
+		end)		
+		
+		wait(L_24_.Firerate)
+		
+		local L_236_ = JamCalculation()
+		if L_236_ then
+			L_66_ = false
+		else
+			L_66_ = true
+		end
+		Shooting = false
+	end
+end
+
+function fireExplo()
+	if L_15_ then
+		L_66_ = false
+		Recoiling = true
+		Shooting = true
+		L_57_:WaitForChild('Fire'):Play()
+		L_106_:FireServer()
+		L_99_ = CreateBullet(L_24_.BulletSpread)
+		L_102_ = L_102_ - 1
+		UpdateAmmo()
+		RecoilFront = true
+		local L_237_, L_238_ = spawn(function()
+			CastRay(L_99_)
+		end)
+		
+		delay(L_24_.Firerate / 2, function()
+			Recoiling = false
+			RecoilFront = false
+		end)		
+			
+		L_66_ = false
+		Shooting = false
+	end
+end
+
+function fireShot()
+	if L_15_ then
+		L_66_ = false
+		Recoiling = true
+		Shooting = true
+		RecoilFront = true
+		--CheckReverb()
+		L_56_:WaitForChild('Fire'):Play()
+		L_106_:FireServer()
+		for L_240_forvar1 = 1, L_24_.ShotNum do
+			L_99_ = CreateBullet(L_24_.BulletSpread)
+			local L_241_, L_242_ = spawn(function()
+				CastRay(L_99_)
+			end)
+		end
+						
+		for L_243_forvar1, L_244_forvar2 in pairs(L_56_:GetChildren()) do
+			if L_244_forvar2.Name:sub(1, 7) == "FlashFX" then
+				L_244_forvar2.Enabled = true
+			end
+		end
+	
+		delay(1 / 30, function()
+			for L_245_forvar1, L_246_forvar2 in pairs(L_56_:GetChildren()) do
+				if L_246_forvar2.Name:sub(1, 7) == "FlashFX" then
+					L_246_forvar2.Enabled = false
+				end
+			end
+		end)
+		
+		if L_24_.CanBolt == true then
+			BoltingBackAnim()
+			delay(L_24_.Firerate / 2, function()
+				if L_24_.CanSlideLock == false then
+					BoltingForwardAnim()
+				elseif L_24_.CanSlideLock == true then
+					if L_100_ > 0 then
+						BoltingForwardAnim()
+					end
+				end
+			end)
+		end
+		
+		delay(L_24_.Firerate / 2, function()
+			Recoiling = false
+			RecoilFront = false
+		end)
+		L_100_ = L_100_ - 1
+		UpdateAmmo()
+		wait(L_24_.Firerate)
+		
+		L_73_ = true
+		BoltBackAnim()
+		BoltForwardAnim()
+		IdleAnim()
+		L_73_ = false
+		
+		local L_239_ = JamCalculation()
+		if L_239_ then
+			L_66_ = false
+		else
+			L_66_ = true
+		end
+		
+		Shooting = false
+	end
+end
+
+function fireBoltAction()
+	if L_15_ then
+		L_66_ = false
+		Recoiling = true
+		Shooting = true
+		--CheckReverb()
+		L_56_:WaitForChild('Fire'):Play()
+		L_106_:FireServer()
+		L_99_ = CreateBullet(L_24_.BulletSpread)
+		L_100_ = L_100_ - 1
+		UpdateAmmo()
+		RecoilFront = true
+		local L_247_, L_248_ = spawn(function()
+			CastRay(L_99_)
+		end)
+						
+		for L_250_forvar1, L_251_forvar2 in pairs(L_56_:GetChildren()) do
+			if L_251_forvar2.Name:sub(1, 7) == "FlashFX" then
+				L_251_forvar2.Enabled = true
+			end
+		end
+	
+		delay(1 / 30, function()
+			for L_252_forvar1, L_253_forvar2 in pairs(L_56_:GetChildren()) do
+				if L_253_forvar2.Name:sub(1, 7) == "FlashFX" then
+					L_253_forvar2.Enabled = false
+				end
+			end
+		end)
+		
+		if L_24_.CanBolt == true then
+			BoltingBackAnim()
+			delay(L_24_.Firerate / 2, function()
+				if L_24_.CanSlideLock == false then
+					BoltingForwardAnim()
+				elseif L_24_.CanSlideLock == true then
+					if L_100_ > 0 then
+						BoltingForwardAnim()
+					end
+				end
+			end)
+		end
+		
+		delay(L_24_.Firerate / 2, function()
+			Recoiling = false
+			RecoilFront = false
+		end)
+		wait(L_24_.Firerate)
+		
+		L_73_ = true
+		BoltBackAnim()
+		BoltForwardAnim()
+		IdleAnim()
+		L_73_ = false
+		
+		local L_249_ = JamCalculation()
+		if L_249_ then
+			L_66_ = false
+		else
+			L_66_ = true
+		end		
+		
+		Shooting = false
+	end
+end
+
+function fireAuto()
+	while not Shooting and L_100_ > 0 and L_65_ and L_66_ and L_15_ do
+		L_66_ = false
+		Recoiling = true
+		--CheckReverb()
+		L_56_:WaitForChild('Fire'):Play()
+		L_106_:FireServer()
+		L_100_ = L_100_ - 1
+		UpdateAmmo()
+		Shooting = true
+		RecoilFront = true
+		L_99_ = CreateBullet(L_24_.BulletSpread)
+		local L_254_, L_255_ = spawn(function()
+			CastRay(L_99_)
+		end)
+					
+		for L_257_forvar1, L_258_forvar2 in pairs(L_56_:GetChildren()) do
+			if L_258_forvar2.Name:sub(1, 7) == "FlashFX" then
+				L_258_forvar2.Enabled = true
+			end
+		end
+	
+		delay(1 / 30, function()
+			for L_259_forvar1, L_260_forvar2 in pairs(L_56_:GetChildren()) do
+				if L_260_forvar2.Name:sub(1, 7) == "FlashFX" then
+					L_260_forvar2.Enabled = false
+				end
+			end
+		end)
+		
+		if L_24_.CanBolt == true then
+			BoltingBackAnim()
+			delay(L_24_.Firerate / 2, function()
+				if L_24_.CanSlideLock == false then
+					BoltingForwardAnim()
+				elseif L_24_.CanSlideLock == true then
+					if L_100_ > 0 then
+						BoltingForwardAnim()
+					end
+				end
+			end)
+		end
+		
+		
+		delay(L_24_.Firerate / 2, function()
+			Recoiling = false
+			RecoilFront = false
+		end)
+		wait(L_24_.Firerate)
+		
+		local L_256_ = JamCalculation()
+		if L_256_ then
+			L_66_ = false
+		else
+			L_66_ = true
+		end
+		
+		Shooting = false
+	end
+end
+
+function fireBurst()
+	if not Shooting and L_100_ > 0 and L_65_ and L_15_ then
+		for L_261_forvar1 = 1, L_24_.BurstNum do
+			if L_100_ > 0 and L_65_ then
+				L_66_ = false
+				Recoiling = true
+			--CheckReverb()
+				L_56_:WaitForChild('Fire'):Play()
+				L_106_:FireServer()
+				L_99_ = CreateBullet(L_24_.BulletSpread)
+				local L_262_, L_263_ = spawn(function()
+					CastRay(L_99_)
+				end)
+					
+				for L_265_forvar1, L_266_forvar2 in pairs(L_56_:GetChildren()) do
+					if L_266_forvar2.Name:sub(1, 7) == "FlashFX" then
+						L_266_forvar2.Enabled = true
+					end
+				end
+		
+				delay(1 / 30, function()
+					for L_267_forvar1, L_268_forvar2 in pairs(L_56_:GetChildren()) do
+						if L_268_forvar2.Name:sub(1, 7) == "FlashFX" then
+							L_268_forvar2.Enabled = false
+						end
+					end
+				end)
+			
+				if L_24_.CanBolt == true then
+					BoltingBackAnim()
+					delay(L_24_.Firerate / 2, function()
+						if L_24_.CanSlideLock == false then
+							BoltingForwardAnim()
+						elseif L_24_.CanSlideLock == true then
+							if L_100_ > 0 then
+								BoltingForwardAnim()
+							end
+						end
+					end)
+				end
+			
+				L_100_ = L_100_ - 1
+				UpdateAmmo()
+				RecoilFront = true
+				delay(L_24_.Firerate / 2, function()
+					Recoiling = false
+					RecoilFront = false
+				end)
+				wait(L_24_.Firerate)
+			
+				local L_264_ = JamCalculation()
+				if L_264_ then
+					L_66_ = false
+				else
+					L_66_ = true
+				end
+		
+			end
+			Shooting = true
+		end
+		Shooting = false
+	end
+end
+
+function Shoot()
+	if L_15_ and L_66_ then
+		if L_89_ == 1 then
+			fireSemi()
+		elseif L_89_ == 2 then
+			fireAuto()
+		elseif L_89_ == 3 then
+			fireBurst()	
+		elseif L_89_ == 4 then
+			fireBoltAction()
+		elseif L_89_ == 5 then
+			fireShot()
+		elseif L_89_ == 6 then
+			fireExplo()
+		end
+	end
+end
+
+--// Walk and Sway
+local L_133_
+
+local L_134_ = 0.6
+local L_135_ = 0.05 -- speed
+local L_136_ = -0.1 -- height
+
+local L_137_ = 0
+local L_138_ = 0
+local L_139_ = 35 --This is the limit of the mouse input for the sway
+local L_140_ = -9 --This is the magnitude of the sway when you're unaimed
+local L_141_ = -9 --This is the magnitude of the sway when you're aimed
+
+--local Sprinting =false
+local L_142_ = L_118_.new(Vector3.new())
+L_142_.s = 15
+L_142_.d = 0.5
+
+game:GetService("UserInputService").InputChanged:connect(function(L_269_arg1) --Get the mouse delta for the gun sway
+	if L_269_arg1.UserInputType == Enum.UserInputType.MouseMovement then
+		L_137_ = math.min(math.max(L_269_arg1.Delta.x, -L_139_), L_139_)
+		L_138_ = math.min(math.max(L_269_arg1.Delta.y, -L_139_), L_139_)
+	end
+end)
+
+L_4_.Idle:connect(function() --Reset the sway to 0 when the mouse is still
+	L_137_ = 0
+	L_138_ = 0
+end)
+
+local L_143_ = false
+local L_144_ = CFrame.new()
+local L_145_ = CFrame.new()
+
+local L_146_ = 0
+local L_147_ = CFrame.new()
+local L_148_ = 0.1
+local L_149_ = 2
+
+local L_150_ = 0
+local L_151_ = .2
+local L_152_	= 17
+
+local L_153_ = 0
+local L_154_ = 5
+local L_155_ = .3
+
+
+
+local L_156_, L_157_ = 0, 0
+
+local L_158_ = nil
+local L_159_ = nil
+local L_160_ = nil
+
+L_3_.Humanoid.Running:connect(function(L_270_arg1)
+	if L_270_arg1 > 1 then
+		L_143_ = true
+	else
+		L_143_ = false
+	end
+end)
+
+--// Renders
+local L_161_
+
+L_103_:connect(function()
+	if L_15_ then
+		L_156_, L_157_ = L_156_ or 0, L_157_ or 0
+		if L_159_ == nil or L_158_ == nil then
+			L_159_ = L_45_.C0
+			L_158_ = L_45_.C1
+		end
+		
+		local L_271_ = (math.sin(L_150_ * L_152_ / 2) * L_151_)
+		local L_272_ = (math.sin(L_150_ * L_152_) * L_151_)
+		local L_273_ = CFrame.new(L_271_, L_272_, 0.02)
+				
+		
+		local L_274_ = (math.sin(L_146_ * L_149_ / 2) * L_148_)
+		local L_275_ = (math.cos(L_146_ * L_149_) * L_148_)
+		local L_276_ = CFrame.new(L_274_, L_275_, 0.02)
+		
+		if L_143_ then
+			L_150_ = L_150_ + .017
+			if L_24_.WalkAnimEnabled == true then
+				L_144_ = L_273_
+			else
+				L_144_ = CFrame.new()
+			end
+		else
+			L_150_ = 0
+			L_144_ = CFrame.new()
+		end
+		
+		L_142_.t = Vector3.new(L_137_, L_138_, 0)
+		local L_277_ = L_142_.p
+		local L_278_ = L_277_.X / L_139_ * (L_61_ and L_141_ or L_140_)
+		local L_279_ = L_277_.Y / L_139_ * (L_61_ and L_141_ or L_140_)
+		
+		L_5_.CFrame = L_5_.CFrame:lerp(L_5_.CFrame * L_145_, 0.2)
+		
+		if L_61_ then
+			L_133_ = CFrame.Angles(math.rad(-L_278_), math.rad(L_278_), math.rad(L_279_)) * CFrame.fromAxisAngle(Vector3.new(5, 0, -1), math.rad(L_278_))	
+			L_146_ = 0
+			L_147_ = CFrame.new()
+		elseif not L_61_ then
+			L_133_ = CFrame.Angles(math.rad(-L_279_), math.rad(-L_278_), math.rad(-L_278_)) * CFrame.fromAxisAngle(L_44_.Position, math.rad(-L_279_))
+			L_146_ = L_146_ + 0.017			
+			L_147_ = L_276_
+		end
+		
+		if L_24_.SwayEnabled ==  true then
+			L_45_.C0 = L_45_.C0:lerp(L_159_ * L_133_ * L_144_ * L_147_, 0.1)
+		else
+			L_45_.C0 = L_45_.C0:lerp(L_159_ * L_144_, 0.1)
+		end		
+		
+		if L_64_ and not L_67_ and L_69_ and not L_61_ and not L_63_ and not Shooting then
+			L_45_.C1 = L_45_.C1:lerp(L_45_.C0 * L_24_.SprintPos, 0.1)
+		elseif not L_64_ and not L_67_ and not L_69_ and not L_61_ and not L_63_ and not Shooting and not L_76_ then
+			L_45_.C1 = L_45_.C1:lerp(CFrame.new(), 0.1)
+		end
+		
+		if L_61_ and not L_64_ then
+			if not L_62_ then
+				L_87_ = L_24_.AimCamRecoil
+				L_86_ = L_24_.AimGunRecoil
+				L_88_ = L_24_.AimKickback
+			elseif L_62_ then
+				if L_90_ == 1 then
+					L_87_ = L_24_.AimCamRecoil / 1.5
+					L_86_ = L_24_.AimGunRecoil / 1.5
+					L_88_ = L_24_.AimKickback / 1.5
+				end
+				
+				if L_90_ == 2 then
+					L_87_ = L_24_.AimCamRecoil / 2
+					L_86_ = L_24_.AimGunRecoil / 2
+					L_88_ = L_24_.AimKickback / 2
+				end
+			end
+			
+			if (L_3_.Head.Position - L_5_.CoordinateFrame.p).magnitude < 2 then
+				L_45_.C1 = L_45_.C1:lerp(L_45_.C0 * L_53_.CFrame:toObjectSpace(L_44_.CFrame), L_24_.AimSpeed)
+				
+				L_42_:WaitForChild('Sense'):WaitForChild('Sensitivity').Visible = true
+				L_42_:WaitForChild('Sense'):WaitForChild('Sensitivity').Text = L_51_
+				L_104_.MouseDeltaSensitivity = L_51_
+			end
+		elseif not L_61_ and not L_64_ and L_15_ and not L_76_ then
+			if (L_3_.Head.Position - L_5_.CoordinateFrame.p).magnitude < 2 then
+				L_45_.C1 = L_45_.C1:lerp(CFrame.new(), L_24_.UnaimSpeed)
+				
+				L_42_:WaitForChild('Sense'):WaitForChild('Sensitivity').Visible = false
+				L_42_:WaitForChild('Sense'):WaitForChild('Sensitivity').Text = L_51_
+				L_104_.MouseDeltaSensitivity = L_52_
+			end	
+			
+			if not L_62_ then
+				L_87_ = L_24_.camrecoil
+				L_86_ = L_24_.gunrecoil
+				L_88_ = L_24_.Kickback
+			elseif L_62_ then
+				if L_90_ == 1 then
+					L_87_ = L_24_.camrecoil / 1.5
+					L_86_ = L_24_.gunrecoil / 1.5
+					L_88_ = L_24_.Kickback / 1.5
+				end
+				
+				if L_90_ == 2 then
+					L_87_ = L_24_.camrecoil / 2
+					L_86_ = L_24_.gunrecoil / 2
+					L_88_ = L_24_.Kickback / 2
+				end
+			end	
+		end
+		
+		if Recoiling then
+			L_145_ = CFrame.Angles(L_87_, 0, 0)	
+			--cam.CoordinateFrame = cam.CoordinateFrame *  CFrame.fromEulerAnglesXYZ(math.rad(camrecoil*math.random(0,3)), math.rad(camrecoil*math.random(-1,1)), math.rad(camrecoil*math.random(-1,1)))
+			L_45_.C0 = L_45_.C0:lerp(L_45_.C0 * CFrame.new(0, 0, L_86_) * CFrame.Angles(-math.rad(L_88_), 0, 0), 0.3)
+		elseif not Recoiling then	
+			L_145_ = CFrame.Angles(0, 0, 0)
+			L_45_.C0 = L_45_.C0:lerp(CFrame.new(), 0.2)
+		end
+		
+		if L_62_ then
+			L_3_:WaitForChild('Humanoid').Jump = false
+		end
+		
+		if L_15_ then 
+			L_5_.FieldOfView = L_5_.FieldOfView * (1 - L_24_.ZoomSpeed) + (L_94_ * L_24_.ZoomSpeed)
+			if (L_3_.Head.Position - L_5_.CoordinateFrame.p).magnitude >= 2 then
+				L_87_ = L_24_.AimCamRecoil
+				L_86_ = L_24_.AimGunRecoil
+				L_88_ = L_24_.AimKickback
+				
+				L_42_:WaitForChild('Sense'):WaitForChild('Sensitivity').Visible = true
+				L_42_:WaitForChild('Sense'):WaitForChild('Sensitivity').Text = L_51_
+				L_104_.MouseDeltaSensitivity = L_51_
+			elseif (L_3_.Head.Position - L_5_.CoordinateFrame.p).magnitude < 2 and not L_61_ and not L_62_ then
+				L_87_ = L_24_.camrecoil
+				L_86_ = L_24_.gunrecoil
+				L_88_ = L_24_.Kickback
+				
+				L_42_:WaitForChild('Sense'):WaitForChild('Sensitivity').Visible = false
+				L_42_:WaitForChild('Sense'):WaitForChild('Sensitivity').Text = L_51_
+				L_104_.MouseDeltaSensitivity = L_52_
+			end
+		end
+		
+		if L_15_ and L_24_.CameraGo then --and (char.Head.Position - cam.CoordinateFrame.p).magnitude < 2 then
+			L_4_.TargetFilter = game.Workspace
+			local L_280_ =  L_3_:WaitForChild("HumanoidRootPart").CFrame * CFrame.new(0, 1.5, 0) * CFrame.new(L_3_:WaitForChild("Humanoid").CameraOffset)
+			L_48_.C0 = L_8_.CFrame:toObjectSpace(L_280_)
+			L_48_.C1 = CFrame.Angles(-math.asin((L_4_.Hit.p - L_4_.Origin.p).unit.y), 0, 0)
+			L_104_.MouseIconEnabled = false	
+		end
+		
+		if L_15_ and (L_3_.Head.Position - L_5_.CoordinateFrame.p).magnitude >= 2 then
+			if L_4_.Icon ~= "http://www.roblox.com/asset?id=" .. L_24_.TPSMouseIcon then
+				L_4_.Icon = "http://www.roblox.com/asset?id=" .. L_24_.TPSMouseIcon
+			end--
+			L_104_.MouseIconEnabled = true
+			
+			if L_3_:FindFirstChild('Right Arm') and L_3_:FindFirstChild('Left Arm') then
+				L_3_['Right Arm'].LocalTransparencyModifier = 1
+				L_3_['Left Arm'].LocalTransparencyModifier = 1
+			end
+		end;
+	end
+end)
+
+--// Stances
+function Prone()
+	UpdateAmmo()
+	L_109_:FireServer("Prone")	
+	
+	L_14_:Create(L_3_:WaitForChild('Humanoid'), TweenInfo.new(0.3), {
+		CameraOffset = Vector3.new(0, -3, 0)
+	}):Play()
+	L_3_:WaitForChild("Humanoid").WalkSpeed = 4
+	
+	L_152_ = 4
+	L_151_ = 0.025
+	
+	L_62_ = true
+	
+	Proned2 = Vector3.new(0, 0.5, 0.5)
+	L_127_(L_9_,  CFrame.new(0, -2.4201169, -0.0385534465, -0.99999994, -5.86197757e-012, -4.54747351e-013, 5.52669195e-012, 0.998915195, 0.0465667509, 0, 0.0465667509, -0.998915195), nil, function(L_281_arg1)
+		return math.sin(math.rad(L_281_arg1))
+	end, 0.25)
+	L_127_(L_10_,  CFrame.new(1.00000191, -1, -5.96046448e-008, 1.31237243e-011, -0.344507754, 0.938783348, 0, 0.938783467, 0.344507784, -1, 0, -1.86264515e-009) , nil, function(L_282_arg1)
+		return math.sin(math.rad(L_282_arg1))
+	end, 0.25)
+	L_127_(L_11_,  CFrame.new(-0.999996185, -1, -1.1920929e-007, -2.58566502e-011, 0.314521015, -0.949250221, 0, 0.94925046, 0.314521164, 1, 3.7252903e-009, 1.86264515e-009) , nil, function(L_283_arg1)
+		return math.sin(math.rad(L_283_arg1))
+	end, 0.25)
+end
+
+function Stand()
+	UpdateAmmo()
+	L_109_:FireServer("Stand")
+	
+	L_14_:Create(L_3_:WaitForChild('Humanoid'), TweenInfo.new(0.3), {
+		CameraOffset = Vector3.new(0, 0, 0)
+	}):Play()
+	
+	L_62_ = false		
+	
+	if not L_61_ then
+		L_3_:WaitForChild("Humanoid").WalkSpeed = 16
+		L_151_ = .2
+		L_152_ = 17
+	elseif L_61_ then
+		L_3_:WaitForChild("Humanoid").WalkSpeed = 16
+		L_152_ = 10
+		L_151_ = 0.02
+	end
+	
+	Proned2 = Vector3.new(0, 0, 0)
+	L_127_(L_9_, CFrame.new(0, 0, 0, -1, 0, 0, 0, 0, 1, 0, 1, -0), nil, function(L_284_arg1)
+		return math.sin(math.rad(L_284_arg1))
+	end, 0.25)
+	L_127_(L_10_,  CFrame.new(1, -1, 0, 0, 0, 1, 0, 1, -0, -1, 0, 0), nil, function(L_285_arg1)
+		return math.sin(math.rad(L_285_arg1))
+	end, 0.25)
+	L_127_(L_11_,  CFrame.new(-1, -1, 0, 0, 0, -1, 0, 1, 0, 1, 0, 0), nil, function(L_286_arg1)
+		return math.sin(math.rad(L_286_arg1))
+	end, 0.25)
+end
+
+function Crouch()
+	UpdateAmmo()
+	L_109_:FireServer("Crouch")
+	
+	L_14_:Create(L_3_:WaitForChild('Humanoid'), TweenInfo.new(0.3), {
+		CameraOffset = Vector3.new(0, -1, 0)
+	}):Play()
+	L_3_:WaitForChild("Humanoid").WalkSpeed = 9
+	
+	L_152_ = 9
+	L_151_ = 0.035
+	
+	L_62_ = true
+	
+	Proned2 = Vector3.new(0, 0, 0)
+	L_127_(L_9_, CFrame.new(0, -1.04933882, 0, -1, 0, -1.88871293e-012, 1.88871293e-012, -3.55271368e-015, 1, 0, 1, -3.55271368e-015), nil, function(L_287_arg1)
+		return math.sin(math.rad(L_287_arg1))
+	end, 0.25)
+	L_127_(L_10_,  CFrame.new(1, 0.0456044674, -0.494239986, 6.82121026e-013, -1.22639676e-011, 1, -0.058873821, 0.998265445, -1.09836602e-011, -0.998265445, -0.058873821, 0), nil, function(L_288_arg1)
+		return math.sin(math.rad(L_288_arg1))
+	end, 0.25)
+	L_127_(L_11_,  CFrame.new(-1.00000381, -0.157019258, -0.471293032, -8.7538865e-012, -8.7538865e-012, -1, 0.721672177, 0.692235112, 1.64406284e-011, 0.692235112, -0.721672177, 0), nil, function(L_289_arg1)
+		return math.sin(math.rad(L_289_arg1))
+	end, 0.25)
+	L_127_(L_6_:WaitForChild("Neck"), nil, CFrame.new(0, -0.5, 0, -1, 0, 0, 0, 0, 1, 0, 1, -0), function(L_290_arg1)
+		return math.sin(math.rad(L_290_arg1))
+	end, 0.25)
+end
+
+function LeanRight()
+	if L_90_ ~= 2 then
+		L_109_:FireServer("LeanRight")
+		L_127_(L_9_, nil, CFrame.new(0, 0.200000003, 0, -0.939692616, 0, -0.342020124, -0.342020124, 0, 0.939692616, 0, 1, 0), function(L_291_arg1)
+			return math.sin(math.rad(L_291_arg1))
+		end, 0.25)
+		L_127_(L_10_, nil, CFrame.new(0.300000012, 0.600000024, 0, 0, 0.342020124, 0.939692616, 0, 0.939692616, -0.342020124, -1, 0, 0), function(L_292_arg1)
+			return math.sin(math.rad(L_292_arg1))
+		end, 0.25)
+		L_127_(L_11_,  nil, nil, function(L_293_arg1)
+			return math.sin(math.rad(L_293_arg1))
+		end, 0.25)	
+		L_127_(L_6_:WaitForChild("Clone"), nil, CFrame.new(-0.400000006, -0.300000012, 0, -1, 0, 0, 0, 0, 1, 0, 1, 0), function(L_294_arg1)
+			return math.sin(math.rad(L_294_arg1))
+		end, 0.25)
+		if not L_62_ then
+			L_14_:Create(L_3_:WaitForChild('Humanoid'), TweenInfo.new(0.3), {
+				CameraOffset = Vector3.new(1, -0.5, 0)
+			}):Play()	
+		elseif L_62_ then
+			if L_90_ == 1 then
+				L_14_:Create(L_3_:WaitForChild('Humanoid'), TweenInfo.new(0.3), {
+					CameraOffset = Vector3.new(1, -1.5, 0)
+				}):Play()	
+			end
+		end;
+	end	
+end
+
+function LeanLeft()
+	if L_90_ ~= 2 then
+		L_109_:FireServer("LeanLeft")
+		L_127_(L_9_, nil, CFrame.new(0, 0.200000003, 0, -0.939692616, 0, 0.342020124, 0.342020124, 0, 0.939692616, 0, 1, 0), function(L_295_arg1)
+			return math.sin(math.rad(L_295_arg1))
+		end, 0.25)
+		L_127_(L_10_, nil, nil, function(L_296_arg1)
+			return math.sin(math.rad(L_296_arg1))
+		end, 0.25)
+		L_127_(L_11_,  nil, CFrame.new(-0.300000012, 0.600000024, 0, 0, -0.342020124, -0.939692616, 0, 0.939692616, -0.342020124, 1, 0, 0), function(L_297_arg1)
+			return math.sin(math.rad(L_297_arg1))
+		end, 0.25)
+		L_127_(L_6_:WaitForChild("Clone"), nil, CFrame.new(0.400000006, -0.300000012, 0, -1, 0, 0, 0, 0, 1, 0, 1, 0), function(L_298_arg1)
+			return math.sin(math.rad(L_298_arg1))
+		end, 0.25)
+		if not L_62_ then
+			L_14_:Create(L_3_:WaitForChild('Humanoid'), TweenInfo.new(0.3), {
+				CameraOffset = Vector3.new(-1, -0.5, 0)
+			}):Play()	
+		elseif L_62_ then
+			if L_90_ == 1 then
+				L_14_:Create(L_3_:WaitForChild('Humanoid'), TweenInfo.new(0.3), {
+					CameraOffset = Vector3.new(-1, -1.5, 0)
+				}):Play()	
+			end
+		end;
+	end	
+end
+
+function Unlean()
+	if L_90_ ~= 2 then
+		L_109_:FireServer("Unlean")
+		L_127_(L_9_, nil, CFrame.new(0, 0, 0, -1, -0, -0, 0, 0, 1, 0, 1, 0), function(L_299_arg1)
+			return math.sin(math.rad(L_299_arg1))
+		end, 0.25)
+		L_127_(L_10_, nil, CFrame.new(0.5, 1, 0, 0, 0, 1, 0, 1, 0, -1, -0, -0), function(L_300_arg1)
+			return math.sin(math.rad(L_300_arg1))
+		end, 0.25)
+		L_127_(L_11_,  nil, CFrame.new(-0.5, 1, 0, -0, -0, -1, 0, 1, 0, 1, 0, 0), function(L_301_arg1)
+			return math.sin(math.rad(L_301_arg1))
+		end, 0.25)	
+		if L_6_:FindFirstChild('Clone') then
+			L_127_(L_6_:WaitForChild("Clone"), nil, CFrame.new(0, -0.5, 0, -1, -0, -0, 0, 0, 1, 0, 1, 0), function(L_302_arg1)
+				return math.sin(math.rad(L_302_arg1))
+			end, 0.25)
+		end		
+		if not L_62_ then
+			L_14_:Create(L_3_:WaitForChild('Humanoid'), TweenInfo.new(0.3), {
+				CameraOffset = Vector3.new(0, 0, 0)
+			}):Play()	
+		elseif L_62_ then			
+			if L_90_ == 1 then
+				L_14_:Create(L_3_:WaitForChild('Humanoid'), TweenInfo.new(0.3), {
+					CameraOffset = Vector3.new(0, -1, 0)
+				}):Play()	
+			end
+		end;
+	end
+end
+	
+local L_162_ = false
+
+L_104_.InputBegan:connect(function(L_303_arg1, L_304_arg2)
+	if not L_304_arg2 and L_15_ == true then
+		if L_15_ then
+			if L_303_arg1.KeyCode == Enum.KeyCode.C or L_303_arg1.KeyCode == Enum.KeyCode.ButtonB then 
+				if L_90_ == 0 and not L_64_ and L_15_ then			
+					L_90_ = 1
+					Crouch()
+				
+					L_91_ = false
+					L_93_ = true
+					L_92_ = false
+				elseif L_90_ == 1 and not L_64_ and L_15_ then
+					L_90_ = 2
+					Prone()
+				
+					L_93_ = false
+					L_91_ = true
+					L_92_ = false
+					L_162_ = true
+				end
+			end
+							
+					
+			if L_303_arg1.KeyCode == Enum.KeyCode.X or L_303_arg1.KeyCode == Enum.KeyCode.ButtonY then 
+				if L_90_ == 2 and not L_64_ and L_15_ then
+					L_162_ = false		
+					L_90_ = 1
+					Crouch()
+					
+					L_91_ = false
+					L_93_ = true
+					L_92_ = false
+				elseif L_90_ == 1 and not L_64_ and L_15_ then		
+					L_90_ = 0
+					Stand()
+				
+					L_91_ = false
+					L_93_ = false
+					L_92_ = true
+				end
+			end
+		end
+	end
+end)
+
+--// Touch Connections
+L_3_:WaitForChild('Humanoid').Touched:connect(function(L_305_arg1)
+	local L_306_, L_307_ = SearchResupply(L_305_arg1)
+	if L_306_ and L_17_ then
+		L_17_ = false
+		L_100_ = L_24_.Ammo
+		L_101_ = L_24_.StoredAmmo * L_24_.MagCount
+		L_102_ = L_24_.ExplosiveAmmo
+		if L_55_:FindFirstChild('Resupply') then
+			L_55_.Resupply:Play()
+		end
+		wait(15)
+		L_17_ = true
+	end;
+end)
+
+--// Input Connections
+L_104_.InputBegan:connect(function(L_308_arg1, L_309_arg2)
+	if not L_309_arg2 and L_15_ then
+		if L_308_arg1.UserInputType == (Enum.UserInputType.MouseButton2 or L_308_arg1.KeyCode == Enum.KeyCode.ButtonL2) and not L_76_ and not L_75_ and not L_74_ and L_24_.CanAim and not L_71_ and L_15_ and not L_63_ and not L_64_ then
+			if not L_61_ then
+				if not L_62_ then
+					L_3_.Humanoid.WalkSpeed = 10
+					L_152_ = 10
+					L_151_ = 0.008
+				end
+				
+				if (L_3_.Head.Position - L_5_.CoordinateFrame.p).magnitude <= 2 then
+					L_94_ = L_50_
+				end
+				L_130_.target = L_53_.CFrame:toObjectSpace(L_44_.CFrame).p
+				L_112_:FireServer(true)				
+				L_61_ = true
+			end
+		end;
+		
+		if L_308_arg1.KeyCode == Enum.KeyCode.E and L_15_ and not L_77_ and not L_78_ then
+			L_77_ = true
+			L_79_ = false
+			L_78_ = true
+			LeanRight()
+		end
+		
+		if L_308_arg1.KeyCode == Enum.KeyCode.Q and L_15_ and not L_77_ and not L_79_ then
+			L_77_ = true
+			L_78_ = false
+			L_79_ = true
+			LeanLeft()
+		end
+		
+		if L_308_arg1.KeyCode == L_24_.AlternateAimKey and not L_76_ and not L_75_ and not L_74_ and L_24_.CanAim and not L_71_ and L_15_ and not L_63_ and not L_64_ then
+			if not L_61_ then
+				if not L_62_ then
+					L_3_.Humanoid.WalkSpeed = 10
+					L_152_ = 10
+					L_151_ = 0.008
+				end
+				L_94_ = L_50_
+				L_130_.target = L_53_.CFrame:toObjectSpace(L_44_.CFrame).p
+				L_112_:FireServer(true)
+				L_61_ = true
+			end
+		end;
+		
+		if L_308_arg1.UserInputType == (Enum.UserInputType.MouseButton1 or L_308_arg1.KeyCode == Enum.KeyCode.ButtonR2) and not L_76_ and not L_74_ and L_66_ and L_15_ and not L_63_ and not L_64_ and not L_71_ then
+			L_65_ = true
+			if not Shooting and L_15_ and not L_80_ then
+				if L_100_ > 0 then			
+					Shoot()
+				end
+			elseif not Shooting and L_15_ and L_80_ then
+				if L_102_ > 0 then
+					Shoot()
+				end
+			end
+		end;
+		
+		if L_308_arg1.KeyCode == (L_24_.LaserKey or L_308_arg1.KeyCode == Enum.KeyCode.DPadRight) and L_15_ and L_24_.LaserAttached then
+			local L_310_ = L_1_:FindFirstChild("LaserLight")
+			L_119_.KeyDown[1].Plugin()
+		end;
+		
+		if L_308_arg1.KeyCode == (L_24_.LightKey or L_308_arg1.KeyCode == Enum.KeyCode.ButtonR3) and L_15_ and L_24_.LightAttached then
+			local L_311_ = L_1_:FindFirstChild("FlashLight"):FindFirstChild('Light')
+			local L_312_ = false
+			L_311_.Enabled = not L_311_.Enabled
+		end;
+		
+		if L_15_ and L_308_arg1.KeyCode == (L_24_.FireSelectKey or L_308_arg1.KeyCode == Enum.KeyCode.DPadUp) and not L_76_ and not L_67_ and not L_75_ then
+			L_67_ = true
+			if L_89_ == 1 then
+				if Shooting then
+					Shooting = false
+				end
+				if L_24_.AutoEnabled then
+					L_89_ = 2
+					L_80_ = false
+					L_66_ = L_81_
+				elseif not L_24_.AutoEnabled and L_24_.BurstEnabled then
+					L_89_ = 3
+					L_80_ = false
+					L_66_ = L_81_
+				elseif not L_24_.AutoEnabled and not L_24_.BurstEnabled and L_24_.BoltAction then
+					L_89_ = 4
+					L_80_ = false
+					L_66_ = L_81_
+				elseif not L_24_.AutoEnabled and not L_24_.BurstEnabled and not L_24_.BoltAction and L_24_.ExplosiveEnabled then
+					L_89_ = 6
+					L_80_ = true
+					L_81_ = L_66_
+					L_66_ = L_82_
+				elseif not L_24_.AutoEnabled and not L_24_.BurstEnabled and not L_24_.BoltAction and not L_24_.ExplosiveEnabled then
+					L_89_ = 1
+					L_80_ = false
+					L_66_ = L_81_
+				end
+			elseif L_89_ == 2 then
+				if Shooting then
+					Shooting = false
+				end
+				if L_24_.BurstEnabled then
+					L_89_ = 3
+					L_80_ = false
+					L_66_ = L_81_
+				elseif not L_24_.BurstEnabled and L_24_.BoltAction then
+					L_89_ = 4
+					L_80_ = false
+					L_66_ = L_81_
+				elseif not L_24_.BurstEnabled and not L_24_.BoltAction and L_24_.ExplosiveEnabled then
+					L_89_ = 6
+					L_80_ = true
+					L_81_ = L_66_
+					L_66_ = L_82_
+				elseif not L_24_.BurstEnabled and not L_24_.BoltAction and not L_24_.ExplosiveEnabled and L_24_.SemiEnabled then
+					L_89_ = 1
+					L_80_ = false
+					L_66_ = L_81_
+				elseif not L_24_.BurstEnabled and not L_24_.BoltAction and not L_24_.SemiEnabled then
+					L_89_ = 2
+					L_80_ = false
+					L_66_ = L_81_
+				end
+			elseif L_89_ == 3 then
+				if Shooting then
+					Shooting = false
+				end
+				if L_24_.BoltAction then
+					L_89_ = 4
+					L_80_ = false
+					L_66_ = L_81_
+				elseif not L_24_.BoltAction and L_24_.ExplosiveEnabled then
+					L_89_ = 6
+					L_80_ = true
+					L_81_ = L_66_
+					L_66_ = L_82_
+				elseif not L_24_.BoltAction and not L_24_.ExplosiveEnabled and L_24_.SemiEnabled then
+					L_89_ = 1
+					L_80_ = false
+					L_66_ = L_81_
+				elseif not L_24_.BoltAction and not L_24_.SemiEnabled and L_24_.AutoEnabled then
+					L_89_ = 2
+					L_80_ = false
+					L_66_ = L_81_
+				elseif not L_24_.BoltAction and not L_24_.SemiEnabled and not L_24_.AutoEnabled then
+					L_89_ = 3
+					L_80_ = false
+					L_66_ = L_81_
+				end
+			elseif L_89_ == 4 then
+				if Shooting then
+					Shooting = false
+				end
+				if L_24_.ExplosiveEnabled then
+					L_89_ = 6
+					L_80_ = true
+					L_81_ = L_66_
+					L_66_ = L_82_
+				elseif not L_24_.ExplosiveEnabled and L_24_.SemiEnabled then
+					L_89_ = 1
+					L_80_ = false
+					L_66_ = L_81_
+				elseif not L_24_.SemiEnabled and L_24_.AutoEnabled then
+					L_89_ = 2
+					L_80_ = false
+					L_66_ = L_81_
+				elseif not L_24_.SemiEnabled and not L_24_.AutoEnabled and L_24_.BurstEnabled then
+					L_89_ = 3
+					L_80_ = false
+					L_66_ = L_81_
+				elseif not L_24_.SemiEnabled and not L_24_.AutoEnabled and not L_24_.BurstEnabled then
+					L_89_ = 4
+					L_80_ = false
+					L_66_ = L_81_
+				end
+			elseif L_89_ == 6 then
+				if Shooting then
+					Shooting = false
+				end
+				L_82_ = L_66_
+				if L_24_.SemiEnabled then
+					L_89_ = 1
+					L_80_ = false
+					L_66_ = L_81_
+				elseif not L_24_.SemiEnabled and L_24_.AutoEnabled then
+					L_89_ = 2
+					L_80_ = false
+					L_66_ = L_81_
+				elseif not L_24_.SemiEnabled and not L_24_.AutoEnabled and L_24_.BurstEnabled then
+					L_89_ = 3
+					L_80_ = false
+					L_66_ = L_81_
+				elseif not L_24_.SemiEnabled and not L_24_.AutoEnabled and not L_24_.BurstEnabled and L_24_.BoltAction then
+					L_89_ = 4
+					L_80_ = false
+					L_66_ = L_81_
+				elseif not L_24_.SemiEnabled and not L_24_.AutoEnabled and not L_24_.BurstEnabled and not L_24_.BoltAction then
+					L_89_ = 6
+					L_80_ = true
+					L_81_ = L_66_
+					L_66_ = L_82_
+				end
+			end
+			UpdateAmmo()
+			FireModeAnim()
+			IdleAnim()
+			L_67_ = false
+		end;
+		
+		if L_308_arg1.KeyCode == (Enum.KeyCode.F or L_308_arg1.KeyCode == Enum.KeyCode.DPadDown) and not L_76_ and not L_74_ and not L_75_ and not L_64_ and not L_67_ and not L_61_ and not L_63_ and not Shooting and not L_73_ then			
+			if not L_70_ and not L_71_ then
+				L_71_ = true
+				Shooting = false
+				L_66_ = false
+				L_132_ = time()
+				delay(0.6, function()
+					if L_100_ ~= L_24_.Ammo and L_100_ > 0 then
+						CreateShell()
+					end
+				end)	
+				BoltBackAnim()
+				L_70_ = true
+			elseif L_70_ and L_71_ then
+				BoltForwardAnim()
+				Shooting = false
+				L_66_ = true
+				if L_100_ ~= L_24_.Ammo and L_100_ > 0 then
+					L_100_ = L_100_ - 1
+				elseif L_100_ >= L_24_.Ammo then
+					L_66_ = true
+				end						
+				L_70_ = false
+				L_71_ = false
+				IdleAnim()
+				L_72_ = false
+			end
+			UpdateAmmo()
+		end;
+		
+		if L_308_arg1.KeyCode == (Enum.KeyCode.LeftShift or L_308_arg1.KeyCode == Enum.KeyCode.ButtonL3) and not L_75_ and not L_74_ and L_143_ then
+			L_68_ = true
+			if L_15_ and not L_67_ and not L_64_ and L_68_ and not L_62_ and not L_71_ then
+				Shooting = false
+				L_61_ = false
+				L_64_ = true
+						
+				delay(0, function()
+					if L_64_ and not L_63_ then
+						L_61_ = false
+						L_69_ = true
+					end
+				end)
+				L_94_ = 80
+				L_3_.Humanoid.WalkSpeed = L_24_.SprintSpeed
+				L_152_ = L_24_.SprintSpeed
+				L_151_ = 0.4
+			end
+		end;
+		
+		if L_308_arg1.KeyCode == (Enum.KeyCode.R or L_308_arg1.KeyCode == Enum.KeyCode.ButtonX) and not L_76_ and not L_75_ and not L_74_ and L_15_ and not L_63_ and not L_61_ and not Shooting and not L_64_ and not L_71_ then		
+			if not L_80_ then			
+				if L_101_ > 0 and L_100_ < L_24_.Ammo then
+					Shooting = false
+					L_63_ = true
+					
+					for L_313_forvar1, L_314_forvar2 in pairs(game.Players:GetChildren()) do
+						if L_314_forvar2 and L_314_forvar2 ~= L_2_ and L_314_forvar2.TeamColor == L_2_.TeamColor then
+							if (L_314_forvar2.Character.HumanoidRootPart.Position - L_3_.HumanoidRootPart.Position).magnitude  <= 150 then
+								if L_7_:FindFirstChild('AHH') and not L_7_.AHH.IsPlaying then
+									L_116_:FireServer(L_7_.AHH, L_97_[math.random(0, 23)])
+								end
+							end
+						end
+					end
+					
+					ReloadAnim()
+					if L_100_ <= 0 then
+						if not L_24_.CanSlideLock then
+							BoltBackAnim()
+							BoltForwardAnim()
+						end
+					end
+					IdleAnim()
+					L_66_ = true
+					
+					if L_100_ <= 0 then
+						if (L_101_ - (L_24_.Ammo - L_100_)) < 0 then
+							L_100_ = L_100_ + L_101_
+							L_101_ = 0
+						else
+							L_101_ = L_101_ - (L_24_.Ammo - L_100_)
+							L_100_ = L_24_.Ammo
+						end
+					elseif L_100_ > 0 then
+						if (L_101_ - (L_24_.Ammo - L_100_)) < 0 then
+							L_100_ = L_100_ + L_101_ + 1
+							L_101_ = 0
+						else
+							L_101_ = L_101_ - (L_24_.Ammo - L_100_)
+							L_100_ = L_24_.Ammo + 1
+						end
+					end
+	
+					L_63_ = false
+					if not L_72_ then
+						L_66_ = true
+					end
+				end;
+			elseif L_80_ then
+				if L_102_ > 0 then
+					Shooting = false
+					L_63_ = true
+					nadeReload()
+					IdleAnim()
+					L_63_ = false
+					L_66_ = true
+				end
+			end;
+			UpdateAmmo()
+		end;
+		
+		if L_308_arg1.KeyCode == Enum.KeyCode.RightBracket and L_61_ then
+			if (L_51_ < 1) then
+				L_51_ = L_51_ + L_24_.SensitivityIncrement
+			end
+		end
+		
+		if L_308_arg1.KeyCode == Enum.KeyCode.LeftBracket and L_61_ then
+			if (L_51_ > 0.1) then
+				L_51_ = L_51_ - L_24_.SensitivityIncrement
+			end
+		end
+		
+		if L_308_arg1.KeyCode == (Enum.KeyCode.T or L_308_arg1.KeyCode == Enum.KeyCode.DPadLeft) and L_1_:FindFirstChild("AimPart2") then
+			if not L_83_ then
+				L_53_ = L_1_:WaitForChild("AimPart2")
+				L_50_ = L_24_.CycleAimZoom
+				if L_61_ then
+					L_94_ = L_24_.CycleAimZoom
+				end
+				L_83_ = true
+			else
+				L_53_ = L_1_:FindFirstChild("AimPart")
+				L_50_ = L_24_.AimZoom
+				if L_61_ then
+					L_94_ = L_24_.AimZoom
+				end
+				L_83_ = false
+			end;
+		end;
+		
+		if L_308_arg1.KeyCode == L_24_.InspectionKey and not L_76_ and not L_75_ then
+			if not L_74_ then
+				L_74_ = true
+				InspectAnim()
+				IdleAnim()
+				L_74_ = false
+			end
+		end;
+		
+		if L_308_arg1.KeyCode == L_24_.AttachmentKey and not L_76_ and not L_74_ then
+			if L_15_ then
+				if not L_75_ then
+					L_64_ = false
+					L_61_ = false
+					L_66_ = false
+					L_75_ = true
+					
+					AttachAnim()
+				elseif L_75_ then
+					L_64_ = false
+					L_61_ = false
+					L_66_ = true
+					L_75_ = false
+					
+					IdleAnim()
+				end
+			end
+		end;
+			
+		if L_308_arg1.KeyCode == Enum.KeyCode.P and not L_74_ and not L_75_ and not L_61_ and not L_64_ and not L_62_ and not L_63_ and not Recoiling and not L_64_ then
+			if not L_76_ then
+				L_76_ = true
+				L_14_:Create(L_45_, TweenInfo.new(0.2), {
+					C1 = L_24_.SprintPos
+				}):Play()
+				wait(0.2)
+				L_109_:FireServer("Patrol", L_24_.SprintPos)
+			else
+				L_76_ = false
+				L_14_:Create(L_45_, TweenInfo.new(0.2), {
+					C1 = CFrame.new()
+				}):Play()
+				wait(0.2)
+				L_109_:FireServer("Unpatrol")
+			end
+		end;
+	end
+end)
+
+L_104_.InputEnded:connect(function(L_315_arg1, L_316_arg2)
+	if not L_316_arg2 and L_15_ then
+		if L_315_arg1.UserInputType == (Enum.UserInputType.MouseButton2 or L_315_arg1.KeyCode == Enum.KeyCode.ButtonL2) and not L_74_ and L_24_.CanAim and not L_75_ then
+			if L_61_ then
+				if not L_62_ then
+					L_3_.Humanoid.WalkSpeed = 16
+					L_152_ = 17
+					L_151_ = .25
+				end	
+				L_94_ = 70
+				L_130_.target = Vector3.new()
+				L_112_:FireServer(false)
+				L_61_ = false
+			end
+		end;
+		
+		if L_315_arg1.KeyCode == Enum.KeyCode.E and L_15_ and L_77_ then
+			Unlean()		
+			L_77_ = false
+			L_79_ = false
+			L_78_ = false
+		end
+		
+		if L_315_arg1.KeyCode == Enum.KeyCode.Q and L_15_ and L_77_ then
+			Unlean()		
+			L_77_ = false
+			L_79_ = false
+			L_78_ = false
+		end
+		
+		if L_315_arg1.KeyCode == L_24_.AlternateAimKey and not L_74_ and L_24_.CanAim then
+			if L_61_ then
+				if not L_62_ then
+					L_3_.Humanoid.WalkSpeed = 16
+					L_152_ = 17
+					L_151_ = .25
+				end	
+				L_94_ = 70
+				L_130_.target = Vector3.new()
+				L_112_:FireServer(false)
+				L_61_ = false
+			end
+		end;
+		
+		if L_315_arg1.UserInputType == (Enum.UserInputType.MouseButton1 or L_315_arg1.KeyCode == Enum.KeyCode.ButtonR2) and not L_74_ then
+			L_65_ = false				
+			if Shooting then
+				Shooting = false
+			end
+		end;
+		
+		if L_315_arg1.KeyCode == Enum.KeyCode.E and L_15_ then
+			local L_317_ = L_42_:WaitForChild('GameGui')
+			if L_16_ then
+				L_317_:WaitForChild('AmmoFrame').Visible = false
+				L_16_ = false
+			end
+		end;
+		
+		if L_315_arg1.KeyCode == (Enum.KeyCode.LeftShift or L_315_arg1.KeyCode == Enum.KeyCode.ButtonL3) and not L_74_ and not L_67_ and not L_62_ then -- SPRINT
+			L_68_ = false
+			if L_64_ and not L_61_ and not Shooting and not L_68_ then
+				L_64_ = false
+				L_69_ = false
+				L_94_ = 70
+			
+				L_3_.Humanoid.WalkSpeed = 16	
+				L_152_ = 17
+				L_151_ = .25			
+			end
+		end;
+	end
+end)
+
+L_104_.InputChanged:connect(function(L_318_arg1, L_319_arg2)
+	if not L_319_arg2 and L_15_ and L_24_.FirstPersonOnly and L_61_ then
+		if L_318_arg1.UserInputType == Enum.UserInputType.MouseWheel then
+			if L_318_arg1.Position.Z == 1 and (L_51_ < 1) then
+				L_51_ = L_51_ + L_24_.SensitivityIncrement
+			elseif L_318_arg1.Position.Z == -1 and (L_51_ > 0.1) then
+				L_51_ = L_51_ - L_24_.SensitivityIncrement
+			end
+		end
+	end
+end)
+
+L_104_.InputChanged:connect(function(L_320_arg1, L_321_arg2)
+	if not L_321_arg2 and L_15_ then
+		local L_322_, L_323_ = workspace:FindPartOnRayWithIgnoreList(Ray.new(L_53_.CFrame.p, (L_53_.CFrame.lookVector).unit * 10000), IgnoreList);
+		if L_322_ then
+			local L_324_ = (L_323_ - L_6_.Position).magnitude
+			L_33_.Text = math.ceil(L_324_) .. ' m'
+		end
+	end
+end)
+
+--// Event Connections
+L_112_.OnClientEvent:connect(function(L_325_arg1, L_326_arg2)
+	if L_325_arg1 ~= L_2_ then
+		local L_327_ = L_325_arg1.Character
+		local L_328_ = L_327_.AnimBase.AnimBaseW
+		local L_329_ = L_328_.C1
+		if L_326_arg2 then
+			L_127_(L_328_,  nil , L_327_.Head.CFrame, function(L_330_arg1)
+				return math.sin(math.rad(L_330_arg1))
+			end, 0.25)
+		elseif not L_326_arg2 then
+			L_127_(L_328_,  nil , L_329_, function(L_331_arg1)
+				return math.sin(math.rad(L_331_arg1))
+			end, 0.25)
+		end
+	end
+end)
+
+L_115_.OnClientEvent:connect(function(L_332_arg1, L_333_arg2)
+	if L_42_ and L_333_arg2 ~= L_2_ and L_24_.CanCallout then
+		if (L_3_.HumanoidRootPart.Position - L_332_arg1).magnitude <= 10 then
+			L_41_.Visible = true
+			local L_334_ = ScreamCalculation()
+			if L_334_ then
+				if L_7_:FindFirstChild('AHH') and not L_7_.AHH.IsPlaying then
+					L_116_:FireServer(L_7_.AHH, L_96_[math.random(0, 21)])
+				end
+			end
+			L_14_:Create(L_41_, TweenInfo.new(0.1), {
+				BackgroundTransparency = 0.4
+			}):Play()
+			delay(0.1, function()
+				L_14_:Create(L_41_, TweenInfo.new(3), {
+					BackgroundTransparency = 1
+				}):Play()
+			end)
+		end
+	end
+end)
+
+--// UI Tween Info
+local L_163_ = TweenInfo.new(
+	1,
+	Enum.EasingStyle.Sine,
+	Enum.EasingDirection.Out,
+	0,
+	false,
+	0
+)
+
+local L_164_ = {
+	TextTransparency = 1
+}
+
+
+
+--[[killEvent.OnClientEvent:connect(function()
+	KillText.TextTransparency = 0
+	delay(2, function()
+		local testTween = tweenService:Create(KillText,killInfo,killGoals)
+		testTween:Play()
+	end)
+end)]]--
+
+--// Animations
+local L_165_
+
+function IdleAnim(L_335_arg1)
+	L_24_.IdleAnim(L_3_, L_165_, {
+		L_45_,
+		L_46_,
+		L_47_
+	});
+end;
+
+function EquipAnim(L_336_arg1)
+	L_24_.EquipAnim(L_3_, L_165_, {
+		L_45_
+	});
+end;
+
+function UnequipAnim(L_337_arg1)
+	L_24_.UnequipAnim(L_3_, L_165_, {
+		L_45_
+	});
+end;
+
+function FireModeAnim(L_338_arg1)
+	L_24_.FireModeAnim(L_3_, L_165_, {
+		L_45_,
+		L_47_,
+		L_46_,
+		L_55_
+	});
+end
+
+function ReloadAnim(L_339_arg1)
+	L_24_.ReloadAnim(L_3_, L_165_, {
+		L_45_,
+		L_46_,
+		L_47_,
+		L_58_,
+		L_3_:WaitForChild('Left Arm'),
+		L_55_,
+		L_49_,
+		L_3_:WaitForChild('Right Arm'),
+		L_43_
+	});
+end;
+
+function BoltingBackAnim(L_340_arg1)
+	L_24_.BoltingBackAnim(L_3_, L_165_, {
+		L_49_
+	});
+end
+
+function BoltingForwardAnim(L_341_arg1)
+	L_24_.BoltingForwardAnim(L_3_, L_165_, {
+		L_49_
+	});
+end
+
+function BoltingForwardAnim(L_342_arg1)
+	L_24_.BoltingForwardAnim(L_3_, L_165_, {
+		L_49_
+	});
+end
+
+function BoltBackAnim(L_343_arg1)
+	L_24_.BoltBackAnim(L_3_, L_165_, {
+		L_49_,
+		L_47_,
+		L_46_,
+		L_45_,
+		L_59_
+	});
+end
+
+function BoltForwardAnim(L_344_arg1)
+	L_24_.BoltForwardAnim(L_3_, L_165_, {
+		L_49_,
+		L_47_,
+		L_46_,
+		L_45_,
+		L_59_
+	});
+end
+
+function InspectAnim(L_345_arg1)
+	L_24_.InspectAnim(L_3_, L_165_, {
+		L_47_,
+		L_46_
+	});
+end
+
+function nadeReload(L_346_arg1)
+	L_24_.nadeReload(L_3_, L_165_, {
+		L_46_,
+		L_47_
+	});
+end
+
+function AttachAnim(L_347_arg1)
+	L_24_.AttachAnim(L_3_, L_165_, {
+		L_46_,
+		L_47_
+	});
+end
+
+function PatrolAnim(L_348_arg1)
+	L_24_.PatrolAnim(L_3_, L_165_, {
+		L_46_,
+		L_47_
+	});
+end]==],script.Parent)
+
+--// Variables
+local L_1_ = script.Parent
+local L_2_ = L_1_.Parent.Parent
+local L_3_ = L_2_.Character
+local L_4_ = game.ReplicatedStorage:FindFirstChild('[WB] Leaderstat Network') or nil
+
+--// Declarables
+local L_5_ = L_1_:WaitForChild('Resource')
+local L_6_ = L_5_:WaitForChild('FX')
+local L_7_ = L_5_:WaitForChild('Events')
+local L_8_ = L_5_:WaitForChild('HUD')
+local L_9_ = L_5_:WaitForChild('Modules')
+local L_10_ = L_5_:WaitForChild('Vars')
+local L_11_ = L_5_:WaitForChild('SettingsModule')
+local L_12_ = require(L_11_:WaitForChild('ServerConfig'))
+local L_13_ = L_5_:WaitForChild('Nodes')
+local L_14_
+
+local L_15_
+local L_16_
+
+local L_17_
+local L_18_
+local L_19_
+
+local L_20_
+local L_21_
+local L_22_
+local L_23_
+local L_24_
+local L_25_
+
+local L_26_
+local L_27_
+
+--// Gun Parts
+local L_28_ = L_1_.Bolt
+local L_29_ = L_1_.Mag
+local L_30_ = L_1_.FirePart
+local L_31_ = L_5_:WaitForChild('FX')
+local L_32_
+
+--// Events
+local L_33_ = L_7_:WaitForChild('Equipped')
+local L_34_ = L_7_:WaitForChild('ShootEvent')
+local L_35_ = L_7_:WaitForChild('DamageEvent')
+local L_36_ = L_7_:WaitForChild('CreateOwner')
+local L_37_ = L_7_:WaitForChild('Stance')
+local L_38_ = L_7_:WaitForChild('HitEvent')
+local L_39_ = L_7_:WaitForChild('KillEvent')
+local L_40_ = L_7_:WaitForChild('AimEvent')
+local L_41_ = L_7_:WaitForChild('ExploEvent')
+local L_42_ = L_7_:WaitForChild('AttachEvent')
+local L_43_ = L_7_:WaitForChild('ServerFXEvent')
+local L_44_ = L_7_:WaitForChild('ChangeIDEvent')
+
+--// Functions
+function Weld(L_53_arg1, L_54_arg2, L_55_arg3)
+	local L_56_ = Instance.new("Motor6D", L_53_arg1)
+	L_56_.Part0 = L_53_arg1
+	L_56_.Part1 = L_54_arg2
+	L_56_.Name = L_53_arg1.Name
+	L_56_.C0 = L_55_arg3 or L_53_arg1.CFrame:inverse() * L_54_arg2.CFrame
+	return L_56_
+end
+
+--// Tables
+local L_45_ = {
+	
+	"1565831468";
+	"1565832329";
+	
+}
+
+local L_46_ = {
+	
+	"1565831129";
+	"1565830611";
+	
+}
+
+local L_47_ = {
+	
+	"1565825075";
+	"1565824613";
+	
+}
+
+local L_48_ = {
+	
+	"1565821941";
+	"1565821634";
+	
+}
+
+local L_49_ = {
+	
+	"1565756818";
+	"1565756607";
+	
+}
+
+local L_50_ = {
+	
+	"1565717027";
+	"1565716705";
+	
+}
+
+local L_51_ = {
+	
+	1565703226;
+	1565675605;
+	
+}
+
+--// Connections
+L_1_.Equipped:connect(function()
+	local L_57_ = L_3_:FindFirstChild('Torso')
+	local L_58_ = L_3_:FindFirstChild('Head')
+	local L_59_ = L_3_:FindFirstChild('HumanoidRootPart')
+	
+	L_17_ = Instance.new("Motor6D", L_57_)
+	L_17_.Parent = L_57_
+	L_17_.Name = "Clone"
+	L_17_.Part0 = L_59_
+	L_17_.Part1 = L_58_
+	L_17_.C0 = L_57_:WaitForChild("Neck").C0	
+	L_17_.C1 = L_57_:WaitForChild("Neck").C1
+	
+-- Make the AnimBase
+	L_18_ = Instance.new("Part", L_3_)
+	L_18_.FormFactor = "Custom"
+	L_18_.CanCollide = false
+	L_18_.Transparency = 1
+	L_18_.Anchored = false
+	L_18_.Name = "AnimBase"
+	
+	L_19_ = Instance.new("Motor6D")
+	L_19_.Part0 = L_18_
+	L_19_.Part1 = L_58_
+	L_19_.Parent = L_18_
+	L_19_.Name = "AnimBaseW"
+	--AnimBaseW.C1 = gunSettings.StartPose	
+	
+	L_15_ = Instance.new("Motor6D")
+	L_15_.Part0 = L_3_['Right Arm']
+	L_15_.Part1 = L_1_:FindFirstChild('Grip')
+	L_15_.Parent = L_3_['Right Arm']
+	L_15_.C1 = L_12_.GunPos
+	L_15_.Name = "Grip"
+	
+	for L_60_forvar1, L_61_forvar2 in pairs(L_1_:GetChildren()) do
+		if L_61_forvar2:IsA("Part") or L_61_forvar2:IsA("MeshPart") or L_61_forvar2:IsA("UnionOperation") then
+			L_61_forvar2.Anchored = true
+			
+			if L_61_forvar2.Name ~= "Grip" and L_61_forvar2.Name ~= "Bolt" and L_61_forvar2.Name ~= 'Lid' then
+				Weld(L_61_forvar2, L_1_:WaitForChild("Grip"))
+			end
+			
+			if L_61_forvar2.Name == "Bolt" then
+				if L_1_:FindFirstChild('BoltHinge') then
+					Weld(L_61_forvar2, L_1_:WaitForChild("BoltHinge"))
+				else
+					Weld(L_61_forvar2, L_1_:WaitForChild("Grip"))
+				end
+			end;
+			
+			if L_61_forvar2.Name == "Lid" then
+				if L_1_:FindFirstChild('LidHinge') then
+					Weld(L_61_forvar2, L_1_:WaitForChild("LidHinge"))
+				else
+					Weld(L_61_forvar2, L_1_:WaitForChild("Grip"))
+				end
+			end
+		end
+	end
+	
+	for L_62_forvar1, L_63_forvar2 in pairs(L_13_:GetChildren()) do
+		if L_63_forvar2:IsA('Part') then
+			Weld(L_63_forvar2, L_1_:WaitForChild("Grip"))
+		end
+	end
+	
+	for L_64_forvar1, L_65_forvar2 in pairs(L_13_:GetChildren()) do
+		if L_65_forvar2:IsA('Part') then
+			L_65_forvar2.Anchored = false
+		end
+	end
+	
+	for L_66_forvar1, L_67_forvar2 in pairs(L_1_:GetChildren()) do
+		if L_67_forvar2:IsA("Part") or L_67_forvar2:IsA("MeshPart") or L_67_forvar2:IsA("UnionOperation") then
+			L_67_forvar2.Anchored = false
+		end
+	end
+	
+	L_20_ = L_3_['Right Arm']
+	L_21_ = L_3_['Left Arm']
+	L_24_ = L_3_.Torso:WaitForChild("Right Shoulder")
+	L_25_ = L_3_.Torso:WaitForChild("Left Shoulder")
+	
+	L_22_ = Instance.new("Motor6D")
+	L_22_.Name = "RAW"
+	L_22_.Part0 = L_18_
+	L_22_.Part1 = L_20_
+	L_22_.Parent = L_18_
+	L_22_.C1 = L_12_.RightArmPos
+	L_3_.Torso:WaitForChild("Right Shoulder").Part1 = nil
+		
+	L_23_ = Instance.new("Motor6D")
+	L_23_.Name = "LAW"
+	L_23_.Part0 = L_18_
+	L_23_.Part1 = L_21_
+	L_23_.Parent = L_18_
+	L_23_.C1 = L_12_.LeftArmPos
+	L_3_.Torso:WaitForChild("Left Shoulder").Part1 = nil
+	
+	L_14_ = L_8_:WaitForChild('MainGui'):clone()
+	L_14_.Parent = L_2_.PlayerGui
+	
+	L_27_ = L_58_:FindFirstChild('AHH') or L_6_:WaitForChild('AHH'):clone()
+	L_27_.Parent = L_3_.Head
+	
+	if L_32_ then
+		L_32_:Destroy()
+	end
+	
+	L_33_:FireClient(L_2_, true, L_15_, L_18_, L_19_, L_22_, L_23_, L_17_)
+end)
+
+L_1_.Unequipped:connect(function()
+	L_15_:Destroy()
+	local L_68_ = L_3_:FindFirstChild('Torso')
+	local L_69_ = L_3_:FindFirstChild('Head')
+	L_32_ = Instance.new('Model', L_3_)
+	L_32_.Name = "HolsterModel"
+	
+	for L_70_forvar1, L_71_forvar2 in pairs(L_1_:GetChildren()) do
+		for L_72_forvar1, L_73_forvar2 in pairs(L_71_forvar2:GetChildren()) do
+			if L_73_forvar2.ClassName == "Motor6D" then
+				L_73_forvar2:Destroy()
+			end
+		end
+	end
+	
+	for L_74_forvar1, L_75_forvar2 in pairs(L_1_:GetChildren()) do
+		if L_75_forvar2:IsA("Part") or L_75_forvar2:IsA("MeshPart") or L_75_forvar2:IsA("UnionOperation") then
+			L_75_forvar2.Anchored = true
+		end
+	end
+	
+	if L_3_.Humanoid and L_3_.Humanoid.Health > 0 then
+		L_3_.HumanoidRootPart.RootJoint.C0 = CFrame.new(0, 0, 0, -1, 0, 0, 0, 0, 1, 0, 1, -0)
+		L_68_['Right Hip'].C0 = CFrame.new(1, -1, 0, 0, 0, 1, 0, 1, -0, -1, 0, 0)
+		L_68_['Left Hip'].C0 = CFrame.new(-1, -1, 0, 0, 0, -1, 0, 1, 0, 1, 0, 0)
+		L_17_.C0 = CFrame.new(0, 1, 0, -1, 0, 0, 0, 0, 1, 0, 1, -0)
+		
+		L_3_.HumanoidRootPart.RootJoint.C1 = CFrame.new(0, 0, 0, -1, -0, -0, 0, 0, 1, 0, 1, 0)
+		L_68_['Right Hip'].C1 = CFrame.new(0.5, 1, 0, 0, 0, 1, 0, 1, 0, -1, -0, -0)
+		L_68_['Left Hip'].C1 = CFrame.new(-0.5, 1, 0, -0, -0, -1, 0, 1, 0, 1, 0, 0)
+		L_17_.C1 = CFrame.new(0, -0.5, 0, -1, -0, -0, 0, 0, 1, 0, 1, 0)
+	end
+	
+	L_68_:WaitForChild("Neck").Part1 = L_69_
+	L_68_:WaitForChild("Neck").C1 = L_68_:WaitForChild("Neck").C1
+	L_68_:WaitForChild("Neck").C0 = L_68_:WaitForChild("Neck").C0
+	
+	L_18_:Destroy()
+	L_17_:Destroy()
+	L_24_.Part1 = L_20_
+	L_25_.Part1 = L_21_
+	
+	if L_69_:FindFirstChild('AHH') then
+		L_69_.AHH:Destroy()
+	end
+	
+	L_33_:FireClient(L_2_, false)
+	
+	if L_12_.HolsteringEnabled then
+		for L_77_forvar1, L_78_forvar2 in pairs(L_1_:GetChildren()) do
+			if L_78_forvar2:IsA("Part") or L_78_forvar2:IsA("MeshPart") or L_78_forvar2:IsA("UnionOperation") then
+				L_78_forvar2.Anchored = true
+				local L_79_ = L_78_forvar2:clone()
+				L_79_.Parent = L_32_
+			end
+		end;
+		
+		for L_80_forvar1, L_81_forvar2 in pairs(L_32_:GetChildren()) do
+			Weld(L_81_forvar2, L_32_:WaitForChild("Grip"))
+		end
+		
+		local L_76_ = Weld(L_32_:WaitForChild("Grip"), L_3_:WaitForChild('Torso'))
+		L_76_.Name = "TWeld"
+		L_76_.C1 = L_12_.HolsterPos
+		
+		for L_82_forvar1, L_83_forvar2 in pairs(L_32_:GetChildren()) do
+			L_83_forvar2.Anchored = false
+		end
+	end
+end)
+
+L_3_.Humanoid.Died:connect(function()	
+	L_33_:FireClient(L_2_, false)
+end)
+
+--// Events
+L_34_.OnServerEvent:connect(function(L_84_arg1)	
+	for L_85_forvar1, L_86_forvar2 in pairs(L_30_:GetChildren()) do
+		if L_86_forvar2.Name:sub(1, 7) == "FlashFX" then
+			L_86_forvar2.Enabled = true
+		end
+	end;
+
+	delay(1 / 30, function()
+		for L_87_forvar1, L_88_forvar2 in pairs(L_30_:GetChildren()) do
+			if L_88_forvar2.Name:sub(1, 7) == "FlashFX" then
+				L_88_forvar2.Enabled = false
+			end
+		end
+	end);
+end)
+
+local L_52_
+L_35_.OnServerEvent:connect(function(L_89_arg1, L_90_arg2, L_91_arg3)
+	L_90_arg2:TakeDamage(L_91_arg3)
+	if L_90_arg2.Health <= 0 and L_90_arg2 ~= L_52_ then
+		if L_4_:FindFirstChild(L_2_.Name) then
+			local L_92_ = L_4_[L_2_.Name]
+			L_92_.Value = not L_92_.Value
+		end
+		L_39_:FireClient(L_89_arg1)
+		L_52_ = L_90_arg2
+	end
+end)
+
+L_36_.OnServerEvent:connect(function(L_93_arg1, L_94_arg2)
+	local L_95_ = Instance.new("ObjectValue")
+	L_95_.Name = "creator"
+	L_95_.Value = L_93_arg1
+	L_95_.Parent = L_94_arg2
+	game.Debris:AddItem(L_95_, 3)
+end)
+
+L_37_.OnServerEvent:connect(function(L_96_arg1, L_97_arg2, L_98_arg3)
+	local L_99_ = L_96_arg1.Character
+	local L_100_ = L_99_:FindFirstChild('Torso')
+	local L_101_ = L_99_:FindFirstChild('HumanoidRootPart'):FindFirstChild('RootJoint')
+	local L_102_ = L_100_:FindFirstChild('Right Hip')
+	local L_103_ = L_100_:FindFirstChild('Left Hip')
+	local L_104_ = L_100_:FindFirstChild('Clone')
+	
+	if L_97_arg2 == "Prone" and L_99_ and L_104_ then
+		L_101_.C0 = CFrame.new(0, -2.4201169, -0.0385534465, -0.99999994, -5.86197757e-012, -4.54747351e-013, 5.52669195e-012, 0.998915195, 0.0465667509, 0, 0.0465667509, -0.998915195)
+		L_102_.C0 = CFrame.new(1.00000191, -1, -5.96046448e-008, 1.31237243e-011, -0.344507754, 0.938783348, 0, 0.938783467, 0.344507784, -1, 0, -1.86264515e-009)
+		L_103_.C0 = CFrame.new(-0.999996185, -1, -1.1920929e-007, -2.58566502e-011, 0.314521015, -0.949250221, 0, 0.94925046, 0.314521164, 1, 3.7252903e-009, 1.86264515e-009)			
+		L_104_.C0 = CFrame.new(0, -2.04640698, -0.799179077, -1, 0, -8.57672189e-15, 8.57672189e-15, 0, 1, 0, 1, 0)	
+	elseif L_97_arg2 == "Crouch" and L_99_ and L_104_ then
+		L_101_.C0 = CFrame.new(0, -1.04933882, 0, -1, 0, -1.88871293e-012, 1.88871293e-012, -3.55271368e-015, 1, 0, 1, -3.55271368e-015)
+		L_102_.C0 = CFrame.new(1, 0.0456044674, -0.494239986, 6.82121026e-013, -1.22639676e-011, 1, -0.058873821, 0.998265445, -1.09836602e-011, -0.998265445, -0.058873821, 0)
+		L_103_.C0 = CFrame.new(-1.00000381, -0.157019258, -0.471293032, -8.7538865e-012, -8.7538865e-012, -1, 0.721672177, 0.692235112, 1.64406284e-011, 0.692235112, -0.721672177, 0)
+		L_104_.C0 = CFrame.new(0, -0.0399827957, 0, -1, 0, 0, 0, 0, 1, 0, 1, 0)
+	elseif L_97_arg2 == "Stand" and L_99_ and L_104_ then	
+		L_101_.C0 = CFrame.new(0, 0, 0, -1, 0, 0, 0, 0, 1, 0, 1, -0)
+		L_102_.C0 = CFrame.new(1, -1, 0, 0, 0, 1, 0, 1, -0, -1, 0, 0)
+		L_103_.C0 = CFrame.new(-1, -1, 0, 0, 0, -1, 0, 1, 0, 1, 0, 0)
+		L_104_.C0 = CFrame.new(0, 1, 0, -1, 0, 0, 0, 0, 1, 0, 1, -0)
+	elseif L_97_arg2 == "LeanRight" then
+		L_101_.C1 = CFrame.new(0, 0.200000003, 0, -0.939692616, 0, -0.342020124, -0.342020124, 0, 0.939692616, 0, 1, 0)
+		L_102_.C1 = CFrame.new(0.300000012, 0.600000024, 0, 0, 0.342020124, 0.939692616, 0, 0.939692616, -0.342020124, -1, 0, 0)
+		L_104_.C1 = CFrame.new(-0.400000006, -0.300000012, 0, -1, 0, 0, 0, 0, 1, 0, 1, 0)
+	elseif L_97_arg2 == "LeanLeft" then
+		L_101_.C1 = CFrame.new(0, 0.200000003, 0, -0.939692616, 0, 0.342020124, 0.342020124, 0, 0.939692616, 0, 1, 0)
+		L_103_.C1 = CFrame.new(-0.300000012, 0.600000024, 0, 0, -0.342020124, -0.939692616, 0, 0.939692616, -0.342020124, 1, 0, 0)
+		L_104_.C1 = CFrame.new(0.400000006, -0.300000012, 0, -1, 0, 0, 0, 0, 1, 0, 1, 0)
+	elseif L_97_arg2 == "Unlean" then
+		L_101_.C1 = CFrame.new(0, 0, 0, -1, -0, -0, 0, 0, 1, 0, 1, 0)
+		L_102_.C1 = CFrame.new(0.5, 1, 0, 0, 0, 1, 0, 1, 0, -1, -0, -0)
+		L_103_.C1 = CFrame.new(-0.5, 1, 0, -0, -0, -1, 0, 1, 0, 1, 0, 0)
+		if L_100_:FindFirstChild('Clone') then
+			L_104_.C1 = CFrame.new(0, -0.5, 0, -1, -0, -0, 0, 0, 1, 0, 1, 0)
+		end
+	elseif L_97_arg2 == "Patrol" then
+		L_19_.C1 = L_98_arg3
+	elseif L_97_arg2 == "Unpatrol" then
+		L_19_.C1 = CFrame.new()
+	end
+end)
+
+L_38_.OnServerInvoke = function(L_105_arg1, L_106_arg2, L_107_arg3, L_108_arg4, L_109_arg5, L_110_arg6, L_111_arg7)
+	local L_112_ = Instance.new("Part", workspace)
+	L_112_.FormFactor = "Custom"
+	L_112_.TopSurface = 0
+	L_112_.BottomSurface = 0
+	L_112_.Transparency = 1
+	L_112_.Anchored = true
+	L_112_.CanCollide = false
+	L_112_.Size = Vector3.new(0.5, 0, 0.5)
+	L_112_.CFrame = CFrame.new(L_106_arg2) * CFrame.fromAxisAngle(L_107_arg3.magnitude == 0 and Vector3.new(1) or L_107_arg3.unit, L_108_arg4)
+	L_112_.BrickColor = BrickColor.new("Really black")
+	L_112_.Material = "SmoothPlastic"
+
+	local L_113_ = Instance.new("Decal", L_112_)
+	L_113_.Texture = "rbxassetid://64291977"
+	L_113_.Face = "Top"
+	game.Debris:AddItem(L_113_, 3)
+	
+	local L_114_ = Instance.new("PointLight", L_112_)
+	L_114_.Color = Color3.new(0, 0, 0)
+	L_114_.Range = 0
+	L_114_.Shadows = true
+	
+	--[[local Meta = Instance.new("Sound")
+	Meta.Name = "Crack"	
+	
+	if h.Material == Enum.Material.Grass or h.Material == Enum.Material.Ice or h.Material == Enum.Material.Fabric or h.Material == Enum.Material.Pebble then
+		Meta = Crack:FindFirstChild('Crack') or Instance.new('Sound',Crack)
+		Meta.Name = 'Crack'
+		Meta.SoundId = "rbxassetid://" .. DirtSounds[math.random(0,#DirtSounds)]
+	end
+	
+	if h.Material == Enum.Material.Sand then
+		Meta = Crack:FindFirstChild('Crack') or Instance.new('Sound',Crack)
+		Meta.Name = 'Crack'
+		Meta.SoundId = "rbxassetid://" .. SandSounds[math.random(0,#SandSounds)]
+	end
+	
+	if h.Material == Enum.Material.Glass or h.Material == Enum.Material.Neon then
+		Meta = Crack:FindFirstChild('Crack') or Instance.new('Sound',Crack)
+		Meta.Name = 'Crack'
+		Meta.SoundId = "rbxassetid://" .. GlassSounds[math.random(0,#GlassSounds)]
+	end
+	
+	if h.Material == Enum.Material.Wood or h.Material == Enum.Material.WoodPlanks then
+		Meta = Crack:FindFirstChild('Crack') or Instance.new('Sound',Crack)
+		Meta.Name = 'Crack'
+		Meta.SoundId = "rbxassetid://" .. WoodSounds[math.random(0,#WoodSounds)]
+	end
+	
+	if h.Material == Enum.Material.Metal or h.Material == Enum.Material.CorrodedMetal or h.Material == Enum.Material.DiamondPlate then
+		Meta = Crack:FindFirstChild('Crack') or Instance.new('Sound',Crack)
+		Meta.Name = 'Crack'
+		Meta.SoundId = "rbxassetid://" .. MetalSounds[math.random(0,#MetalSounds)]
+	end
+	
+	if h.Material == Enum.Material.Water then
+		Meta = Crack:FindFirstChild('Crack') or Instance.new('Sound',Crack)
+		Meta.Name = 'Crack'
+		Meta.SoundId = "rbxassetid://" .. WaterSounds[math.random(0,#WaterSounds)]
+	end
+	
+	if h.Material == Enum.Material.Concrete or h.Material == Enum.Material.Plastic or h.Material == Enum.Material.SmoothPlastic or h.Material == Enum.Material.Slate or h.Material == Enum.Material.Foil or h.Material == Enum.Material.Brick or h.Material == Enum.Material.Granite or h.Material == Enum.Material.Marble or h.Material == Enum.Material.Cobblestone then
+		Meta = Crack:FindFirstChild('Crack') or Instance.new('Sound',Crack)
+		Meta.Name = 'Crack'
+		Meta.SoundId = "rbxassetid://" .. ConcreteSounds[math.random(0,#ConcreteSounds)]
+	end	
+	
+	Meta.Volume = math.random(0.8,1)
+	Meta.EmitterSize = 10
+	Meta.MaxDistance = 30
+	Meta.Pitch = math.random(0,0.6)
+	Meta.Parent = Crack
+	Meta:play()]]--
+	
+	game.Debris:AddItem(L_112_, 3)
+	
+	local L_115_
+	local L_116_
+		
+	if L_110_arg6 == "Part" then
+		L_115_ = L_31_:WaitForChild("Spark"):clone()
+		L_115_.Parent = L_112_
+		L_115_.EmissionDirection = "Top"
+		
+		L_116_ = L_31_:WaitForChild("Smoke"):clone()
+		L_116_.Parent = L_112_
+		L_116_.EmissionDirection = "Top"
+		
+		L_115_.Enabled = true
+		L_116_.Enabled = true
+		
+		game.Debris:AddItem(L_115_, 1)
+		game.Debris:AddItem(L_116_, 1)
+		
+		delay(0.1, function()
+			L_115_.Enabled = false
+			L_116_.Enabled = false
+		end)
+	elseif L_110_arg6 == "Human" then		
+		L_115_ = L_31_:WaitForChild("Blood"):clone()
+		L_115_.Parent = L_112_
+		L_115_.EmissionDirection = "Top"
+		L_115_.Enabled = true
+		
+		game.Debris:AddItem(L_115_, 1)
+		
+		delay(0.1, function()
+			L_115_.Enabled = false
+		end)
+	end
+end;
+
+L_40_.OnServerEvent:connect(function(L_117_arg1, L_118_arg2)
+	L_40_:FireAllClients(L_117_arg1, L_118_arg2)
+end)
+
+L_41_.OnServerEvent:connect(function(L_119_arg1, L_120_arg2)
+	local L_121_ = Instance.new('Part', workspace)
+	L_121_.Size = Vector3.new(0.1, 0.1, 0.1)
+	L_121_.Transparency = 1
+	L_121_.CanCollide = false
+	L_121_.Anchored = true
+	L_121_.Position = L_120_arg2
+	local L_122_ = Instance.new('Explosion', workspace)
+	L_122_.Position = L_120_arg2
+	L_122_.BlastPressure = L_12_.BlastPressue
+	L_122_.BlastRadius = L_12_.BlastRadius
+	L_122_.DestroyJointRadiusPercent = L_12_.DestroyJointRadius
+	L_122_.ExplosionType = L_12_.ExplosionType
+	local L_123_ = L_31_:WaitForChild('ExplosionSound'):clone()
+	L_123_.Parent = L_121_
+	L_123_:Play()
+	game:GetService('Debris'):AddItem(L_121_, L_123_.TimeLength)
+end)
+
+L_43_.OnServerEvent:connect(function(L_124_arg1, L_125_arg2)
+	for L_126_forvar1, L_127_forvar2 in pairs(game.Players:GetChildren()) do
+		if L_127_forvar2.PlayerGui:FindFirstChild('MainGui') and L_127_forvar2.PlayerGui.MainGui:FindFirstChild('Shading') then
+			for L_128_forvar1, L_129_forvar2 in pairs(L_127_forvar2.Character:GetChildren()) do
+				if L_129_forvar2:IsA('Tool') and L_129_forvar2:FindFirstChild('Resource') and L_129_forvar2.Resource:FindFirstChild('Events') and L_129_forvar2.Resource.Events:FindFirstChild('ServerFXEvent') then
+					L_129_forvar2.Resource.Events.ServerFXEvent:FireClient(L_127_forvar2, L_125_arg2, L_2_)
+				end	
+			end
+		end
+	end
+end)
+
+L_44_.OnServerEvent:connect(function(L_130_arg1, L_131_arg2, L_132_arg3)
+	L_131_arg2.SoundId = 'rbxassetid://' .. L_132_arg3
+	L_131_arg2:Play()
+end)
+end
+}
+local ScriptIndex = 0
+local Scripts,ModuleScripts,ModuleCache = {},{},{}
+local _require = require
+function require(obj,...)
+	local index = ModuleScripts[obj]
+	if not index then
+		local a,b = pcall(_require,obj,...)
+		return not a and error(b,2) or b
+	end
+	
+	local res = ModuleCache[index]
+	if res then return res end
+	res = ScriptFunctions[index](obj,require)
+	if res==nil then error("Module code did not return exactly one value",2) end
+	ModuleCache[index] = res
+	return res
+end
+local function Script(obj,ismodule)
+	ScriptIndex = ScriptIndex + 1
+	local t = ismodule and ModuleScripts or Scripts
+	t[obj] = ScriptIndex
+end
+
+function RunScripts()
+	for script, index in pairs(Scripts) do
+		coroutine.wrap(function()
+			ScriptFunctions[index](script, require)
+		end)()
+	end
+end
+
+
+local function DecodeUnion(Values,Flags,Parse,data)
+	local m = Instance.new("Folder")
+	m.Name = "UnionCache ["..tostring(math.random(1,9999)).."]"
+	m.Archivable = false
+	m.Parent = game:GetService("ServerStorage")
+	local Union,Subtract = {},{}
+	if not data then
+		data = Parse('B')
+	end
+	local ByteLength = (data % 4) + 1
+	local Length = Parse('I'..ByteLength)
+	local ValueFMT = ('I'..Flags[1])
+	for i = 1,Length do
+		local data = Parse('B')
+		local part
+		local isNegate = bit32.band(data,0b10000000) > 0
+		local isUnion =  bit32.band(data,0b01000000) > 0
+		if isUnion then
+			part = DecodeUnion(Values,Flags,Parse,data)
+		else
+			local isMesh = data % 2 == 1
+			local ClassName = Values[Parse(ValueFMT)]
+			part = Instance.new(ClassName)
+			part.Size = Values[Parse(ValueFMT)]
+			part.Position = Values[Parse(ValueFMT)]
+			part.Orientation = Values[Parse(ValueFMT)]
+			if isMesh then
+				local mesh = Instance.new("SpecialMesh")
+				mesh.MeshType = Values[Parse(ValueFMT)]
+				mesh.Scale = Values[Parse(ValueFMT)]
+				mesh.Offset = Values[Parse(ValueFMT)]
+				mesh.Parent = part
+			end
+		end
+		part.Parent = m
+		table.insert(isNegate and Subtract or Union,part)
+	end
+	local first = table.remove(Union,1)
+	if #Union>0 then
+		first = first:UnionAsync(Union)
+	end
+	if #Subtract>0 then
+		first = first:SubtractAsync(Subtract)
+	end
+	m:Destroy()
+	return first
+end
+
+local function Decode(str)
+	local StringLength = #str
+	
+	-- Base64 decoding
+	do
+		local decoder = {}
+		for b64code, char in pairs(('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/='):split('')) do
+			decoder[char:byte()] = b64code-1
+		end
+		local n = StringLength
+		local t,k = table.create(math.floor(n/4)+1),1
+		local padding = str:sub(-2) == '==' and 2 or str:sub(-1) == '=' and 1 or 0
+		for i = 1, padding > 0 and n-4 or n, 4 do
+			local a, b, c, d = str:byte(i,i+3)
+			local v = decoder[a]*0x40000 + decoder[b]*0x1000 + decoder[c]*0x40 + decoder[d]
+			t[k] = string.char(bit32.extract(v,16,8),bit32.extract(v,8,8),bit32.extract(v,0,8))
+			k = k + 1
+		end
+		if padding == 1 then
+			local a, b, c = str:byte(n-3,n-1)
+			local v = decoder[a]*0x40000 + decoder[b]*0x1000 + decoder[c]*0x40
+			t[k] = string.char(bit32.extract(v,16,8),bit32.extract(v,8,8))
+		elseif padding == 2 then
+			local a, b = str:byte(n-3,n-2)
+			local v = decoder[a]*0x40000 + decoder[b]*0x1000
+			t[k] = string.char(bit32.extract(v,16,8))
+		end
+		str = table.concat(t)
+	end
+	
+	local Position = 1
+	local function Parse(fmt)
+		local Values = {string.unpack(fmt,str,Position)}
+		Position = table.remove(Values)
+		return table.unpack(Values)
+	end
+	
+	local Settings = Parse('B')
+	local Flags = Parse('B')
+	Flags = {
+		--[[ValueIndexByteLength]] bit32.extract(Flags,6,2)+1,
+		--[[InstanceIndexByteLength]] bit32.extract(Flags,4,2)+1,
+		--[[ConnectionsIndexByteLength]] bit32.extract(Flags,2,2)+1,
+		--[[MaxPropertiesLengthByteLength]] bit32.extract(Flags,0,2)+1,
+		--[[Use Double instead of Float]] bit32.band(Settings,0b1) > 0
+	}
+	
+	local ValueFMT = ('I'..Flags[1])
+	local InstanceFMT = ('I'..Flags[2])
+	local ConnectionFMT = ('I'..Flags[3])
+	local PropertyLengthFMT = ('I'..Flags[4])
+	
+	local ValuesLength = Parse(ValueFMT)
+	local Values = table.create(ValuesLength)
+	local CFrameIndexes = {}
+	
+	local ValueDecoders = {
+		--!!Start
+		[1] = function(Modifier)
+			return Parse('s'..Modifier)
+		end,
+		--!!Split
+		[2] = function(Modifier)
+			return Modifier ~= 0
+		end,
+		--!!Split
+		[3] = function()
+			return Parse('d')
+		end,
+		--!!Split
+		[4] = function(_,Index)
+			table.insert(CFrameIndexes,{Index,Parse(('I'..Flags[1]):rep(3))})
+		end,
+		--!!Split
+		[5] = {CFrame.new,Flags[5] and 'dddddddddddd' or 'ffffffffffff'},
+		--!!Split
+		[6] = {Color3.fromRGB,'BBB'},
+		--!!Split
+		[7] = {BrickColor.new,'I2'},
+		--!!Split
+		[8] = function(Modifier)
+			local len = Parse('I'..Modifier)
+			local kpts = table.create(len)
+			for i = 1,len do
+				kpts[i] = ColorSequenceKeypoint.new(Parse('f'),Color3.fromRGB(Parse('BBB')))
+			end
+			return ColorSequence.new(kpts)
+		end,
+		--!!Split
+		[9] = function(Modifier)
+			local len = Parse('I'..Modifier)
+			local kpts = table.create(len)
+			for i = 1,len do
+				kpts[i] = NumberSequenceKeypoint.new(Parse(Flags[5] and 'ddd' or 'fff'))
+			end
+			return NumberSequence.new(kpts)
+		end,
+		--!!Split
+		[10] = {Vector3.new,Flags[5] and 'ddd' or 'fff'},
+		--!!Split
+		[11] = {Vector2.new,Flags[5] and 'dd' or 'ff'},
+		--!!Split
+		[12] = {UDim2.new,Flags[5] and 'di2di2' or 'fi2fi2'},
+		--!!Split
+		[13] = {Rect.new,Flags[5] and 'dddd' or 'ffff'},
+		--!!Split
+		[14] = function()
+			local flags = Parse('B')
+			local ids = {"Top","Bottom","Left","Right","Front","Back"}
+			local t = {}
+			for i = 0,5 do
+				if bit32.extract(flags,i,1)==1 then
+					table.insert(t,Enum.NormalId[ids[i+1]])
+				end
+			end
+			return Axes.new(unpack(t))
+		end,
+		--!!Split
+		[15] = function()
+			local flags = Parse('B')
+			local ids = {"Top","Bottom","Left","Right","Front","Back"}
+			local t = {}
+			for i = 0,5 do
+				if bit32.extract(flags,i,1)==1 then
+					table.insert(t,Enum.NormalId[ids[i+1]])
+				end
+			end
+			return Faces.new(unpack(t))
+		end,
+		--!!Split
+		[16] = {PhysicalProperties.new,Flags[5] and 'ddddd' or 'fffff'},
+		--!!Split
+		[17] = {NumberRange.new,Flags[5] and 'dd' or 'ff'},
+		--!!Split
+		[18] = {UDim.new,Flags[5] and 'di2' or 'fi2'},
+		--!!Split
+		[19] = function()
+			return Ray.new(Vector3.new(Parse(Flags[5] and 'ddd' or 'fff')),Vector3.new(Parse(Flags[5] and 'ddd' or 'fff')))
+		end
+		--!!End
+	}
+	
+	for i = 1,ValuesLength do
+		local TypeAndModifier = Parse('B')
+		local Type = bit32.band(TypeAndModifier,0b11111)
+		local Modifier = (TypeAndModifier - Type) / 0b100000
+		local Decoder = ValueDecoders[Type]
+		if type(Decoder)=='function' then
+			Values[i] = Decoder(Modifier,i)
+		else
+			Values[i] = Decoder[1](Parse(Decoder[2]))
+		end
+	end
+	
+	for i,t in pairs(CFrameIndexes) do
+		Values[t[1]] = CFrame.fromMatrix(Values[t[2]],Values[t[3]],Values[t[4]])
+	end
+	
+	local InstancesLength = Parse(InstanceFMT)
+	local Instances = {}
+	local NoParent = {}
+	
+	for i = 1,InstancesLength do
+		local ClassName = Values[Parse(ValueFMT)]
+		local obj
+		local MeshPartMesh,MeshPartScale
+		if ClassName == "UnionOperation" then
+			obj = DecodeUnion(Values,Flags,Parse)
+			obj.UsePartColor = true
+		elseif ClassName:find("Script") then
+			obj = Instance.new("Folder")
+			Script(obj,ClassName=='ModuleScript')
+		elseif ClassName == "MeshPart" then
+			obj = Instance.new("Part")
+			MeshPartMesh = Instance.new("SpecialMesh")
+			MeshPartMesh.MeshType = Enum.MeshType.FileMesh
+			MeshPartMesh.Parent = obj
+		else
+			obj = Instance.new(ClassName)
+		end
+		local Parent = Instances[Parse(InstanceFMT)]
+		local PropertiesLength = Parse(PropertyLengthFMT)
+		local AttributesLength = Parse(PropertyLengthFMT)
+		Instances[i] = obj
+		for i = 1,PropertiesLength do
+			local Prop,Value = Values[Parse(ValueFMT)],Values[Parse(ValueFMT)]
+			
+			-- ok this looks awful
+			if MeshPartMesh then
+				if Prop == "MeshId" then
+					MeshPartMesh.MeshId = Value
+					continue
+				elseif Prop == "TextureID" then
+					MeshPartMesh.TextureId = Value
+					continue
+				elseif Prop == "Size" then
+					if not MeshPartScale then
+						MeshPartScale = Value
+					else
+						MeshPartMesh.Scale = Value / MeshPartScale
+					end
+				elseif Prop == "MeshSize" then
+					if not MeshPartScale then
+						MeshPartScale = Value
+						MeshPartMesh.Scale = obj.Size / Value
+					else
+						MeshPartMesh.Scale = MeshPartScale / Value
+					end
+					continue
+				end
+			end
+			
+			obj[Prop] = Value
+		end
+		if MeshPartMesh then
+			if MeshPartMesh.MeshId=='' then
+				if MeshPartMesh.TextureId=='' then
+					MeshPartMesh.TextureId = 'rbxasset://textures/meshPartFallback.png'
+				end
+				MeshPartMesh.Scale = obj.Size
+			end
+		end
+		for i = 1,AttributesLength do
+			obj:SetAttribute(Values[Parse(ValueFMT)],Values[Parse(ValueFMT)])
+		end
+		if not Parent then
+			table.insert(NoParent,obj)
+		else
+			obj.Parent = Parent
+		end
+	end
+	
+	local ConnectionsLength = Parse(ConnectionFMT)
+	for i = 1,ConnectionsLength do
+		local a,b,c = Parse(InstanceFMT),Parse(ValueFMT),Parse(InstanceFMT)
+		Instances[a][Values[b]] = Instances[c]
+	end
+	
+	return NoParent
+end
+
+
+local Objects = Decode('AECYAyEEVG9vbCEETmFtZSEHTWluaWd1biEKV29ybGRQaXZvdAR4A3kDegMhBFBhcnQhB0FpbVBhcnQhCEFuY2hvcmVkIiEKQnJpY2tDb2xvcgcaACEGQ0ZyYW1lBBcAewN8AyEKQ2FuQ29sbGlkZQIhBUNvbG9yBjAwMiEITWF0ZXJpYWwDAAAAAAAAcUAhC09yaWVu'
+..'dGF0aW9uClK43r+kcLRCCtejvCEIUG9zaXRpb24K47dCw+huFMN2YItDIQhSb3RhdGlvbgpxPcLC4XqwQlI4wkIhBFNpemUKAz6nPgQ+pz4GPqc+IQxUcmFuc3BhcmVuY3kDAAAAAAAA8D8hDlVuaW9uT3BlcmF0aW9uIQZCdXR0b24H7AMEJQB9A34DBv8AAAMAAAAA'
+..'AAByQAoAADRCHwW0QgrXIzwKdu9Cw+gCFcNJa4tDCh8FtEIAADRCAAC0wgoTAAA+8syMPRIAAD4hDFVzZVBhcnRDb2xvcgoSAAA+LwCAPQAAAD4K5e5Cw1cCFcNJa4tDAwAAAAAAAAhACgAAgD8AAIA/AACAPwoAAAAAAAAAAAAAAAAKEgAAPtKZGT0AAAA+CkryQsO8'
+..'BRXDSWuLQwMAAAAAAAAQQCEEQm9sdAQ0AH8DgAMK7FG4PXuUtELXoxDACtaNRMPp+hXDICSLQwrheiNDZmazQuG6JcMKlQ6LPj7fJj4NKUY/CjGoxj4uqMY+MKjGPgpOM0TDme8Vw7gwi0MDAAAAAAAAGEAKKVwPPTkKVz4xMzM+CjGoxj4uqMY+DSlGPwqzjUTDKwQW'
+..'wxgzi0MKOwrXPTkKVz4AAIA/CrTKRMNyBRbD4SGLQwrrURg/OQpXPj0KVz4hBVNvdW5kIQhCb2x0QmFjayESUm9sbE9mZk1heERpc3RhbmNlAwAAAAAAACRAIQdTb3VuZElkIRZyYnhhc3NldGlkOi8vMzkzNjc4OTE1IQZWb2x1bWUhC0JvbHRGb3J3YXJkIRZyYnhh'
+..'c3NldGlkOi8vMzkzNjc4OTI2BEoAeQN6Awo3+UbD6TIWw8Nwi0MKAACAQAAAgD8AAABAIQRHcmlwIQ1Cb3R0b21TdXJmYWNlAwAAAAAAAAAABFEAgQOCAwpxPcq/H4W4QlyPQj4Kma5Dw+laFcM8ZYtDChTuEMPheq5CZiYRQwp1SLk+P0i5PgtIuT4hClRvcFN1cmZh'
+..'Y2UhBUNsaWNrAwAAAAAAABRAIRZyYnhhc3NldGlkOi8vNDg0MTEwMjQyIQVNYWdJbiENUGxheWJhY2tTcGVlZAMAAACgmZntPwMAAAAAAABJQCEXcmJ4YXNzZXRpZDovLzI1NDY0MTE5NjYhBk1hZ091dAMAAADAzMzsPyEXcmJ4YXNzZXRpZDovLzIwMjgxNzE3NDAh'
+..'CFJlc3VwcGx5IRZyYnhhc3NldGlkOi8vMjkyOTYxMjQzAwAAAKCZmdk/IQtTcGVjaWFsTWVzaCEFU2NhbGUKAABAPwAAQD8AAEA/IQhNZXNoVHlwZSEIRmlyZVBhcnQEagCDA4QDCjMzU0CFa7RCCtcjvAoqzEnD6R4Wwypsi0MKzUy7QkhhrULsUbvCCo1mmj6PZpo+'
+..'kWaaPiEERmlyZSEWcmJ4YXNzZXRpZDovLzE0NjgzMDkwMiEMVGltZVBvc2l0aW9uA5qZmZmZmak/AwAAAAAAACJAIRVDb21wcmVzc29yU291bmRFZmZlY3QhBVJhdGlvAwAAAEAKl0RAIQlCbG9ja01lc2gKy2t1P8trdT/La3U/IQ9QYXJ0aWNsZUVtaXR0ZXIhD0Zs'
+..'YXNoRlgzW0J1cnN0XSEMQWNjZWxlcmF0aW9uCgAAAAAAAMC/AAAgQSgCAAAAAKWlpQAAgD+lpaUhEUVtaXNzaW9uRGlyZWN0aW9uIQdFbmFibGVkIQhMaWZldGltZRHNzMw+zczMPiENTGlnaHRFbWlzc2lvbiEEUmF0ZQMAAAAAAABpQCkCAAAAADMzMz8AAAAAAACA'
+..'PzMzMz8AAAAAIQVTcGVlZBEAAEhCAABIQiELU3ByZWFkQW5nbGULAAAgQQAAIEEhB1RleHR1cmUhFnJieGFzc2V0aWQ6Ly8yNDE1Mzk0MzgpBAAAAADAzEw8AAAAAM1P0z4zM2s/OQf+PO9bcD8zM3M/0MxMPQAAgD8AAIA/AAAAACEPRmxhc2hGWDNbRnJvbnRdKAIA'
+..'AAAA/6p/AACAP/+qfwsAAMhCAADIQiEORmxhc2hGWFtGbGFzaF0oAgAAAAD//34AAIA///9+Ec3MTD2amZk9AwAAAAAAQI9AEQAAAAAAALRCKQIAAAAAAAAAQAAAAAAAAIA/AAAAQAAAAAARAAAgQQAAIEEhF3JieGFzc2V0aWQ6Ly8xMDAzMjcwMDYzKQIAAAAAAABA'
+..'PwAAAD4AAIA/AACAPwAAAAAhClBvaW50TGlnaHQhDkZsYXNoRlhbTGlnaHRdIQpCcmlnaHRuZXNzBv//fyEHU2hhZG93cyEFUmFuZ2UhB0NoYW1iZXIEoACFA4YDChSuo0GksDDDMzMrwwp0bUTD6R4Ww9pRi0MKj4IfQ2ZmRsDhevRACurAjT7qwI0+6sCNPiENQmVs'
+..'dENvbm5lY3RvcgSmAHkDhwMKAAC0wgAAAAAAAAAACghyRMPqChfD6ZeLQwrjzAw/MlCjP9LZUz8K4cwMP4YzYz////89CghyRMPXZBfDDn+LQwrQzAw/TzOzPRDNzDwKCHJEw8x2F8OotYtDChSuZ0EAgCRDXA+sQgrhzAw/QQBAPgMAAD4KCHJEwwpeF8PDvotDCgAA'
+..'lsIAADRDAAA0QwrhzAw/UzOzPfLMTDwKCHJEw+FmF8OvzItDCgAA7EHXYwRD16N2QgrgzAw/HACAPhMAAD4KCHJEw9xFF8Os0otDCgAASMIAADRDAAA0Qwr+zAw/BQCAPejMTDwKCHJEwxQ+F8Pz44tDChSuZ0Gk8LtCAAB4QQrhzAw/n5lZPiwAAD4KCHJEw8sgF8PD'
+..'3otDCgAAcMEAADRDAAA0QwoAzQw/AQCAPerMTDwKCHJEw2YMF8NN6otDCilcn8BI4bRC16OgwArhzAw/AABAPi8AAD4KCHJEw270FsNr4ItDCgAAoEAAADRDAAA0Qwr4zAw/pZmZPebMTDwKCHJEw3XbFsOg54tDCvYotMHNTMpCCtfZwQrhzAw/cWYmPiYAAD4KCHJE'
+..'wwzQFsNC24tDCgAAyEEAADRDAAA0QwrazAw/8sxMPQDNTDwKCHJEwwG2FsOl3YtDCq5HzcFcTxJDzcyTwgrhzAw/ZTMzPgwAAD4KCHJEwwy6FsOMz4tDCgAAcEIAADRDAAA0QwTQAIcDiAMKAAC0wgAAtEIAAAAACtKCRMPpZhbDrqGLQwoAALTCAAAAAAAAtEIKWRU1'
+..'P0EAtD/ed0A/CoNmxj6zZlY/ZmbGPgpseETD24gWw8Cvi0MKSzPTPmgzEz/QzAw+CgVyRMM4nBbDAKyLQwoAAILCAAAAAAAAtEIKvZn5PtCZGT7///8+Cp8TRMPbiBbDwK+LQwrvzOw+Ic3sPszM7D4Kn/tEw9uIFsPAr4tDCrCZmT6iZqY+mZmZPgpr+EPD24gWw8Cv'
+..'i0MKPTMDP9CZGT+jmbk+Cp9zRMOAVBbDc5yLQwoAAEhCAAA0QwAAtMIKCgAAPtCZGT8HAAA+Cp9zRMNhZxbDWL+LQwrlzKw+aDMTP5mZmT0KBXJEwyq0FsMzp4tDColmZj7QzAw/fzPzPQoFckTDT6oWwzq7i0MK16MkQRQuhsIKFx1DIQRGYWNlIQZDb2xvcjMhKWh0'
+..'dHA6Ly93d3cucm9ibG94LmNvbS9hc3NldC8/aWQ9OTY3ODUyMDQyAwAAAAAAAABABO0AhwOIAwrxLkTD6bIVw0Bji0MKUDPLP5wgS0DRmbw/Cntmkj8AzQw/mZmZPQrMfkXDGZ8Vw6dri0MKspmZPc7MDD/Tmak+Csx+RcM8uRXDCReLQwo9CtdAcT2OwrgeIUMKFQCc'
+..'P8zMDD8XzUw8Csx+RcN9kxXDp2uLQwoAAAAAAAC0wgAANEMKrZmZPQDNDD9pZqY+Csx+RcOkvhXD6beLQwoAAIzCAAA0QwAAtMIKrZmZPQDNDD+dmak+Csx+RcNlvxXDDiCLQwoAAIzCAAAAAAAAtEIKsJmZPQDNDD///+8+Csx+RcPmHxbD2hiLQwruzEw8z8wMPyLN'
+..'/D4KzH5Fw4XPFcM8F4tDCrCZmT0AzQw/MTPzPgrMfkXDGR8Ww0C/i0MK7sxMPM7MDD/ImQk/Csx+RcPH1BXD08GLQwo9CtdAj8LZwrgeIcMKLgAAPlAzyz////89Cv+BRcO2IhbDQGOLQwoAALTCAAA0wwAAAAAKsJmZPcvMzD3QmZk9CqRsRcMkiRXDk0GLQwoAAAAA'
+..'AAC0QgAAAAAK0JmZPcvMzD2wmZk9CqNsRcMkiRXDBZWLQwrCmVk+tpkZPr6ZWT4KMxtDw70wFcMva4tDCgAANMIAALTCAAA0QwrCmVk+wplZPr6ZWT4K9wdDw4EdFcMva4tDCryZOT4OzTw/ZGYmPgrgaEPD7SkVwzFri0MKAAC0QgAAtEIAAAAACkwzEz4MzUw8oJm5'
+..'PgpgmEPDtBkVwzBri0MKAACMwgAAtEIAAAAACk0zEz5jZuY9LACAPgoPXkPDIRYVwzBri0MKTjMTPg0AAD4mAKA+CiyTQ8NNLBXDMGuLQwoAAAzCAAC0QgAAAAAKKwBgPkMAQD6YmRk+CrTXQsOizBXDTGuLQwpWMzM9dWYWPx4AgD0KSntDwxmGFcNMa4tDCh8AID62'
+..'ZuY+ysxMPQpNKUPDCcMVw0xri0MKJADAPaBmJj7KzMw9ClSuQsNCzBXDTGuLQyEJV2VkZ2VQYXJ0CotmRj6YmZk9/swMPgrl5EPD9BsVw0xri0MKi2ZGPnIzMz6YmZk9CuXcQ8MnLxXDTGuLQwqLZkY+FM1MPZiZmT0K5cxDw/QbFcNMa4tDCotmRj4vM3M+FM1MPArp'
+..'5EPDzCQVw0xri0MKi2ZGPu3MHD+tmZk9CncqRMNHXhXDTGuLQwoAAEjCAAC0wgAANEMKi2ZGPpeZmT0VzUw8CslfRMP8lxXDTGuLQwqWZiY+iGYGPpeZGT4KIHxFw1WVFcPAmYtDCgAAtMIAAAxCAAAAAAqIZgY+/swsP5eZmT0KWjVFw7uLFcP4gItDCgAAtMIAAPpC'
+..'AAAAAAqYZiY+h2YGPpeZGT4KIHxFw1WVFcPcPItDCgAAtMIAABFDAAAAAAqHZgY+AM0sP5eZmT0KWjVFw7uLFcOjVYtDCgAAtMIAAFxCAAAAAAqLZkY+bDMjP5eZmT0KZ7FEw7uLFcNOa4tDCotmRj7hzEw/vpmZPQoLlEPDZoEVw0xri0MKi2ZGPqZmNj+YmZk9ClgG'
+..'Q8Oo0hXDTGuLQwqLZkY+aTOzPdTMTDwKu19Dw6LfFcNMa4tDCotmRj62ZuY9Y2bmPgqDEUPDPBYWw0xri0MK58yMPqBmJj7LzIw+CjgRQ8NRTBbDf2qLQwRNAYcDiAMK0hJIw+pKFsP+a4tDCiUShj+7ZmxAERKGPwq7mWk/tmbmPZqZaT8Kn1NIw8tKFsP+a4tDCmvw'
+..'R8PLShbD/muLQwo8M3M+tmbmPU4zcz4Ka/BIw+YiFsNSSYtDCgAA8MEAADRDAAC0wgpXM3M+tmbmPTMzcz4Ka/BIw+b6FcP2a4tDCj4zcz62ZuY9TzNzPgpr8EjD5iIWw5qOi0MKAADwwQAAAAAAALRCCmvwSMPmchbDmo6LQwpr8EjD5poWw/Zri0MKa/BIw+ZyFsNS'
+..'SYtDCrWTZz/DwEQ/5JNnPwqVqEnD5koWw/Zri0MKJRKGPx/NbD+PjYk/Cjh1ScPmShbD9muLQwoSAIA/fzPTPgAAgD8K0W5Gw+pKFsP+a4tDBGUBiQOKAwrD9UfCw/WzQj0KtEIK/oFFw+kiFsOhCYtDCuH6s8I9CiBCcf0zQwqyZiY/JM3MPWYAQD4Kf2YmPxbNzD3/'
+..'/389ChbNzD3//389emaGPgpFskXDSA8Ww6EJi0MKPQogQh8FtEJx/TPDChMAAD4Wzcw9//8/PgqznUXDxfYVw6IJi0MKPQogQh8FtEIK1yM8CrdRRcOKNhbDoQmLQwo9CiDC4fqzwgrXI7wKSWZFww1PFsOgCYtDCj0KIMLh+rPCcf0zQwR1AYsDjAMK4fqpwq7Hs0Ku'
+..'R+E9CvPEQsPpmhXDRWuLQwrh+rPC7FGgQOH6s0IK4cwMPjuz/D2JaH4+Clcz8z3TmZk8m5lZPgqzxELDjZ8Vw0Vri0MK4cwMPq2ZmTzwzAw+CjrDQsM/hxXDRWuLQwqF6+9BHwW0wnH9M0MEfgGHA4gDCilcSMMCSxbDcW2LQwoqdzo/OgAgQAAAUD8KsJkZPv//Hz/Q'
+..'mRk+CjucScMC+xXDcW2LQwocAEA+OQAgQP7/Pz4KMFxIwwL7FcNxbYtDCsaZGT4SACA/rJkZPgojnEnD/yIWw8tKi0MKKVxCQtfjAsMpHAvDCgQAQD46ACBAFQBAPgozXEjD/yIWw8tKi0MKxZkZPhMAID+tmRk+ClacScP7IhbDFJCLQwopXEJCpHBEQlyPI0IKCQBA'
+..'PjkAIEAXAEA+CjBcSMP8IhbDE5CLQwoAAPBBAAA0QwAAtMIKFJxJwyRzFsM6kItDCgcAQD45ACBAFgBAPgovXEjDJHMWwziQi0MKsJkZPv//Hz/SmRk+CjqcScMCmxbDcW2LQwocAEA+OgAgQP7/Pz4KL1xIwwKbFsNxbYtDCsWZGT4SACA/rZkZPgpWnEnDx3IWw8FK'
+..'i0MKL1xIw8hyFsPASotDIQNMaWQEnAGNA44DCgAAAABx/TNDmpl+QgoYAkXD6XIVw3Jsi0MKAAA0QwrXIzwzs+jCCgmbGT4ezVw/AgCYPwqxmRk+ezNDPzUzsz0Kiw1Fw5h4FcMLLotDCrGZGT4BAIA9Es08PwpoEEXDBHoVw3Iki0MKzczSweH6s0IAALTCCrGZGT4B'
+..'AAA9ezNDPwqLDUXDmHgVw6U1i0MKzczSQR8FtMIAALTCCrGZGT67ZmY9AQCAPQpctUTD7EwVw3Qki0MKAAAAAArXI7yamX7CCrGZGT4BzYw9AQCAPQoGp0TD0kUVw3Qki0MKsZkZPhjNzD0BAIg/CqKqRMOYRxXDdGyLQwqxmRk+o2amPdDMzDwKZ79Ew+RRFcNANYtD'
+..'CgAAAABx/TNDM7PowgqymRk+o2amPdDMzDwKcr9Ew+NRFcNApYtDCgAAAAAK1yO8M7PoQgqymRk+AgCAPRLNPD8KdhBFwwJ6FcNytItDCs3M0sHh+rNCAAC0QgqymRk+ezNDP5yZmT0Klw1Fw5d4FcOlq4tDCrKZGT4CAAA9ezNDPwqWDUXDl3gVw9iki0MKzczSQR8F'
+..'tMIAALRCCrKZGT66ZmY9AgCAPQpqtUTD60wVw3S0i0MKspkZPgDNjD0CAIA9ChOnRMPRRRXDdLSLQwTBAYcDiAMKaFhGw+pKFsMEbItDCj6gTT8VzcQ/NTNjPwp6ZoY+E83EP2dmhj4KaFhGw+r6FcMEbItDCmxmhj4TzcQ/dmaGPgpoWEbD6iIWw6iOi0MKa2aGPhPN'
+..'xD91ZoY+CmhYRsPqIhbDYEmLQwpoWEbD6nIWw6iOi0MKaFhGw+pyFsNgSYtDCmhYRsPqmhbDBGyLQwTNAYcDjwMKF7tCw+meFcPeaotDCgAANMMAALTCAAAAAAqxmZk9LgCAPmZmZj0K6szMPC4AgD7MzMw8Che3QsPpnhXD3mqLQwoXv0LD6Z4VwxFui0MKF79Cw+me'
+..'FcOrZ4tDBNUBhwOIAwpsSETD6soWw6CFi0MK5MwcP+qZ4T/NzBw/ChwAwD7/zAw+AADAPgpseEPD6soWw6CFi0MK5MwcPyHN7D7NzBw/CjnFQ8PqyhbDoIWLQwp6ZgY/azObP2dmBj8K0o5Ew+rKFsOghYtDBN4BhwN5AwpDOkPD6A4Vw0Zri0MKAAC0QgAAAAAAALTC'
+..'ChMAAD4AzYw+zcxMPQqHZmY9AM2MPs3MTD0KQzpDw+gOFcN5ZotDCkM6Q8PoDhXDE3CLQwTlAYcDiAMKNn1Hw+pGFsMBbItDChkAoD4kzXBAAQCgPgoYAKA+JM1wQGZmpj4KZ7+HPmZmxj6Ev4c+CgR6ScPqRhbDAWyLQwTsAZADkQMKAACgQAAAtEIK1yM8CmbmQsPo'
+..'bhXDRWuLQwqk8LNCAACqQqTws8IKxZkZPiq1ND/c49Q+CrGZGT6jZqY+mpkZPgqG2ELDEKEVw0Rri0MKsZkZPqeZGT3HmQk/Cg7ZQsM9VhXDRWuLQwoAAHBCHwW0wnH9M0MKsZkZPpyZmT3VmZk+Cj3PQsMWpRXDRGuLQwoAAKrCCtezQgrXoz0KsZkZPq+ZmT2iZuY+'
+..'ClLrQsPbUxXDNmuLQwoAAHDC4fqzwnH9M0MK7MzMPejMzD06AOA+CuXuQsMSVBXDNmuLQwqxmRk+czPzPq+ZGT4KaOFCw9NRFcM2a4tDCgAA8EEfBbTCcf0zQwrszEw9czPzPujMTD0KCfJCw21bFcOccYtDCgnyQsNtWxXDz2SLQwQDApIDkwMK6qpEw+pGFcNAbYtD'
+..'Cj0KtEKamX7CUvgzwwoXfVs+WQJVPw4tFj4KDH1bPlgCVT/81Lg9Cl4KZz1YAlU/PApnPQpLrETDKF4Vw0Bti0MKl5dEw+dTFcNBbYtDCnS6IT5YAlU/DS0WPgo9vkTD7TkVwz9ti0MKialEw6wvFcNAbYtDBA8ClAOVAwr2KCDBcf0zQwAAtMIKAEpEw+pGFsNUVItD'
+..'CnH9KcMK1yM8AAC0Qgpi4ZM/DM0wQPKhvT8KtJkZPoYz0z5qZqY+CmVARMPXSBbDUz+LQwoazcw7npmZPVAzsz0KZhREw9CUFsNmL4tDCgAAtMIK1yO8AAAAAArCmXk+Gs3MO56ZmT0KZRREw2pqFsNnL4tDCgrXI7xx/TNDAAC0wgoVAIA9EM2sPp2ZmT0KZEBEwzZT'
+..'FsNnL4tDChzNzDudmZk9UDOzPQpmbETDzpQWw2Qvi0MKwpl5PhzNzDudmZk9CmVsRMNoahbDZS+LQwoVAAA/4pm5Pp6Z2T4KZ0BEw2t+FsNmT4tDCmwzEz6fmck+WDNTPgpheETDivkVwzcei0MKCtelQoXrBsNIIQfDCoBmJj7WmRk/b2YmPgrLbkTDq+4Vw4Jbi0MK'
+..'CtcfQXH9M0MAALTCCoBmJj7VmRk/dGZmPgrLbkTDqvMVw1NNi0MKUjMzPpEz8z5vZmY+CmN4RMMa/RXDijKLQwrsUaDAcf0zQwAAtMIKBQCgPjIAgD5MM5M+Cv/hQ8OrChbD31OLQwoAALTC4fqzQgAAAAAKnpmZPjIAgD6zmZk+Cv3hQ8NDDBbD3z+LQwo5MzM+SwDA'
+..'P1EzMz4K/YFEw0AMFsNDPotDCtTMfD8dzUw+98x8PwrO3kTDDkkWw6dsi0MK08xsP1MzQz8ozWw/Cs72RcOZSRbDnGyLQwoAAAAAHwW0wnH9M0MKBACQP4Uz0z4XAJA/Cs52RcOcSRbDnmyLQwoFAEA+1pkZPx8AQD4KNDVDw6hJFsMMa4tDCjczIz95M7M9TjMjPwrN'
+..'dkPDpkkWwwtri0MKNzOLPzIAgD5KM4s/CgGiQ8OlSRbDC2uLQwoGAGA/SwDAPyQAYD8KAYJEw6FJFsOhbItDCnVmhj44ABA/2MwMPgpm0ETDuYAWw5E8i0MKhevvQQAANEPh+rPCCmpmxj7imTk/h2bGPgr/4UTDHpsWw5Ini0MKKw6rPt3MHD8NDqs+CuSrRMMvQxbD'
+..'aSGLQwofBZbCjwIbwwAAAAAKfQyYPp8MmD6qi44+CkHARMMXUBbDkguLQwofhWfBCtcXQXsUrMIhBVNoZWxsB+0DBFQCjwOIAwb/sAADAAAAAACAmEAKAAAAAAAANMMAALTCCjJ1RMPo/hXDQi6LQwoAADRDAAAAAAAAtEIK9jHhPXIhlj7VMeE9CqUeij2Wq0M+kR6K'
+..'PQqIk0TD6/4Vw0Iui0MKAAAAAAAANEMAALTCCqUeij2USAY+kR6KPQoSe0TD6/4Vw0Iui0MK9ic0PRggkDzcJ7Q9CupORMPp/hXDQi6LQwpJNXA9ciUoPNwntD0K2k9Ew+n+FcNCLotDCqEu0j0fKDQ+gi7SPQrQa0TD6P4Vw0Iui0MK9THhPX418DvVMeE9CppQRMPo'
+..'/hXDQi6LQwpPIZY9Fx4HPjkhlj0K14lEw+j+FcNCLotDCvgntD1+NXA83ie0PQpqU0TD6P4Vw0Iui0MKoS7SPcKfDj6CLtI9ClWCRMPo/hXDQi6LQyEDTWFnBGwCeQOHAwotAUTD6OoWwxoPi0MKNJDJP0vrhz/+/48/CszMDD8eAEA+LgAAPgoBckTDgWIXw0NSi0MK'
+..'AAAAAAAANEMAALRCCuXMHD/+//89F83MPgoBckTDGjwXw3Y5i0MKAAAAAAAANEMAAAAACuXMHD8Xzcw+ZWYmPgoBckTD52AXw3Y5i0MKz5kZPuPMrD6VmRk+CmdARMO1pxbDySqLQwqUmZk+4cysPisAAD4KZ0BEw06BFsNjLItDCgAAAAAAAAAAAAC0QgrhzKw+9v9/'
+..'Pc6ZmT0KZ0BEw+hiFsOWH4tDCqXxtz73XKY/ZPG3Pgr63UPDhZYWwzEVi0MKDgCAPvbMzD3gzMw9Cmd4RMNochbDkSmLQwqamShCUrhKwhSuDEMKDgCAPppmZj/fzMw9CgGiQ8NochbDkSmLQwql8Tc/91ymP2TxNz8K+t1Dw4HEFsMz/opDCh8AyD9A1xM/y8wsPwq9'
+..'AkTDgiQXw8j7ikMKHwDIPzBSuD3MzAw/Cr0CRMOCNBfDYdGKQwofAMg/ZWaGPnQzsz0KvQJEw4LMFsM40YpDCuPMjD4Xe5Q+zMwMPgqKp0TDgrwWw2HpikMK48yMPszMDD5pM5M+CoqnRMOCvBbDVw6LQyEETGluawSTApYDlwMKPQogQoXrx0EAALTCCqTRRMPpXhbD'
+..'NPmKQwozMytCPQqXQSlc1cIKispvPs88MT5sXeU9CqVP0T37Ing+00/RPQrw0kTD42oWw/XzikMKAAAAAB8FgsKPAgLDCqRP0T37Ing+00/RPQqAykTD1lIWwwL9ikMKjF3lPc/PJj1rXeU9CqHGRMO8ahbD9/CKQwrGqbs9sc+mO3mD0DwK5clEw5tdFsPP94pDCj0K'
+..'IEKF68dBAACgwQqMXeU9z8+mPWtd5T0KfM1Ew8hSFsOo/YpDCsWpuz2xz6Y7eYPQPArC2ETDm10Ww0b7ikMKPQogQoXrx0EAAKBBClblRMO8ahbDIPiKQyEHSGV4YWdvbgSpAnoDmAMKAAAAAAAAtEIAALRCCgWCRcPpIhbDBsyLQwobZok+kLiePVwUbj4KeBRuPnu4'
+..'nj36OQk+CgAA8MEAALRCAAC0QgpaFG4+e7iePQo6CT4KAAC0wgAANEMAAAAACnQUbj57uJ49+DkJPgoAAPDBAAC0wgAAtMIhBkZvbGRlciEIUmVzb3VyY2UhB01vZHVsZXMhDE1vZHVsZVNjcmlwdCEHUGx1Z2lucyEJVXRpbGl0aWVzIQZTcHJpbmchBmVhc2luZyEE'
+..'VmFycyEJQm9vbFZhbHVlIQ1VSVNjb3BlQWN0aXZlIQRNb2RzIQVOb2RlcyEGRXZlbnRzIQtSZW1vdGVFdmVudCEIRXF1aXBwZWQhClNob290RXZlbnQhC0NyZWF0ZU93bmVyIQtEYW1hZ2VFdmVudCEGU3RhbmNlIQlLaWxsRXZlbnQhCEFpbUV2ZW50IQpFeHBsb0V2'
+..'ZW50IQtBdHRhY2hFdmVudCENU2VydmVyRlhFdmVudCENQ2hhbmdlSURFdmVudCEOUmVtb3RlRnVuY3Rpb24hCEhpdEV2ZW50IQ5TZXR0aW5nc01vZHVsZSEMU2VydmVyQ29uZmlnIQxDbGllbnRDb25maWchAkZYIQNBSEgDAAAAAADAckAhB0JvZHlIaXQhFnJieGFz'
+..'c2V0aWQ6Ly8xNjA0MzIzMzQDAAAAAAAA+D8hDkV4cGxvc2lvblNvdW5kIRdyYnhhc3NldGlkOi8vMzk2MzAxMzI1NiELU2hlbGxDYXNpbmchFnJieGFzc2V0aWQ6Ly8zMjUwMjUzODcDAAAAoJmZyT8hBUJsb29kKAIAAAAA/wAAAACAP/8AABEAAIA/AACAPwMAAAAA'
+..'AAAuQCEIUm90U3BlZWQRAACgQAAAoEERAABIQgAAoEIpAwAAAADg1vw9AAAAACFboz3W2ENAAAAAAAAAgD8dxzFAAAAAABEAAABAAAAAQCEAKQIAAAAAAACAPwAAAAAAAIA/AACAPwAAAAAhBVNtb2tlCgAAAAAAACDBAAAAACgCAAAAAJycnAAAgD86OjoDAAAAoJmZ'
+..'uT8DAAAAAABAYEApBAAAAAACAFA/AAAAAOaJKD38/98+AAAAADzzUz8AAHxAAAAAAAAAgD8CAFA/AAAAABEAAPBBAADwQQsAAMhBAADIQSEFU3BhcmsKAAAAAAAAcMEAAAAAKAIAAAAAqqr/AACAP6qq/xEzMzM/zcxMPwMAAAAAAABOQCkCAAAAAM3MTD4AAAAAAACA'
+..'P83MTD4AAAAACwAAoEEAAKBBIQNIVUQhCVNjcmVlbkd1aSEHTWFpbkd1aSEFRnJhbWUhB0dhbWVHdWkhEEJhY2tncm91bmRDb2xvcjMG////IRZCYWNrZ3JvdW5kVHJhbnNwYXJlbmN5DAAAAAAAAAAAAADc/wwAAIA/AAAAAIA/AAAhCUFtbW9GcmFtZQMAAABgZmbW'
+..'PyEPQm9yZGVyU2l6ZVBpeGVsDN4khj+J/vZMkD+o/wwAAAAAAwEAAAAAPwAhCVRleHRMYWJlbCEFVGl0bGUMAACAPwAAAAAAABkAIQRGb250IQRUZXh0IQRNNEExIQpUZXh0Q29sb3IzIQhUZXh0U2l6ZQMAAAAAAAAzQCEWVGV4dFN0cm9rZVRyYW5zcGFyZW5jeSEL'
+..'VGV4dFdyYXBwZWQhEk1hZ0NvdW50QmFja2dyb3VuZAwAAIA/0f+x5Bc/6/8MAAAAACgAAAAAADMAIQdWaXNpYmxlIQR8IDE1BiMjIwMAAAAAAAAyQCEITWFnQ291bnQMAACAP87/JYXrPur/DAAAAAAoAAAAAABMACEGWkluZGV4IQhEaXN0RGlzcAwAAAAABgBcj0I/'
+..'7P8MAAAAAEsAAAAAACEAIQMwIG0DAAAAAAAAMUAhDlRleHRYQWxpZ25tZW50IQ5BbW1vQmFja2dyb3VuZAwAAIA/rv+TRVk/6P8MAAAAACgAAAAAABwAIQIzMAMAAAAAAAA5QCEQVGV4dFN0cm9rZUNvbG9yMwYqKiohBEFtbW8MAACAP6v/syxLP+f/DAAAAAAoAAAA'
+..'AAApACEKSW1hZ2VMYWJlbCEHU3RhbmNlcyEMQm9yZGVyQ29sb3IzDP4Bfj8CAPQM0L0AAAwAAAAAVAAAAAAAUQAhBUltYWdlIRdyYnhhc3NldGlkOi8vMTg2ODAwNzQ5NSEJU2NhbGVUeXBlIQVNb2RlNQMAAABgZmbmPwwAAAAAAQAAAAAAGQAMAAAAADEAAAAAAAUA'
+..'IQVNb2RlNAwAAAAANAAAAAAAGQAMAAAAADAAAAAAAAUAIQVNb2RlMwwAAAAAZgAAAAAAGQAhBU1vZGUyDAAAAACYAAAAAAAZACEFTW9kZTEMAAAAAMoAAAAAABkAIQlDb250cm9sczIMhvjZPgAAbuamvwAADLQGZj8AAK8kNz4ZACERIkgiIC0gaW5zcGVjdCBndW4h'
+..'CUNvbnRyb2xzMwzIukE+AAAIllu/AAAMvOyNPwAA1/afPRkAIQoiRiIgLSBib2x0IQlDb250cm9sczQMg72tPgAAs9gGvwAADGnmZD8AAFkJBT4ZACELIkMiLSBjcm91Y2ghCUhpdE1hcmtlcgwAAAA/8/8AAAA/8/8MAAAAABoAAAAAABoAISlodHRwOi8vd3d3LnJv'
+..'YmxveC5jb20vYXNzZXQvP2lkPTEyMTE3Mzc1NyELSW1hZ2VDb2xvcjMhClNjb3BlRnJhbWUhBVNjb3BlBgAAAAwAAAA/9v8AAAAA9v8MAAAAABQAAAAAABQAIShodHRwOi8vd3d3LnJvYmxveC5jb20vYXNzZXQvP2lkPTcyMDAyMDIyIQdTY29wZUlkISlodHRwOi8v'
+..'d3d3LnJvYmxveC5jb20vYXNzZXQvP2lkPTE4NDkyMjY0NCECRjEMAAAAAPb/AAAAAPb/DAAAAAAAAAAAgD8UACECRjIhC0xvY2FsU2NyaXB0IQVDcm9zcyEFU2Vuc2UMAACAPwAAAACAPyQAIQdUZXh0Qm94IQtTZW5zaXRpdml0eQYyMjIMAAAAP/P/AAAAADIADAAA'
+..'AABkAAAAAAAaACEDMC41IQpUZXh0U2NhbGVkAwAAAAAAACxAIQhJbnRlcmFjdAx9/7o+AABaB1o/AAAMAAAAAA0BAAAAABYAIRdQcmVzcyBFIFRvIFJlc3RvY2sgQW1tbyEGT3RoZXJzIQRLaWxsDAAAAD+c/wAAgD84/wwAAAAAyAAAAAAAGQAhEVRhcmdldCBFbGlt'
+..'aW5hdGVkIRBUZXh0VHJhbnNwYXJlbmN5IQdTaGFkaW5nBggAAAwAAAAA9v8AAAAA6v8MAACAPwoAzcyMPwAAIQZTY3JpcHQhDlByb2dyYW1fU2VydmVyCvoSRsNe3xXDwPqLQwoAAIA/AAAAAAAAAAAKAAAAAAAAgD8AAAAACgBgeLugOZ65h/9/vwpi/fi8uOF/P0CF'
+..'Q7kKACCAOABINTn//3+/Cu4ENT/3BDU/AHAtOQoA9qe7oDYhvVzMf78KkNGqOiXNfz8hPiG9CkDLIb3ERFw7fMx/vwoGUeG8j+Z/P37OkTsKAL5xuwCjELmN/3+/Cgjqaz00k38/wJa3uQrfWn0/pcUSviC7cLsKrfgHvgQIbb8bErU+CgAAAAAAAAAAAACAvwoAAIC/'
+..'AAAAAAAAAAAKwBdEvzCSJD8A8Jc4CgDwl7gAwFC5//9/PwoAgLs4ALAsOQAAgL8K9gV/v8C6sj0AoJy4Crw8477HZ2U/VinUuArHZ2U/tjzjPhBfLDkKAAAAAAAAgL8AAAAACgBAXjgAZvs4AACAvwowl7I9WQZ/PwASAjkKjDvjvhBoZT8A4NW4CgBIWzkAACy3AACA'
+..'vwoAAHG4zBp8v4H0Mb4KAQCAvwDApDgAkPK4CpgUi755E0S/yC0VvwpXB2g/AADAtSpS2L4KAAAAAAAAAAAAAIA/igYAAAwAAgAHAAgACQAKAAsADAANAA4ADwAQABEAEgATABQAFQAWABcAGAAZABoAGwAcAB0AHgBAAgEGACkAKgAkACsALAAtAAEGAC4ALwAkADAA'
+..'LAAtAAALAAIAHwAKACAADAAhAA4ADwAQACIAEgAjABQAJAAWACUAGAAmABoAJwAoAAkAHgBAAwEGADcAOAAzADkAOgAtAAEGADsAPAAzADkAPQAtAAEGADcAPgAzADkAPwAtAAANAAIAMQAIAAkACgALAAwAMgAOAA8AEAARABIAEwAUADMAFgA0ABgANQAaADYAHAAd'
+..'ACgACQBAAAMEAAIAQQBCAEMARABFAEYAHQBAAAMEAAIARwBCAEMARABIAEYAHQAGAAAIAAoACwAMAEkADgAPABAAEQASABMAFgBKABoASwAcAB0ABgAADgACAEwACAAJAE0ATgAKAAsADABPAA4ADwAQABEAEgATABQAUAAWAFEAGABSABoAUwBUAE4AHAAdAEAABwMA'
+..'AgBVAEIAVgBEAFcAQAAHBQACAFgAWQBaAEIAWwBEAFwARgAdAEAABwUAAgBdAFkAXgBCAFsARABfAEYAHQBAAAcEAAIAYABCAEMARABhAEYAYgBjAAcCAGQAZQBmADkABgAADAACAGcACAAJAAoACwAMAGgADgAPABAAEQASABMAFABpABYAagAYAGsAGgBsABwAHQBA'
+..'AA0EAAIAbQBEAG4AbwBwAEYAcQByAA4BAHMAdAB1AA0BAGQAdgB3AA0NAAIAeAB5AHoAEAB7AHwAVgB9AA8AfgB/AIAAHQCBAIIAGgCDAIQAhQCGAIcAiACJABwAigB3AA0KAAIAiwB5AHoAEACMAHwAVgB9AA8AfgB/AIAAHQCBAIIAhgCNAIgAiQB3AA0MAAIAjgAQ'
+..'AI8AfABWAH0ADwB+AJAAgAAdAIEAkQAYAJIAGgCTAIQAlACIAJUAHACWAJcADQYAAgCYAJkAQwAQAJoAfQAPAJsACQCcADkABgAADgACAJ0ACAAJAE0ATgAKAAsADACeAA4ADwAQABEAEgATABQAnwAWAKAAGAChABoAogBUAE4AHAAdAB4AQAdAAgAGAKgAqQClAIAG'
+..'AKoAqwCsAEACAAYArQCuAK8AgAYAsACxALIAQAIABgCzALQAtQCABgC2ALcAuABAAgAGALkAugC7AIAGALwAvQC+AEACAAYAvwDAAMEAgAYAwgDDAMQAQAIABgDFAMYAxwCABgDIAMkAygAABgDLAMwAzQAACwACAKMACgALAAwApAAOAA8AEAARABIAEwAUAKUAFgCm'
+..'ABgApQAaAKcAKAAJAB4AQAJAAkAGAQYA0wDUAM8AMAAsAC0AAAYA1QDWANcAAQYA2ADZAM8AMAAsAC0AAQYA2gDbAM8AMAAsAC0AAQYA3ADdAM8AMAAsAC0AQAIABgDeAN8A4AABBgDhAOIA4AAwACwALQAABgDjAOQAzwCABgDlAOYA5wAACgAIAAkACgALAAwAzgAO'
+..'AA8AEAARABIAEwAUAM8AFgDQABgA0QAaANIAiAAXAwDoACsA6QARAIgA6gCIABcDAOgAMADpABEAiADqAIgAFwIA6QARAIgA6gCIABcDAOgAHQDpABEAiADqAIgAFwMA6ABOAOkAEQCIAOoAiAAXAwDoAOsA6QARAIgA6gAeAEADQARAAgAGAO8A8ADPAIAGAPEA8gDz'
+..'AEADgAYA9AD1APYAAAYA9wD4APkAAAYA+gD7APwAQAIABgD9AP4AzwCABgD/AAAB8wBAAgAGAAEBAgHPAIAGAAMBBAEFAQEGAAYBBwEIATAALAAtAEADAQYACQEKAQsBMAAsAC0AAQYADAENAS0AMAAsAC0AQAJAAkACQAIBBgAOAQ8BEAErACwALQABBgARARIBEAEw'
+..'ACwALQABBgATARQBFQEwACwALQBAAkACgAYAFgEXARgBAAYAGQEaAQsBAAYAGwEcAR0BQAMABgAeAR8BzwBAAgAGACABIQEdAQAGACIBIwHPAEADQAIABgAkASUBzwBAA0AEACYBJwEoAQsBAAYAKQEqAc8AAAYAKwEsAc8AQAJAAkACgAYALQEuAfYAAAYALwEwATEB'
+..'gAYAMgEzAfYAQANAAgEGADQBNQE2ATAALAAtAAAGADcBOAE5AUACAQYAOgE7ATwBMAAsAC0AAAYAPQE+AT8BAAYAQAFBAc8AAAYAQgFDAR0BQAIABgBEAUUBzwCABgBGAUcBGAEABgBIAUkBzwABBgBKAUsBzwAwACwALQAACgAIAAkACgALAAwA7AAOAA8AEAARABIA'
+..'EwAUAM8AFgDtABgA0QAaAO4AiAAeAgDpABEAiADqAIgAHgMA6ADrAOkAEQCIAOoAiAAeAwDoADAA6QARAIgA6gCIAB4DAOgAHQDpABEAiADqAIgAHgMA6AArAOkAEQCIAOoAiAAeAwDoAE4A6QARAIgA6gAeAEACQAJAAgEGAE8BUAHPADAALAAtAAEGAE8BUQHPADAA'
+..'LAAtAEAHAQYAUgFTAVQBMAAsAC0AAQYAVQFWAc8AMAAsAC0AAQYAVwFYAVkBMAAsAC0AAQYAUgFaAVQBMAAsAC0AAQYAVQFbAc8AMAAsAC0AAQYAVwFcAVkBMAAsAC0AQAKBBgBdAV4B9gAwACwALQABBgBfAWABzwAwACwALQABBgBhAWIBzwAwACwALQAACwAIAAkA'
+..'CgALAAwATAEOAA8AEAARABIAEwAUAM8AFgBNARgA0QAaAE4BKAAJAB4AQAYABgBoAWUBZAEAJgFpAWoBawEABgBsAWUBZAEAJgFpAW0BbgEAJgFpAW8BcAEAJgFpAXEBcgEACwAIAAkACgALAAwAYwEOAA8AEAARABIAEwAUAGQBFgBlARgAZgEaAGcBKAAJAB4AQAIA'
+..'BgB4AXkBdAEBBgB6AXsBfAEwACwALQAACwAIAAkACgALAAwAcwEOAA8AEAARABIAEwAUAHQBFgB1ARgAdgEaAHcBKAAJAB4AQAZAAoEGAIABgQH2ACsALAAtAAEGAIIBgwHPADAALAAtAEACgQYAhAGFAYYBKwAsAC0AAQYAhwGIAVQBMAAsAC0AQAKBBgCJAYoBiwEr'
+..'ACwALQABBgCMAY0BjgEwACwALQBAAoEGAIkBjwGGASsALAAtAAEGAJABkQFUATAALAAtAEACgQYAkgGTAfYAKwAsAC0AAQYAlAGVAc8AMAAsAC0AQAKBBgCWAZcBiwErACwALQABBgCMAZgBjgEwACwALQAACgAIAAkACgALAAwAfQEOAA8AEAARABIAEwAUAM8AFgB+'
+..'ARgA0QAaAH8BiAAoAwDoAOsA6QARAIgA6gCIACgDAOgAKwDpABEAiADqAIgAKAMA6ABOAOkAEQCIAOoAiAAoAgDpABEAiADqAIgAKAMA6AAwAOkAEQCIAOoAiAAoAwDoAB0A6QARAIgA6gAeAEAHQAJABgAGAJ8BoAGbAQAmAaEBogGjAQAmAaQBpQGmAQAGAKcBqAGp'
+..'AQAmAaoBqwGpAQAGAKwBrQGbAQAmAa4BrwGwAQAmAbEBsgGzAQAmAbQBtQG2AQAGALcBuAGbAQAmAbkBugG7AQAGALwBvQGbAQAmAb4BvwGbAQAMAAIAmQEIAAkACgALAAwAmgEOAA8AEAARABIAEwAUAJsBFgCcARgAnQEaAJ4BKAAJAB4AQAYBBgDDAcQBzwAwACwA'
+..'LQABBgDFAcYBWQEwACwALQABBgDHAcgBVAEwACwALQABBgDHAckBVAEwACwALQABBgDFAcoBWQEwACwALQABBgDDAcsBzwAwACwALQAACwAIAAkACgALAAwAwAEOAA8AEAARABIAEwAUAM8AFgDBARgA0QAaAMIBKAAJAB4AQAMBBgDQAdEB9gAwACwALQABBgDQAdIB'
+..'9gAwACwALQABBgDQAdMB9gAwACwALQAACwAIAAkACgALAAwAzAEOAA8AEAARABIAEwAUAPYAFgDNARgAzgEaAM8BKAAJAB4AQAMBBgDXAdgBzwAwACwALQABBgDZAdoBzwAwACwALQABBgDbAdwBzwAwACwALQAACgAIAAkACgALAAwA1AEOAA8AEAARABIAEwAUAM8A'
+..'FgDVARgA0QAaANYBiAAyAwDoACsA6QARAIgA6gCIADIDAOgAHQDpABEAiADqAIgAMgMA6ABOAOkAEQCIAOoAiAAyAgDpABEAiADqAIgAMgMA6AAwAOkAEQCIAOoAHgBAAgEGAOEB4gEVATAALAAtAAEGAOEB4wEVATAALAAtAAALAAgACQAKAAsADADdAQ4ADwAQABEA'
+..'EgATABQAFQEWAN4BGADfARoA4AEoAAkAHgBAAgEGAOcB5QHPADAALAAtAIEGAOgB6QH2ADAALAAtAAALAAgACQAKAAsADADkAQ4ADwAQABEAEgATABQAzwAWAOUBGADRABoA5gEoAAkAHgBAAwEGAO8B8AHrATAALAAtAEACgAYA8QHyAfMBAAYA9AH1AfYBQAUABgD3'
+..'AfgB+QEABgD6AfsB+QEBBgD8Af0B/gEwACwALQABBgD/AQAC/gEwACwALQABBgD/AQEC/gEwACwALQAACwAIAAkACgALAAwA6gEOAA8AEAARABIAEwAUAOsBFgDsARgA7QEaAO4BKAAJAB4AQAYABgAGAgMCuwEBBgAHAggCuwEwACwALQABBgAHAgkCuwEwACwALQAA'
+..'BgAKAgMCuwEBBgAHAgsCuwEwACwALQABBgAHAgwCuwEwACwALQAACwAIAAkACgALAAwAAgIOAA8AEAARABIAEwAUALsBFgADAhgABAIaAAUCKAAJAB4AQAJAA0AEAAYAEgITAg4CQANAAgAmARQCFQIWAgAGABcCGAIZAgAGABoCGwIZAkACACYBHAIdAhYCAAYAHgIf'
+..'AhkCAAYAIAIhAhkCQAJAAkACgAYAIgIjAiQCQAIBBgAlAiYCJwIwACwALQBAAgAGACgCKQInAgAGACoCKwIsAkADQAIABgAtAi4CLwIBBgAwAjECLwIwACwALQABBgAyAjMCLwIwACwALQABBgA0AjUCLwIwACwALQBAAkACgQYANgI3AjgCMAAsAC0AAQYAOQI6Ai8C'
+..'MAAsAC0AQAQBBgA7AjwCLwIwACwALQABBgA9Aj4CLwIwACwALQABBgA/AkACLwIwACwALQABBgBBAkICLwIwACwALQAABgBDAkQCRQIBBgBGAkcCLwIwACwALQBAAgEGAEgCSQJKAjAALAAtAIEGAEsCTAJNAjAALAAtAAAKAAgACQAKAAsADAANAg4ADwAQABEAEgAT'
+..'ABQADgIWAA8CGAAQAhoAEQKIADwCAOkAEQCIAOoAiAA8AwDoADAA6QARAIgA6gCIADwDAOgA6wDpABEAiADqAIgAPAMA6AArAOkAEQCIAOoAiAA8AwDoAB0A6QARAIgA6gCIADwDAOgATgDpABEAiADqAB4AQAPAAgEGAFcCWAJZAjAALAAtAAEGAFoCWwJZAisALAAt'
+..'AMACgQYAXAJdAlkCMAAsAC0AAQYAXgJfAlkCMAAsAC0AQAUBBgBgAmECWQIwACwALQABBgBiAmMCWQIwACwALQABBgBkAmUCWQIwACwALQABBgBmAmcCWQIwACwALQABBgBoAmkCWQIrACwALQAADAACAE4CCAAJAAoATwIMAFACDgAPABAAUQISAFICFABTAhYAVAIY'
+..'AFUCGgBWAigACQAeAEACQAKABgBuAm8CcAJAAgAmAXECcgJzAgAGAHQCdQKlAEACQAQBBgB2AncCzwAwACwALQAABgB4AnkCegIAJgF7AnwCLQBAAkADAAYAfQJ+As8AgAYAfwKAAoECgAYAggKDAoECAQYAhAKFAs8AMAAsAC0AQAUABgCGAocCpQAABgCIAokCpQAA'
+..'JgGKAosCLQAABgCMAo0CpQAAJgGOAo8CcwIACgACAGoCCgALAAwAawIOAA8AEAARABIAEwAUAKUAFgBsAhgApQAaAG0CHgBAAoEGAJYClwKYAjAALAAtAEACgQYAmQKaApgCMAAsAC0AQAUBBgCbApwCkgIwACwALQAABgCdAp4CnwIBBgCgAqECkgIwACwALQAABgCi'
+..'AqMCpAIBBgCbAqUCkgIwACwALQAACwACAJACCgALAAwAkQIOAA8AEAARABIAEwAUAJICFgCTAhgAlAIaAJUCKAAJAB4AQAMABgCrAqkCrAIABgCtAqkCrgIABgCvAqkCsAIADAACAKYCCAAJAAoACwAMAKcCDgAPABAAEQASABMAFACoAhYAqQIYABUBGgCqAigACQCx'
+..'AgABAAIAsgKxAkcBAAIAswK0AkgBAAIAtQK0AkgBAAIAtgK0AkgBAAIAtwK0AkgBAAIAuAKxAkcBAAIAuQK6Ak0BAAIAYAC6Ak0BAAIAuwKxAkcBAAIAvAKxAkcBAAIAvQKxAkcBAAIAvgK/AlIBAAIAwAK/AlIBAAIAwQK/AlIBAAIAwgK/AlIBAAIAwwK/AlIBAAIA'
+..'xAK/AlIBAAIAxQK/AlIBAAIAxgK/AlIBAAIAxwK/AlIBAAIAyAK/AlIBAAIAyQK/AlIBAAIAygLLAlIBAAIAzAKxAkcBAAIAzQK0Al8BAAIAzgK0Al8BAAIAzwKxAkcBAAIA0AJAAGIDAAIA0QJCANICRgBOAEAAYgMAAgDTAkQA1AJGANUCQABiAwACANYCRADXAkYA'
+..'6wBAAGIDAAIA2AJEANkCRgDaAncAYgwAAgDbAhAA3AJ9AA8AfgDdAoEA3gLfAuACGADhAhoA4gKEAOMChgCHAIgA5AIcAOUCdwBiDgACAOYCeQDnAhAA6AJ9AA8AfgDdAoAA6QKBAOoC3wLgAhgA4QIaAOsChADsAoYA7QKIAOQCHADlAncAYgwAAgDuAnkA7wIQAPAC'
+..'fQAPAH4A8QKAAB0AgQDyAhoA8wKEAJQAhgD0AogA5AIcAOUCsQJHAQACAPUC9gJqAQACAPcC+AJrBQACAPkC+gL7AvwCHQAWAP0CGgD+AvgCbAYAAgD/AvoCEQD8AgADAQNOABYAAgMaAAMDBANtCwACAAUD+gL7AvwCHQABA04AGgAGAwcD6wAIAwkDCgP7AgsDDAMN'
+..'A04ADgMJAAQDbQwAAgAPA/oC+wL8Ah0AAQNOABYAEAMaABEDEgMPAAcDHQAIAxMDCgMUAwsDFQMOAwkABANtDQACABYD+gL7AvwCHQABA04AFgAXAxoAGAMZA+sABwPrAAgDEwMKA/sCCwMVAw0DTgAOAwkABANtDQACABoD+gL7AvwCHQABA04AFgAbAxoAHAMSAw8A'
+..'GQPrAAcDHQAIAx0DCgP7AgsDHgMfA04ABANtDQACACAD+gL7AvwCHQABA04AFgAhAxoAIgMSAw8ABwMdAAgDIwMKAxQDCwMkAyUDJgMOAwkABANtDQACACcD+gL7AvwCHQABA04AFgAoAxoAKQMZA+sABwPrAAgDIwMKA/sCCwMkAw0DTgAOAwkAKgNtCQACACsD+gIR'
+..'APwCAAMsA/sCAQNOABYALQMaAC4DLwMwAzEDMAD4Am0GAAIAMgP6AvsC/AIzAwEDTgAWADQDGgA1A/gCbQYAAgA2A/oC+wL8AjMDAQNOABYANwMaADgD+AJtBgACADkD+gL7AvwCMwMBA04AFgA6AxoAOAP4Am0GAAIAOwP6AvsC/AIzAwEDTgAWADwDGgA4A/gCbQUA'
+..'AgA9A/oC+wIBA04AFgA+AxoAOAMEA20MAAIAPwP6AvsC/AIdAAEDTgAWAEADGgBBAwcD6wAIA0IDCgP7AgsDDAMNA04ADgMJAAQDbQwAAgBDA/oC+wL8Ah0AAQNOABYARAMaAEUDBwPrAAgDRgMKA/sCCwMMAw0DTgAOAwkABANtDAACAEcD+gL7AvwCHQABA04AFgBI'
+..'AxoASQMHA+sACANKAwoD+wILAwwDDQNOAA4DCQAqA2wIAAIASwP8Ah0AFgBMAxoATQMSAw8AGQNDAC8DTgNPAyIA+AJrBQACAFAD+gL7AvwCHQAaAP4CEgMPACoDfgYAAgBRA/oCUgP8Ah0AFgBTAxoAVAMvA1UDKgN+BgACAFYD+gJSA/wCHQAWAFMDGgBUAy8DVwP4'
+..'An4GAAIAWAP6AlIDLANSAwEDTgAWAFkDGgBaA/gCfgYAAgBbA/oCUgMsA1IDAQNOABYAWQMaAFoDXAN+AQACAF0D+AJrBQACAF4D+gL7AvwCHQAWAP0CGgBfA2ADhA0AAgBhA/oCYgP8Ah0AAQNOABYAYwMaAGQDEgMPAAcDHQAIA2UDCgP7AmYDCQALA2cDDgMJAAQD'
+..'awwAAgBoA/oC+wL8Ah0AFgBpAxoAagMSAw8ABwMdAAgDawMKA/sCZgMJAAsDZwMOAwkA+AJrBAACAGwD+gL7AvwCHQAaAP4CBAOHDQACAG0D+gL7AvwCHQABA04AFgBuAxoAbwMHAysACANwAwoDIgBmAwkACwNnA3EDHQAOAwkAKgNrBgACAHID+gJzA/wCHQABA04A'
+..'FgB0AxoAdQN2AwABAAIAdwMA')
+for _,obj in pairs(Objects) do
+	obj.Parent = script or workspace
+end
+
+RunScripts()
