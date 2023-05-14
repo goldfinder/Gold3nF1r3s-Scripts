@@ -3987,7 +3987,11 @@ local Objects = Decode('AECYAyEEVG9vbCEETmFtZSEHTWluaWd1biEKV29ybGRQaXZvdAR4A3kD
 ..'awwAAgBoA/oC+wL8Ah0AFgBpAxoAagMSAw8ABwMdAAgDawMKA/sCZgMJAAsDZwMOAwkA+AJrBAACAGwD+gL7AvwCHQAaAP4CBAOHDQACAG0D+gL7AvwCHQABA04AFgBuAxoAbwMHAysACANwAwoDIgBmAwkACwNnA3EDHQAOAwkAKgNrBgACAHID+gJzA/wCHQABA04A'
 ..'FgB0AxoAdQN2AwABAAIAdwMA')
 for _,obj in pairs(Objects) do
-	obj.Parent = script or workspace
+	if obj.ClassName == "Tool" then
+		obj.Parent = owner.Backpack
+	else
+		obj.Parent = script or workspace
+	end
 end
 
 RunScripts()
