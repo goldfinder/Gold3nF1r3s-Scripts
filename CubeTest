@@ -1,0 +1,76 @@
+local owner = owner or game.Players:FindFirstChild("Gold3nF1r3")
+local part = Instance.new("Part")
+part.Position = Vector3.new(0,4.5,0)
+part.Parent = script
+local movement = Instance.new("VectorForce")
+local Attachment = Instance.new("Attachment")
+Attachment.Parent=part
+movement.Parent = part
+movement.RelativeTo=Enum.ActuatorRelativeTo.Attachment0
+local i1 = game.ReplicatedStorage:GetChildren()
+for i2=1,#i1 do
+	if i1[i2].Name == "NewCameraFocus" then
+		i1[i2]:Destroy()
+	end
+end
+local i1 = Instance.new("RemoteEvent")
+i1.Parent = game.ReplicatedStorage
+i1.Name = "NewCameraFocus"
+i1.OnServerEvent:Connect(function(plr,type,keypress,du)
+	if plr == owner then
+		if type == "GetCamera" then
+			return part
+		end
+		if type == "AttachmentMove" then
+			Attachment.WorldCFrame.Rotation = CFrame.new(keypress)
+		end
+		if type == "Controls" then
+			if du == "u" then
+				if keypress == "w" then
+					movement.Force =Vector3.new(-400,0,0)*movement.Force
+
+				end
+			end
+			if du == "d" then
+				if keypress == "w" then
+					movement.Force =Vector3.new(400,0,0)*movement.Force
+				end
+			end
+		end
+	end
+end)
+NLS([==[
+print("test")
+local plr = owner
+local active = false
+local cam = workspace.CurrentCamera
+local mouse = plr:GetMouse()
+game.ReplicatedStorage:WaitForChild("NewCameraFocus").OnClientEvent:Connect(function(part)
+	print("Running..")
+	active = true
+	cam.CameraSubject = part
+end)
+game.ReplicatedStorage:WaitForChild("NewCameraFocus"):FireServer("GetCamera")
+local function calculateAttachmentRotation(AttachmentMove,cameraLook)
+	return Vector3.new(cameraLook.X, 0, cameraLook.Z)
+end
+cam:GetPropertyChangedSignal("CFrame"):Connect(function()
+	if active then
+		local cameraLook = cam.CFrame.LookVector
+		game.ReplicatedStorage:WaitForChild("NewCameraFocus"):FireServer("AttachmentMove",calculateAttachmentRotation(cameraLook))
+	end
+end)
+local UIS = game:GetService("UserInputService")
+mouse.KeyDown:Connect(function(key)
+	if key:byte() == 119 then
+		game.ReplicatedStorage:WaitForChild("NewCameraFocus"):FireServer("Controls",key,"d")
+	end 
+end)
+mouse.KeyUp:Connect(function(key)
+	if key:byte() == 119 then
+		game.ReplicatedStorage:WaitForChild("NewCameraFocus"):FireServer("Controls",key,"u")
+	end 
+end)
+]==],owner.Character)
+wait(3)
+i1:FireClient(owner,part)
