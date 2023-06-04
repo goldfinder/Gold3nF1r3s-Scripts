@@ -1,0 +1,152 @@
+local TS = game:GetService("TweenService")
+local VC = game:GetService("VoiceChatService")
+local LS = game:GetService("LocalizationService")
+local NAME_COLORS =
+	{
+		BrickColor.new("Bright red").Color,
+		BrickColor.new("Bright blue").Color,
+		BrickColor.new("Earth green").Color,
+		BrickColor.new("Bright violet").Color,
+		BrickColor.new("Bright orange").Color,
+		BrickColor.new("Light yellow").Color,
+		BrickColor.new("Pink").Color,
+		BrickColor.new("Brick yellow").Color,
+	}
+
+local function GetNameValue(pName)
+	local value = 0
+	for index = 1, #pName do
+		local cValue = string.byte(string.sub(pName, index, index))
+		local reverseIndex = #pName - index + 1
+		if #pName%2 == 1 then
+			reverseIndex = reverseIndex - 1
+		end
+		if reverseIndex%4 >= 2 then
+			cValue = -cValue
+		end
+		value = value + cValue
+	end
+	return value
+end
+
+local color_offset = 0
+local function ComputeNameColor(pName)
+	return NAME_COLORS[((GetNameValue(pName) + color_offset) % #NAME_COLORS) + 1]
+end
+--MONGODB
+
+local function GetNameColor(plr)
+	return ComputeNameColor(plr.Name)
+end
+local sfx = Instance.new("Sound")
+sfx.SoundId = "rbxassetid://147982968"
+sfx.Parent = script
+sfx.Name = "SFX"
+local minos1 = Instance.new("Sound")
+minos1.SoundId = "rbxassetid://12697946375"
+minos1.Parent = script
+minos1.Name = "MINOS1"
+local minos2 = Instance.new("Sound")
+minos2.SoundId = "rbxassetid://12697949369"
+minos2.Parent = script
+minos2.Name = "MINOS2"
+local minos2 = Instance.new("Sound")
+minos2.SoundId = "rbxassetid://12697947977"
+minos2.Parent = script
+minos2.Name = "MINOS3"
+function soundcall(soundname,parent)
+	coroutine.resume(coroutine.create(function()
+		local sound = script:FindFirstChild(string.upper(soundname)):Clone()
+		sound.Parent = parent
+		sound.Playing = true
+		wait(sound.TimeLength)
+		sound:Destroy()
+	end))
+end
+function msgfunction(msg,plr)
+	if string.find(msg:lower(),"c/") == 1 then return end
+	if string.find(msg:lower(),"g/") == 1 then return end
+	if string.find(msg:lower(),"sb/") == 1 then return end
+	if string.find(msg:lower(),"r/") == 1 then return end
+	if string.find(msg:lower(),"get/") == 1 then return end
+	if string.find(msg:lower(),"!minosprimeintro")==1  then
+		soundcall("Minos1",plr.Character.Head)
+		return end
+	if string.find(msg:lower(),"!minosprimeuseless")==1 then
+		soundcall("Minos2",plr.Character.Head)
+		return end
+	if string.find(msg:lower(),"!minosprimeoutro")==1 then
+		soundcall("Minos3",plr.Character.Head)
+		return end
+	if string.find(msg:lower(),"!arson")==1 then
+		local parts = plr.Character:GetDescendants()
+		for i=1,#parts do
+			if parts[i]:IsA("BasePart") then
+				local fire = Instance.new("Fire")
+				fire.Parent = parts[i]
+			end
+		end
+		coroutine.resume(coroutine.create(function()
+			repeat 
+				wait()
+				plr.Character.Humanoid.Health = plr.Character.Humanoid.Health-((plr.Character.Humanoid.MaxHealth)/100)
+			until plr.Character.Humanoid.Health == 0
+		end))
+		return end
+	if string.find(msg:lower(),"/e") == 1 then return end
+	local bg = Instance.new("BillboardGui")
+	bg.Parent = plr.Character.Head
+	bg.Size = UDim2.new(20, 0, .5, 0)
+	bg.StudsOffsetWorldSpace = Vector3.new(0, 3, 0)
+	bg.AlwaysOnTop = false
+	bg.LightInfluence = 0
+	plr.chatted:Connect(function(msg)
+		if string.find(msg:lower(),"c/") == 1 then
+		elseif string.find(msg:lower(),"g/") == 1 then
+		elseif string.find(msg:lower(),"sb/") == 1 then
+		elseif string.find(msg:lower(),"r/") == 1 then
+		elseif string.find(msg:lower(),"get/") == 1 then
+		elseif string.find(msg:lower(),"/e") == 1 then
+		elseif string.find(msg:lower(),"!minosprimeintro")==1  then
+		elseif string.find(msg:lower(),"!minosprimeuseless")==1  then
+		elseif string.find(msg:lower(),"!arson")==1  then
+		else
+			bg.StudsOffsetWorldSpace = Vector3.new(0, (.5+bg.StudsOffsetWorldSpace.Y), 0)
+		end
+	end)
+	owner.chatted:connect(function(msg)
+		if msg == "g/no." then
+			bg:Destroy()
+		end
+	end)
+	local textbox = Instance.new("TextLabel")
+	textbox.Parent = bg
+	textbox.Size = UDim2.new(1, 0, 1, 0)
+	textbox.Position = UDim2.new(0, 0, 0, 0)
+	textbox.TextScaled = true
+	textbox.TextColor3 = GetNameColor(plr)
+	textbox.BackgroundTransparency = 1
+	for i=1,#msg do
+		textbox.Text = string.sub(msg,1,i)
+		wait()
+		if plr ~= nil then
+			if plr.Character ~= nil then
+				soundcall("sfx",plr.Character.Head)
+			end
+		end
+		if string.sub(msg,i,i) == "," or string.sub(msg,i,i) == "." or string.sub(msg,i,i) == "?" or string.sub(message,i,i) == "!" then
+			wait(.5)
+		end
+	end
+	wait(5)
+	for i=1,#msg do
+		textbox.Text = string.sub(msg,1,#textbox.Text-1)
+		wait()
+		if plr ~= nil then
+			if plr.Character ~= nil then
+				soundcall("sfx",plr.Character.Head)
+			end
+		end
+	end
+	bg:Destroy()
+end
