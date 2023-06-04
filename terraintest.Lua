@@ -10,7 +10,7 @@ local BASE_HEIGHT 		= 50				-- The main height factor for the terrain.
 
 local CHUNK_SCALE 		= 2 				-- The grid scale for terrain generation. Should be kept relatively low if used in real-time.
 
-local RENDER_DISTANCE 	= 50 				-- The length/width of chunks in voxels that should be around the player at all times
+local RENDER_DISTANCE 	= 200 				-- The length/width of chunks in voxels that should be around the player at all times
 
 local X_SCALE 			= 900			-- How much we should strech the X scale of the generation noise
 
