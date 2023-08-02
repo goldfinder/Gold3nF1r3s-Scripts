@@ -27,11 +27,18 @@ function levelname(number)
 	end
 end
 script.Parent.MouseClick:Connect(function(plr)
+	if plr.Character == nil then return end
 	if plr.Character:FindFirstChild("Role") == nil then return end
 	if plr.Character:FindFirstChild("AccessLevel") == nil then return end
 	if plr.Character:FindFirstChild("Class") == nil then return end
 	if plr.Character:FindFirstChild("User Setup") ~= nil then return end
 	local i = game.ReplicatedStorage["Assets"..script.Parent.Parent.Parent.AssetID.Value]["ID Card"]:Clone()
+	local userId = plr.UserId
+	local thumbType = Enum.ThumbnailType.HeadShot
+	local thumbSize = Enum.ThumbnailSize.Size420x420
+	local content, isReady = plr:GetUserThumbnailAsync(userId, thumbType, thumbSize)
+	i.Handle.GUI.Frame.ImageLabel.Image = content
+	i.Handle.GUI.Frame.ImageLabel.BackgroupTransparency = 0
 	local value = plr.Character:FindFirstChild("AccessLevel").Value
 	i.Handle.GUI["NameLevel Bar"].Level.Text=levelname(tostring(value))
 	i.Handle.GUI["NameLevel Bar"].Name1.Text=plr.Name
