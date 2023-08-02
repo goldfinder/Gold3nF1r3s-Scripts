@@ -36,7 +36,7 @@ script.Parent.MouseClick:Connect(function(plr)
 	local userId = plr.UserId
 	local thumbType = Enum.ThumbnailType.HeadShot
 	local thumbSize = Enum.ThumbnailSize.Size420x420
-	local content, isReady = plr:GetUserThumbnailAsync(userId, thumbType, thumbSize)
+	local content, isReady = game:GetService("Players"):GetUserThumbnailAsync(userId, thumbType, thumbSize)
 	i.Handle.GUI.Frame.ImageLabel.Image = content
 	i.Handle.GUI.Frame.ImageLabel.BackgroupTransparency = 0
 	local value = plr.Character:FindFirstChild("AccessLevel").Value
