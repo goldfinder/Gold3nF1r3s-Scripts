@@ -1,38 +1,41 @@
 warn("No creditable user for original code.  Original code: 'https://pastebin.com/raw/9fQuLpvc' | Current code:  'https://github.com/goldfinder/Gold3nF1r3s-Scripts/blob/main/WunderWaffe.Lua'")
 if owner.Character.Humanoid.RigType==Enum.HumanoidRigType.R6 then else warn("Useable only in R6.") return end
+local excludelist = {}
+local ammo=3
+local reserves = 9
+local dis = 10
 print("Controls:")
-print("Q: Holster/Unholster")
 print("R: Reload")
-print("Left Mouse: Fire")
+print("Q: Holster/Unholster")
+print("M1/Left mouse: Fire")
+print("Settings: | Ammo: "..ammo.." | Reserves: "..reserves.." | Total Shots: "..(ammo+reserves).." | Distance of Damage: "..dis)
 local ls = NLS([[local plr = owner
 	local mouse = plr:GetMouse()
+	local function data(KP)
+		local trigger = plr.Character:FindFirstChild("WWAS")
+		if trigger ~= nil then
+			local data = {}
+			data.KeyPressed = KP
+			trigger:FireServer(data)
+		end
+	end
 	mouse.KeyDown:Connect(function(key)
 		if key:byte() == 114 then
-			local trigger = plr.Character:FindFirstChild("WWAS")
-			local data = {}
-			data.KeyPressed = "R"
-			if trigger ~= nil then
-				trigger:FireServer(data)
-			end
+			data("R")
 		end
 		if key:byte() == 113 then
-			local trigger = plr.Character:FindFirstChild("WWAS")
-			local data = {}
-			data.KeyPressed = "Q"
-			if trigger ~= nil then
-				trigger:FireServer(data)
-			end
+			data("Q")
 		end
 	end)
 	mouse.Button1Down:Connect(function()
 		local trigger = plr.Character:FindFirstChild("WWAS")
-		local data = {}
-		data.KeyPressed = "M1"
-		data.MPOS = {}
-		data.MPOS.X = mouse.hit.X
-		data.MPOS.Y = mouse.hit.Y
-		data.MPOS.Z = mouse.hit.Z
 		if trigger ~= nil then
+			local data = {}
+			data.KeyPressed = "M1"
+			data.MPOS = {}
+			data.MPOS.X = mouse.hit.X
+			data.MPOS.Y = mouse.hit.Y
+			data.MPOS.Z = mouse.hit.Z
 			trigger:FireServer(data)
 		end
 	end)]],owner.Character)
@@ -47,38 +50,44 @@ local pi = math.pi
 local cf = CFrame.new
 local v3 = Vector3.new
 local ca = CFrame.Angles
+local noammocolor = BrickColor.new('Bright red')
+local ammocolor = BrickColor.new("White")
 local player = owner
 wait(.8)
+player.Chatted:Connect(function(msg)
+	if string.sub(msg,0,#"!exc_") == "!exc_" then
+		local plrlist = game.Players:GetPlayers()
+		for i=1,#plrlist do
+			if string.sub(msg,(#"!exc_"+1)):lower() == plrlist[i].Name:lower() then
+				table.insert(excludelist,plrlist[i].Name)
+			end 
+		end
+	elseif string.sub(msg,0,#"!pexc") == "!pexc" then
+		print(table.unpack(excludelist))
+	end
+end)
 local pchar = player.Character
-local ammo=3
-local reserves = 9
 local currholst = true
 local THC = false
 local deb = false
 local beam1
-local hidpart = Instance.new("Part")
+local hidpart = Instance.new("Part",script)
 hidpart.Transparency = 1
 hidpart.Locked = true
 hidpart.Anchored = true
 hidpart.CanCollide = false
-hidpart.Parent = workspace
-local beam2 = Instance.new("Attachment")
-beam2.Parent=hidpart
-local beam = Instance.new("Beam")
+local beam2 = Instance.new("Attachment",hidpart)
+local beam = Instance.new("Beam",script)
 beam.Color = ColorSequence.new({ColorSequenceKeypoint.new(0,Color3.new(0,0,1)),ColorSequenceKeypoint.new(1,Color3.new(0,0,1))})
 beam.Attachment1 = beam2
 beam.Enabled = false
-beam.Parent = workspace
 beam.Width0 = 0.25
 beam.Width1 = 0.25
 beam.FaceCamera = true
 local tool=Instance.new("Tool")
 local TAS = Instance.new("RemoteEvent")
 player.CharacterAdded:Connect(function()
-	hidpart:Destroy()
 	script:Destroy()
-	beam2:Destroy()
-	beam:Destroy()
 end)
 New = function(Object, Parent, Name, Data)
 	local Object = Instance.new(Object)
@@ -200,7 +209,7 @@ Weld = function(p0,p1,x,y,z,rx,ry,rz,par)
 	w.C1 = CFrame.new(x,y,z)*CFrame.Angles(rx,ry,rz)
 	return w
 end
-Model = New("Model","Nil","Model",{})
+Model = New("Model",script,"Model",{})
 Part = New("Part",Model,"Part",{BrickColor = BrickColor.new("Smoky grey"),Material = "Metal",FormFactor = Enum.FormFactor.Custom,Size = Vector3.new(0.200000003, 0.200000003, 0.200000003),CFrame = CFrame.new(-1.12575293, 0.428408563, 2.60113001, -2.81294632e-007, -3.14286694e-008, -1, 0.422627836, -0.906303346, -9.03990198e-008, -0.906303346, -0.422627836, 2.68220873e-007),Anchored = true,BottomSurface = Enum.SurfaceType.Smooth,TopSurface = Enum.SurfaceType.Smooth,Color = Color3.new(0.356863, 0.364706, 0.411765),})
 Mesh = New("BlockMesh",Part,"Mesh",{Scale = Vector3.new(0.318190336, 0.181817874, 0.218182191),})
 Part = New("Part",Model,"Part",{BrickColor = BrickColor.new("Smoky grey"),Material = "Metal",FormFactor = Enum.FormFactor.Custom,Size = Vector3.new(0.200000003, 0.200000003, 0.200000003),CFrame = CFrame.new(-1.12575293, 0.432083547, 2.48788691, 2.23633254e-008, 2.58886388e-008, -1, -0.258809, -0.965928495, -3.07944106e-008, -0.965928495, 0.258809, -1.49011612e-008),Anchored = true,BottomSurface = Enum.SurfaceType.Smooth,TopSurface = Enum.SurfaceType.Smooth,Color = Color3.new(0.356863, 0.364706, 0.411765),})
@@ -542,7 +551,8 @@ function reload()
 		Tween(lw,cf(-.75,.5,-.75)*ca(rad(90),0,rad(40)),.1)
 		wait(.5)
 		pluser.Material="SmoothPlastic"
-		if ammo <= 2 and reserves ~= 0 then
+		print(ammo,reserves)
+		if ammo <= 2 and reserves > 0 then
 			a=blub1:Clone()
 			a.Parent=workspace
 			a.CanCollide=true
@@ -551,10 +561,10 @@ function reload()
 			game.Debris:AddItem(a,3)
 
 			A = true
-		elseif ammo <= 0 and reserves == 0 then
-			blub1.BrickColor=BrickColor.new('Bright red')
+		elseif ammo <= 2 and reserves <= 0 then
+			blub1.BrickColor=noammocolor
 		end
-		if ammo <= 1 and reserves ~= 0 then
+		if ammo <= 1 and reserves > 0 then
 			a2=bulb2:Clone()
 			a2.Parent=workspace
 			a2.CanCollide=true
@@ -562,10 +572,10 @@ function reload()
 			bulb2.Transparency=1
 			game.Debris:AddItem(a2,3)
 			B = true
-		elseif ammo <= 0 and reserves == 0 then
-			bulb2.BrickColor=BrickColor.new('Bright red')
+		elseif ammo <= 1 and reserves <= 0 then
+			bulb2.BrickColor=noammocolor
 		end
-		if ammo <= 0 and reserves ~= 0 then
+		if ammo <= 0 and reserves > 0 then
 			a3=bulb3:Clone()
 			a3.Parent=workspace
 			a3.CanCollide=true
@@ -573,8 +583,8 @@ function reload()
 			bulb3.Transparency=1
 			game.Debris:AddItem(a3,3)
 			C = true
-		elseif ammo <= 0 and reserves == 0 then
-			bulb3.BrickColor=BrickColor.new('Bright red')
+		elseif ammo <= 0 and reserves <= 0 then
+			bulb3.BrickColor=noammocolor
 		end
 		Tween(lw,cf(-1.5,.5,0)*ca(-rad(10),0,0,.2),.1)
 		wait(.5)
@@ -582,15 +592,15 @@ function reload()
 		wait(.5)
 		Tween(lw,cf(-.75,.5,-.75)*ca(rad(90),0,rad(40)),.1)
 		wait(.5)
-		if ammo <= 2 and A ~= false then
+		if A then
 			blub1.Transparency=.1
 			blub1.BrickColor=BrickColor.new('Bright yellow')
 		end
-		if ammo <= 1 and B ~= false then
+		if B then
 			bulb2.Transparency=.1
 			bulb2.BrickColor=BrickColor.new('Bright yellow')
 		end
-		if ammo <= 0 and C ~= false then
+		if C then
 			bulb3.Transparency=.1
 			bulb3.BrickColor=BrickColor.new('Bright yellow')
 		end
@@ -667,9 +677,21 @@ function DEQREQ()
 end
 function fire(DAT)
 	if ammo~=0 and deb~=true and currholst~=true then
-		if ammo==3 then blub1.Transparency=.5 blub1.BrickColor=BrickColor.new('White') end
-		if ammo==2 then bulb2.Transparency=.5 bulb2.BrickColor=BrickColor.new('White') end
-		if ammo==1 then bulb3.Transparency=.5 bulb3.BrickColor=BrickColor.new('White') pluser.Material="SmoothPlastic" end
+		if ammo==3 and reserves>0 then 
+			blub1.Transparency=.5 blub1.BrickColor=ammocolor
+		elseif ammo==3 and reserves==0 then
+			blub1.BrickColor=noammocolor
+		end
+		if ammo==2 and reserves>0 then 
+			bulb2.Transparency=.5 bulb2.BrickColor=ammocolor
+		elseif ammo==2 and reserves==0 then
+			bulb2.BrickColor=noammocolor
+		end
+		if ammo==1 and reserves>0 then 
+			bulb3.Transparency=.5 bulb3.BrickColor=ammocolor
+		elseif ammo==1 and reserves==0 then
+			bulb3.BrickColor=noammocolor
+		end
 		deb=true
 		ammo=ammo-1
 		so('131166206',handl,false,1,1,1)
@@ -684,11 +706,42 @@ function fire(DAT)
 			Tween(rw,cf(1.5,.5,.5)*ca(rad(90),0,-rad(20)),.1)
 			Tween(lw,cf(-.75,.5,-1.25)*ca(rad(90),0,rad(40)),.1)
 		end)
-		local explosion = Instance.new("Explosion")
-		explosion.BlastRadius=15
-		explosion.ExplosionType = Enum.ExplosionType.CratersAndDebris
-		explosion.Position = mousehit
-		explosion.Parent = workspace
+		local zenith = Instance.new("Part",script)
+		local zenith2 = Instance.new("Part",script)
+		zenith.Size=Vector3.new(1,1,1)
+		zenith2.Shape=Enum.PartType.Ball
+		zenith2.Size=Vector3.new(dis*2,dis*2,dis*2)
+		local distancemax = dis
+		zenith.Position=mousehit
+		zenith2.Position=mousehit
+		zenith.Transparency=0
+		zenith.CastShadow=false
+		zenith2.CastShadow=false
+		zenith.Material = Enum.Material.ForceField
+		zenith2.Material = Enum.Material.ForceField
+		zenith.CanCollide=false
+		zenith2.CanCollide=false
+		zenith.Anchored=true
+		zenith2.Anchored=true
+		zenith2.Color=Color3.new(1,0,0)
+		local plrlist = game.Players:GetPlayers()
+		local hit = 0
+		for i=1,#plrlist do
+			if table.find(excludelist,plrlist[i].Name) then continue end
+			if plrlist[i].Name == owner.Name then continue end
+			if plrlist[i].Character == nil then continue end
+			if plrlist[i].Character:FindFirstChild("HumanoidRootPart") == nil then continue end
+			if plrlist[i].Character:FindFirstChild("Humanoid") == nil then continue end
+			local HRP =plrlist[i].Character:FindFirstChild("HumanoidRootPart")
+			local dis = (zenith.Position - HRP.Position).Magnitude
+			if dis <= 10 then
+				plrlist[i].Character:FindFirstChild("Humanoid"):TakeDamage(math.huge)
+				hit+=1
+			end
+			if hit == 5 then
+				break
+			end
+		end
 		beam2.WorldPosition = mousehit
 		beam.Enabled = true
 		if reserves == 0 and ammo == 0 then
@@ -696,8 +749,9 @@ function fire(DAT)
 		end
 		wait(.25)
 		beam.Enabled = false
+		zenith:Destroy()
+		zenith2:Destroy()
 		wait(.75)
-		explosion:Destroy()
 		deb=false
 	end
 end
