@@ -128,15 +128,15 @@ cPart = function(x,y,z,color,tr,cc,an,parent)
 	p:BreakJoints()
 	return p
 end
-so = function(id,par,lo,pi,v,tm)
-	local s = Instance.new("Sound",par)
-	s.Looped=lo
-	s.Pitch=pi
-	s.SoundId = "http://roblox.com/asset/?id="..id
+so = function(sid:number,parent:Instance,looped:boolean,pitch:number,volume:number,time:number)
+	local s = Instance.new("Sound",parent)
+	s.Looped=looped
+	s.Pitch=pitch
+	s.SoundId = "http://roblox.com/asset/?id="..sid
 	wait()
 	s:play()
-	s.Volume=v
-	game.Debris:AddItem(s,tm)
+	s.Volume=volume
+	game.Debris:AddItem(s,time)
 	return s
 end
 Weld = function(p0,p1,x,y,z,rx,ry,rz,par)
@@ -592,17 +592,25 @@ function reload()
 		wait(.5)
 		Tween(lw,cf(-.75,.5,-.75)*ca(rad(90),0,rad(40)),.1)
 		wait(.5)
+		local function quickfunction(part,reserves)
+			if reserves >=0 then
+				ammo = ammo+1
+				reserves = reserves-1
+				part.Transparency=.1
+				part.BrickColor=BrickColor.new('Bright yellow')
+			else
+				part.Transparency=.1
+				part.BrickColor=noammocolor
+			end
+		end
 		if A then
-			blub1.Transparency=.1
-			blub1.BrickColor=BrickColor.new('Bright yellow')
+			quickfunction(blub1,reserves)
 		end
 		if B then
-			bulb2.Transparency=.1
-			bulb2.BrickColor=BrickColor.new('Bright yellow')
+			quickfunction(bulb2,reserves)
 		end
 		if C then
-			bulb3.Transparency=.1
-			bulb3.BrickColor=BrickColor.new('Bright yellow')
+			quickfunction(bulb3,reserves)
 		end
 		Tween(slw,cf(-.25,2.5,.375)*ca(0,0,-pi/2),.1)
 		Tween(lw,cf(-.75,.5,-1.25)*ca(rad(90),0,rad(40)),.1)
@@ -614,10 +622,6 @@ function reload()
 		Tween(lw,cf(-.75,.5,-1.25)*ca(rad(90),0,rad(40)),.1)
 		wait(1)
 		pluser.Material="Neon"
-		while ammo ~= 3 and reserves ~= 0 do
-			ammo = ammo+1
-			reserves = reserves-1
-		end
 		deb=false
 	end
 end
