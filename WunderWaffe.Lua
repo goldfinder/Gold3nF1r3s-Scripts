@@ -52,18 +52,26 @@ local v3 = Vector3.new
 local ca = CFrame.Angles
 local noammocolor = BrickColor.new('Bright red')
 local ammocolor = BrickColor.new("White")
-local player = owner
+local player = owner --Makes it look nicer.
 wait(.8)
 player.Chatted:Connect(function(msg)
-	if string.sub(msg,0,#"!exc_") == "!exc_" then
+	if string.sub(msg,0,#"!exc_"):lower() == "!exc_" then
 		local plrlist = game.Players:GetPlayers()
 		for i=1,#plrlist do
 			if string.sub(msg,(#"!exc_"+1)):lower() == plrlist[i].Name:lower() then
 				table.insert(excludelist,plrlist[i].Name)
 			end 
 		end
-	elseif string.sub(msg,0,#"!pexc") == "!pexc" then
+	elseif string.sub(msg,0,#"!pexc"):lower() == "!pexc" then
 		print(table.unpack(excludelist))
+	elseif string.sub(msg,0,#"!dis_"):lower() == "!dis_" then
+		if tostring(tonumber(string.split(msg,(#"!dis_")))) == string.split(msg,(#"!dis_")) then
+			dis = tonumber(string.sub(msg,(#"!dis_"+1)))
+		elseif string.sub(msg,0,#"!dis_r"):lower() == "!dis_r" then
+			dis = 10
+		else
+			warn("Unable to set distance of shot to "..string.sub(msg,(#"!dis_"+1)).." due to script expecting number.")
+		end
 	end
 end)
 local pchar = player.Character
@@ -539,6 +547,18 @@ mwl= Weld(handl,pchar.Torso,-.4,2,.65,rad(180),-rad(90),0,m)
 m.Parent = pchar
 slw=Weld(mainp,handl,-.25,2.5,.375,0,0,-pi/2,m)
 a=false
+function qfreload(part,reserves,id)
+	if reserves >(0+(id-1)) then
+		ammo = ammo+1
+		part.Transparency=.1
+		part.BrickColor=BrickColor.new('Bright yellow')
+		return true
+	else
+		part.Transparency=.1
+		part.BrickColor=noammocolor
+		return false
+	end
+end
 function reload()
 	if currholst == false and deb == false and reserves > 0 and ammo <= 2 then
 		local A = false
@@ -592,25 +612,15 @@ function reload()
 		wait(.5)
 		Tween(lw,cf(-.75,.5,-.75)*ca(rad(90),0,rad(40)),.1)
 		wait(.5)
-		local function quickfunction(part,reserves)
-			if reserves >=0 then
-				ammo = ammo+1
-				reserves = reserves-1
-				part.Transparency=.1
-				part.BrickColor=BrickColor.new('Bright yellow')
-			else
-				part.Transparency=.1
-				part.BrickColor=noammocolor
-			end
-		end
+
 		if A then
-			quickfunction(blub1,reserves)
+			A = qfreload(bulb3,reserves,1)
 		end
 		if B then
-			quickfunction(bulb2,reserves)
+			B = qfreload(bulb2,reserves,2)
 		end
 		if C then
-			quickfunction(bulb3,reserves)
+			C = qfreload(blub1,reserves,3)
 		end
 		Tween(slw,cf(-.25,2.5,.375)*ca(0,0,-pi/2),.1)
 		Tween(lw,cf(-.75,.5,-1.25)*ca(rad(90),0,rad(40)),.1)
@@ -622,6 +632,15 @@ function reload()
 		Tween(lw,cf(-.75,.5,-1.25)*ca(rad(90),0,rad(40)),.1)
 		wait(1)
 		pluser.Material="Neon"
+		if C then
+			reserves-=3
+		elseif B then
+			reserves-=2
+		elseif A then
+			reserves-=1
+		else
+			print("(Shrug) I don't really know what you are doing.")
+		end
 		deb=false
 	end
 end
