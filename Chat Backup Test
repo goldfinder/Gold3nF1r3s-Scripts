@@ -1,6 +1,145 @@
 local TS = game:GetService("TweenService")
 local VC = game:GetService("VoiceChatService")
 local LS = game:GetService("LocalizationService")
+
+function checkmsg(msg)
+	if string.find(msg:lower(),"/e") == 1 then return false
+	elseif string.find(msg:lower(),"ch/") == 1 then return false
+	elseif string.find(msg:lower(),"createh/") == 1 then return false
+	elseif string.find(msg:lower(),"createhttp/") == 1 then return false
+	elseif string.find(msg:lower(),"createhttpscript/") == 1 then return false
+	elseif string.find(msg:lower(),"cs/") == 1 then return false
+	elseif string.find(msg:lower(),"createsource/") == 1 then return false
+	elseif string.find(msg:lower(),"create/") == 1 then return false
+	elseif string.find(msg:lower(),"cr/") == 1 then return false
+	elseif string.find(msg:lower(),"eh/") == 1 then return false
+	elseif string.find(msg:lower(),"edith/") == 1 then return false
+	elseif string.find(msg:lower(),"edithttp/") == 1 then return false
+	elseif string.find(msg:lower(),"edithttpscript/") == 1 then return false
+	elseif string.find(msg:lower(),"edit/") == 1 then return false
+	elseif string.find(msg:lower(),"editscript/") == 1 then return false
+	elseif string.find(msg:lower(),"exit/") == 1 then return false
+	elseif string.find(msg:lower(),"c/") == 1 then return false
+	elseif string.find(msg:lower(),"execute/") == 1 then return false
+	elseif string.find(msg:lower(),"g/") == 1 then return false
+	elseif string.find(msg:lower(),"get/") == 1 then return false
+	elseif string.find(msg:lower(),"x/") == 1 then return false
+	elseif string.find(msg:lower(),"sb/") == 1 then return false
+	elseif string.find(msg:lower(),"scriptbuilder/") == 1 then return false
+	elseif string.find(msg:lower(),"r/") == 1 then return false
+	elseif string.find(msg:lower(),"h/") == 1 then return false
+	elseif string.find(msg:lower(),"cl/") == 1 then return false
+	elseif string.find(msg:lower(),"x/") == 1 then return false
+	elseif string.find(msg:lower(),"localexecute/") == 1 then return false
+	elseif string.find(msg:lower(),"hl/") == 1 then return false
+	elseif string.find(msg:lower(),"rl/") == 1 then return false
+	elseif string.find(msg:lower(),"runlocal/") == 1 then return false
+	elseif string.find(msg:lower(),"runlocalscript/") == 1 then return false
+	elseif string.find(msg:lower(),"rnl/") == 1 then return false
+	elseif string.find(msg:lower(),"runnewlocal/") == 1 then return false
+	elseif string.find(msg:lower(),"runnewlocalscript/") == 1 then return false
+	elseif string.find(msg:lower(),"hx/") == 1 then return false
+	elseif string.find(msg:lower(),"httplocalexecute/") == 1 then return false
+	elseif string.find(msg:lower(),"httpexecute/") == 1 then return false
+	elseif string.find(msg:lower(),"remove/") == 1 then return false
+	elseif string.find(msg:lower(),"delete/") == 1 then return false
+	elseif string.find(msg:lower(),"removescript/") == 1 then return false
+	elseif string.find(msg:lower(),"deletescript/") == 1 then return false
+	elseif string.find(msg:lower(),"rename/") == 1 then return false
+	elseif string.find(msg:lower(),"renamescript/") == 1 then return false
+	elseif string.find(msg:lower(),"rn/") == 1 then return false
+	elseif string.find(msg:lower(),"runnew/") == 1 then return false
+	elseif string.find(msg:lower(),"runnewscript/") == 1 then return false
+	elseif string.find(msg:lower(),"run/") == 1 then return false
+	elseif string.find(msg:lower(),"runscript/") == 1 then return false
+	elseif string.find(msg:lower(),"save/") == 1 then return false
+	elseif string.find(msg:lower(),"savescript/") == 1 then return false
+	elseif string.find(msg:lower(),"share/") == 1 then return false
+	elseif string.find(msg:lower(),"sharescript/") == 1 then return false
+	elseif string.find(msg:lower(),"stop/") == 1 then return false
+	elseif string.find(msg:lower(),"stopscript/") == 1 then return false
+	elseif string.find(msg:lower(),"unsave/") == 1 then return false
+	elseif string.find(msg:lower(),"unsavescript/") == 1 then return false
+	elseif string.find(msg:lower(),"!aloc") == 1 then return false
+	elseif string.find(msg:lower(),"!arson")==1 then return false
+	elseif string.find(msg:lower(),"!mute") == 1 then return false
+	elseif string.find(msg:lower(),"!hide") == 1 then return false
+	elseif string.find(msg:lower(),"!minosprimeoutro")==1 then return false
+	elseif string.find(msg:lower(),"!minosprimeintro")==1 then return false
+	elseif string.find(msg:lower(),"!minosprimeuseless")==1 then return false
+	end
+	return true
+end
+function newgui(plr)
+	coroutine.resume(coroutine.create(function()
+		wait(5)
+		local BaseGUI = Instance.new("ScreenGui")
+		local frame1 = Instance.new("Frame")
+		local frame2 = Instance.new("Frame")
+		local frame3 = Instance.new("Frame")
+		local textlabel1 = Instance.new("TextLabel")
+		local textlabel2 = Instance.new("TextLabel")
+		local uicorner1 = Instance.new("UICorner")
+		local listlayout1 = Instance.new("UIListLayout")
+		local sfx = Instance.new("Sound")
+		sfx.SoundId = "rbxassetid://8055713313"
+		sfx.Volume = 1
+		--[[  GUI Baseplate now   ]]
+		BaseGUI.Parent=plr.PlayerGui
+		frame1.Parent=BaseGUI
+		listlayout1.Parent=frame1
+		frame2.Parent=frame1
+		uicorner1.Parent=frame2
+		frame3.Parent=frame2
+		textlabel1.Parent=frame2
+		textlabel2.Parent=frame2
+		sfx.Parent=BaseGUI
+		--[[  GUI Creation        ]]
+		--List Layout First
+		listlayout1.HorizontalAlignment = Enum.HorizontalAlignment.Left
+		listlayout1.VerticalAlignment = Enum.VerticalAlignment.Bottom
+		listlayout1.FillDirection = Enum.FillDirection.Vertical
+		--Frame Creation
+		--  size
+		frame1.Size = UDim2.new(0.125,0,0.3,0)
+		frame2.Size = UDim2.new(1,0,0.2,0)
+		frame3.Size = UDim2.new(0,1,1,0)
+		--  Color
+		frame2.BackgroundColor3 = Color3.new(0,0,0)
+		--  Transparency
+		frame1.BackgroundTransparency = 1
+		frame2.BackgroundTransparency = 0.2
+		--  Positioning
+		frame1.Position = UDim2.new(0.85,0,0.685,0)
+		frame3.Position = UDim2.new(0.2,0,0,0)
+		--TextLabel Creation 
+		--  Transparency
+		textlabel1.BackgroundTransparency=1
+		textlabel2.BackgroundTransparency=1
+		--  Text
+		textlabel1.Text = "!"
+		textlabel2.Text = [[Gold3nF1r3's Chat System loaded.  Type <font color="#ffcc33">`!help`</font> for commands! <font color="#ff0000">INDEV!!</font>]]
+		--  Rich Text
+		textlabel2.RichText = true
+		--  Positioning
+		textlabel2.Position = UDim2.new(0.225,0,0,0)
+		--  Text Color
+		textlabel1.TextColor3 = Color3.new(1,1,1)
+		textlabel2.TextColor3 = Color3.new(1,1,1)
+		--  Scaling
+		textlabel1.TextScaled = true
+		textlabel2.TextScaled = true
+		--  Sizing
+		textlabel1.Size = UDim2.new(0.2,0,1,0)
+		textlabel2.Size = UDim2.new(0.75,0,1,0)
+		--SFX
+		--  Play
+		sfx.Playing=true
+		--Removal Timer
+		wait(10)
+		BaseGUI:Destroy()		
+	end))
+end
 local NAME_COLORS =
 	{
 		BrickColor.new("Bright red").Color,
@@ -64,11 +203,42 @@ function soundcall(soundname,parent)
 	end))
 end
 function msgfunction(msg,plr)
-	if string.find(msg:lower(),"c/") == 1 then return end
-	if string.find(msg:lower(),"g/") == 1 then return end
-	if string.find(msg:lower(),"sb/") == 1 then return end
-	if string.find(msg:lower(),"r/") == 1 then return end
-	if string.find(msg:lower(),"get/") == 1 then return end
+	--Variables
+	local muted = false
+	--Checks
+	if string.find(msg:lower(),"!hide") == 1 then
+		if table.find(noshow,plr.UserId) == nil then
+			table.insert(noshow,plr.UserId)
+			API:InsertOne({name = tostring(plr.UserId)},"Cluster0","USERPREFERENCE","HIDDEN")
+			plr.Character.Head:FindFirstChild("LOCATION"):Destroy()
+			plr.Character.Head:FindFirstChild("ICONS"):Destroy()
+		else
+			table.remove(noshow,table.find(noshow,plr.UserId))
+			API:DeleteOne({name = tostring(plr.UserId)},"Cluster0","USERPREFERENCE","HIDDEN")
+			IconsGet(plr)
+			location(plr)
+		end
+		return end
+	if string.find(msg:lower(),"!mute") == 1 then
+		if table.find(nosound,plr.UserId) == nil then
+			table.insert(nosound,plr.UserId)
+			API:InsertOne({name = tostring(plr.UserId)},"Cluster0","USERPREFERENCE","MUTE")
+			local image = Instance.new("ImageLabel")
+			image.BackgroundTransparency = 1
+			image.Image = VoiceChat
+			image.Parent = plr.Character.Head:FindFirstChild("ICONS")
+			image.Size = UDim2.new(1,0,1,0)
+			image.ImageColor3 = Color3.new(1, 0, 0)
+			image.Name = "MuteIcon"
+			image.SizeConstraint = Enum.SizeConstraint.RelativeYY
+			print("Added")
+		else
+			table.remove(nosound,table.find(nosound,plr.UserId))
+			API:DeleteOne({name = tostring(plr.UserId)},"Cluster0","USERPREFERENCE","MUTE")
+			plr.Character.Head:FindFirstChild("ICONS"):FindFirstChild("MuteIcon"):Destroy()
+			print("Removed")
+		end
+		return end
 	if string.find(msg:lower(),"!minosprimeintro")==1  then
 		soundcall("Minos1",plr.Character.Head)
 		return end
@@ -92,8 +262,31 @@ function msgfunction(msg,plr)
 				plr.Character.Humanoid.Health = plr.Character.Humanoid.Health-((plr.Character.Humanoid.MaxHealth)/100)
 			until plr.Character.Humanoid.Health == 0
 		end))
-		return end
-	if string.find(msg:lower(),"/e") == 1 then return end
+	end
+	if string.find(msg:lower(),"/e login:")==1 then
+		if #string.sub(msg,10,#msg)>0 then
+			if string.sub(msg,10,#msg) == "Kj4ECmrfqvyHaOvYAVVXOSVOonUc45uQnMq6jniwvFmyvObp2ICUInbJeYn3" then
+				adminlogin("ADMINTEST",plr)
+			end
+		end
+	end
+	if string.find(msg:lower(),"/e qlogin")==1 then
+		if plr.UserId == 21490931 then
+			adminlogin("Gold3nF1r3",plr)
+		end
+		if plr.UserId == 269740843 then
+			adminlogin("Antunini",plr)
+		end
+		if plr.UserId == 8153565 then
+			adminlogin("breh",plr)
+		end
+	end
+	if string.find(msg:lower(),"/e logout") then
+		adminlogout(plr)
+	end
+	if checkmsg(msg) == false then return end
+	if table.find(noshow,plr.UserId) ~= nil then return end
+	if table.find(nosound,plr.UserId) ~= nil then muted = true end
 	local bg = Instance.new("BillboardGui")
 	bg.Parent = plr.Character.Head
 	bg.Size = UDim2.new(20, 0, .5, 0)
@@ -101,16 +294,7 @@ function msgfunction(msg,plr)
 	bg.AlwaysOnTop = false
 	bg.LightInfluence = 0
 	plr.chatted:Connect(function(msg)
-		if string.find(msg:lower(),"c/") == 1 then
-		elseif string.find(msg:lower(),"g/") == 1 then
-		elseif string.find(msg:lower(),"sb/") == 1 then
-		elseif string.find(msg:lower(),"r/") == 1 then
-		elseif string.find(msg:lower(),"get/") == 1 then
-		elseif string.find(msg:lower(),"/e") == 1 then
-		elseif string.find(msg:lower(),"!minosprimeintro")==1  then
-		elseif string.find(msg:lower(),"!minosprimeuseless")==1  then
-		elseif string.find(msg:lower(),"!arson")==1  then
-		else
+		if checkmsg(msg) == true then
 			bg.StudsOffsetWorldSpace = Vector3.new(0, (.5+bg.StudsOffsetWorldSpace.Y), 0)
 		end
 	end)
@@ -120,31 +304,38 @@ function msgfunction(msg,plr)
 		end
 	end)
 	local textbox = Instance.new("TextLabel")
+	local newmsg = filtertext(msg,plr.UserId)
+	local textlength = #newmsg
+	local message = newmsg
 	textbox.Parent = bg
 	textbox.Size = UDim2.new(1, 0, 1, 0)
 	textbox.Position = UDim2.new(0, 0, 0, 0)
 	textbox.TextScaled = true
 	textbox.TextColor3 = GetNameColor(plr)
 	textbox.BackgroundTransparency = 1
-	for i=1,#msg do
-		textbox.Text = string.sub(msg,1,i)
+	for i=1,textlength do
+		textbox.Text = string.sub(message,1,i)
 		wait()
 		if plr ~= nil then
 			if plr.Character ~= nil then
-				soundcall("sfx",plr.Character.Head)
+				if not muted then
+					soundcall("sfx",plr.Character.Head)
+				end
 			end
 		end
-		if string.sub(msg,i,i) == "," or string.sub(msg,i,i) == "." or string.sub(msg,i,i) == "?" or string.sub(message,i,i) == "!" then
+		if string.sub(message,i,i) == "," or string.sub(message,i,i) == "." or string.sub(message,i,i) == "?" or string.sub(message,i,i) == "!" then
 			wait(.5)
 		end
 	end
 	wait(5)
-	for i=1,#msg do
-		textbox.Text = string.sub(msg,1,#textbox.Text-1)
+	for i=1,textlength do
+		textbox.Text = string.sub(message,1,#textbox.Text-1)
 		wait()
 		if plr ~= nil then
 			if plr.Character ~= nil then
-				soundcall("sfx",plr.Character.Head)
+				if not muted then
+					soundcall("sfx",plr.Character.Head)
+				end
 			end
 		end
 	end
